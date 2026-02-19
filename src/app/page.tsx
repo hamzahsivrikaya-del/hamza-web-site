@@ -162,14 +162,15 @@ export default async function HomePage() {
               </h2>
               <div className="space-y-4 text-text-secondary leading-relaxed">
                 <p>
-                  Antalya'da sertifikalı kişisel antrenör olarak CrossFit, fonksiyonel
+                  Antalya&apos;da sertifikalı kişisel antrenör olarak CrossFit, fonksiyonel
                   antrenman ve atletik performans alanlarında 5 yılı aşkın deneyimle
-                  sporcularıma hizmet veriyorum.
+                  hizmet veriyorum.
                 </p>
                 <p>
                   Spor benim için hep bir araç oldu — sadece daha iyi görünmek için değil,
-                  daha güçlü, daha dayanıklı ve yaşama daha hazır olmak için. CrossFit ile
-                  tanıştığımda antrenmanın ne kadar kişisel ve dönüştürücü olabileceğini
+                  daha güçlü, daha dayanıklı ve yaşama daha hazır olmak için. Halter,
+                  jimnastik, dayanıklılık antrenmanları ve fonksiyonel hareketlerle
+                  çalışırken antrenmanın ne kadar kişisel ve dönüştürücü olabileceğini
                   bizzat yaşadım; şimdi aynı dönüşümü sizinle yaşatmak istiyorum.
                 </p>
                 <p>
