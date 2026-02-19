@@ -21,26 +21,16 @@ function getCategory(pct: number): string {
   return 'Obez'
 }
 
-/* ─── Google Fonts TTF yükle → base64 ─────────────────── */
-async function loadFontBase64(family: string, weight: 400 | 700): Promise<string> {
-  const url = `https://fonts.googleapis.com/css?family=${encodeURIComponent(family)}:${weight}&subset=latin,latin-ext`
-  const css = await fetch(url, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9) Gecko/2008061004 Firefox/3.0',
-    },
-  }).then((r) => r.text())
-
-  // latin-ext bloğunu tercih et, yoksa ilk TTF URL'ini al
-  const extMatch = css.match(/latin ext[\s\S]*?src: url\(([^)]+\.ttf[^)]*)\)/)
-  const anyMatch = css.match(/src: url\(([^)]+\.ttf[^)]*)\)/) ?? css.match(/src: url\(([^)]+)\)/)
-  const fontUrl  = (extMatch ?? anyMatch)?.[1]
-  if (!fontUrl) throw new Error(`Font URL bulunamadi: ${family} ${weight}`)
-
-  const ab    = await fetch(fontUrl).then((r) => r.arrayBuffer())
+/* ─── Local font TTF yükle → base64 ──────────────────── */
+async function loadFontBase64(filename: string): Promise<string> {
+  const ab    = await fetch(`/fonts/${filename}`).then((r) => r.arrayBuffer())
   const bytes = new Uint8Array(ab)
+  // Uint8Array → base64: chunk'lar halinde dönüştür (büyük fontlar için)
   let binary  = ''
-  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
+  const chunk = 8192
+  for (let i = 0; i < bytes.byteLength; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
+  }
   return btoa(binary)
 }
 
@@ -49,10 +39,10 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
   const { default: jsPDF }    = await import('jspdf')
   const { default: autoTable } = await import('jspdf-autotable')
 
-  // Noto Sans — tam Türkçe desteği (latin-ext subset)
+  // Noto Sans — tam Türkçe desteği (public/fonts/ klasöründen yüklenir)
   const [regularB64, boldB64] = await Promise.all([
-    loadFontBase64('Noto Sans', 400),
-    loadFontBase64('Noto Sans', 700),
+    loadFontBase64('NotoSans-Regular.ttf'),
+    loadFontBase64('NotoSans-Bold.ttf'),
   ])
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
