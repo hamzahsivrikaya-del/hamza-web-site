@@ -205,6 +205,12 @@ export default async function MemberDashboard() {
                 <div className="text-xs text-text-secondary">Bacak cm</div>
               </div>
             )}
+            {recentMeasurement.body_fat_pct && (
+              <div className="text-center">
+                <div className="text-lg font-bold">{recentMeasurement.body_fat_pct}</div>
+                <div className="text-xs text-text-secondary">Yağ %</div>
+              </div>
+            )}
           </div>
           <Link href="/dashboard/progress" className="text-sm text-primary mt-3 inline-block hover:underline">
             Tüm ölçümleri gör →
