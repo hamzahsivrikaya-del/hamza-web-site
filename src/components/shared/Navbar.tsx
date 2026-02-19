@@ -39,8 +39,13 @@ export default function Navbar({ showNotifications = true }: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-sm border-b border-border">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
-        <Link href="/" className="text-sm font-bold text-primary hover:text-primary/80 transition-colors">
-          hamzasivrikaya.com
+        <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+          <div className="w-8 h-8 bg-primary flex items-center justify-center rounded-md flex-shrink-0">
+            <span className="text-white text-xs font-black leading-none">HS</span>
+          </div>
+          <span className="text-sm font-black text-primary uppercase tracking-widest hidden sm:block">
+            hamzasivrikaya.com
+          </span>
         </Link>
 
         {/* Sağ: Kullanıcı bilgileri */}

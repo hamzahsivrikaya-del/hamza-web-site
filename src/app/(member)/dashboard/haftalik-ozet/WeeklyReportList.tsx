@@ -56,7 +56,14 @@ export default function WeeklyReportList({ reports }: { reports: WeeklyReport[] 
   if (reports.length === 0) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Haftalık Özetlerim</h1>
+        <div className="flex items-center gap-3">
+          <a href="/dashboard" className="text-text-secondary hover:text-text-primary transition-colors">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </a>
+          <h1 className="text-2xl font-bold">Haftalık Özetlerim</h1>
+        </div>
         <Card>
           <div className="text-center py-10">
             <p className="text-4xl mb-3">📊</p>
@@ -73,8 +80,15 @@ export default function WeeklyReportList({ reports }: { reports: WeeklyReport[] 
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Haftalık Özetlerim</h1>
-        <p className="text-sm text-text-secondary mt-0.5">Her Pazar akşamı güncellenir</p>
+        <div className="flex items-center gap-3 mb-1">
+          <a href="/dashboard" className="text-text-secondary hover:text-text-primary transition-colors">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </a>
+          <h1 className="text-2xl font-bold">Haftalık Özetlerim</h1>
+        </div>
+        <p className="text-sm text-text-secondary mt-0.5 pl-9">Her Pazar akşamı güncellenir</p>
       </div>
 
       <div className="space-y-4">
