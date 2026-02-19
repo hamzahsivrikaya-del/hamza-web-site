@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { generateMeasurementPdf } from '@/lib/generateMeasurementPdf'
 import { createClient } from '@/lib/supabase/client'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -28,6 +29,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
     is_active: member.is_active,
   })
   const [saving, setSaving] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState(false)
 
   const activePackage = packages.find((p) => p.status === 'active')
 
@@ -64,7 +66,26 @@ export default function MemberDetail({ member, packages, measurements, lessons }
             {member.is_active ? 'Aktif' : 'Pasif'}
           </Badge>
         </div>
-        <Button variant="secondary" onClick={() => setEditing(true)}>Düzenle</Button>
+        <div className="flex gap-2">
+          {measurements.length > 0 && (
+            <Button
+              variant="secondary"
+              loading={pdfLoading}
+              onClick={async () => {
+                setPdfLoading(true)
+                await generateMeasurementPdf(member, measurements)
+                setPdfLoading(false)
+              }}
+            >
+              <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              </svg>
+              Rapor PDF
+            </Button>
+          )}
+          <Button variant="secondary" onClick={() => setEditing(true)}>Düzenle</Button>
+        </div>
       </div>
 
       {/* Bilgiler */}
@@ -158,6 +179,31 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   <span className="text-text-secondary">Bacak</span>
                   <span>{measurements[0].leg} cm</span>
                 </div>
+              )}
+              {(measurements[0].sf_chest || measurements[0].sf_abdomen || measurements[0].sf_thigh) && (
+                <>
+                  <div className="border-t border-border pt-2 mt-2">
+                    <p className="text-xs text-text-secondary uppercase tracking-wider mb-2">Skinfold (mm)</p>
+                  </div>
+                  {measurements[0].sf_chest && (
+                    <div className="flex justify-between">
+                      <span className="text-text-secondary">Göğüs</span>
+                      <span>{measurements[0].sf_chest} mm</span>
+                    </div>
+                  )}
+                  {measurements[0].sf_abdomen && (
+                    <div className="flex justify-between">
+                      <span className="text-text-secondary">Karın</span>
+                      <span>{measurements[0].sf_abdomen} mm</span>
+                    </div>
+                  )}
+                  {measurements[0].sf_thigh && (
+                    <div className="flex justify-between">
+                      <span className="text-text-secondary">Uyluk</span>
+                      <span>{measurements[0].sf_thigh} mm</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ) : (

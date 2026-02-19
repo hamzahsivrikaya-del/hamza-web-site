@@ -5,6 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import { formatDate, formatDateShort } from '@/lib/utils'
 import type { Measurement } from '@/lib/types'
+import BodyCompositionCard from './BodyCompositionCard'
 
 const metricOptions = [
   { key: 'weight', label: 'Kilo', unit: 'kg', color: '#DC2626' },
@@ -101,6 +102,9 @@ export default function ProgressChart({ measurements }: { measurements: Measurem
         )}
       </Card>
 
+      {/* Vücut Kompozisyonu kartı */}
+      <BodyCompositionCard measurements={measurements} />
+
       {/* Güncel ölçümler kartı */}
       {latest && (
         <Card>
@@ -148,6 +152,9 @@ export default function ProgressChart({ measurements }: { measurements: Measurem
                   <th className="text-right py-2 px-2">Bel</th>
                   <th className="text-right py-2 px-2">Kol</th>
                   <th className="text-right py-2 px-2">Bacak</th>
+                  <th className="text-right py-2 px-2 text-orange-400/70">SF Göğüs</th>
+                  <th className="text-right py-2 px-2 text-orange-400/70">SF Karın</th>
+                  <th className="text-right py-2 px-2 text-orange-400/70">SF Uyluk</th>
                 </tr>
               </thead>
               <tbody>
@@ -160,6 +167,9 @@ export default function ProgressChart({ measurements }: { measurements: Measurem
                     <td className="text-right py-2 px-2">{m.waist || '-'}</td>
                     <td className="text-right py-2 px-2">{m.arm || '-'}</td>
                     <td className="text-right py-2 px-2">{m.leg || '-'}</td>
+                    <td className="text-right py-2 px-2 text-orange-400/80">{m.sf_chest || '-'}</td>
+                    <td className="text-right py-2 px-2 text-orange-400/80">{m.sf_abdomen || '-'}</td>
+                    <td className="text-right py-2 px-2 text-orange-400/80">{m.sf_thigh || '-'}</td>
                   </tr>
                 ))}
               </tbody>
