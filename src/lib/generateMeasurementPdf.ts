@@ -17,7 +17,7 @@ function getCategory(pct: number): string {
   if (pct < 6)  return 'Elite Sporcu'
   if (pct < 14) return 'Fit'
   if (pct < 18) return 'Ortalama'
-  if (pct < 25) return 'Fazla Yagli'   // ğ → jsPDF'te bile sorun olabilir
+  if (pct < 25) return 'Fazla Yağlı'
   return 'Obez'
 }
 
@@ -25,7 +25,7 @@ function getCategory(pct: number): string {
 async function loadFontBase64(filename: string): Promise<string> {
   const ab    = await fetch(`/fonts/${filename}`).then((r) => r.arrayBuffer())
   const bytes = new Uint8Array(ab)
-  // Uint8Array → base64: chunk'lar halinde dönüştür (büyük fontlar için)
+  // chunk'lar halinde dönüştür (büyük fontlar için güvenli)
   let binary  = ''
   const chunk = 8192
   for (let i = 0; i < bytes.byteLength; i += chunk) {
@@ -52,14 +52,12 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
   doc.addFileToVFS('NotoSans-Bold.ttf', boldB64)
   doc.addFont('NotoSans-Bold.ttf', 'NotoSans', 'bold')
 
-  // Varsayılan fontu ayarla
   doc.setFont('NotoSans', 'normal')
 
   const W      = 210
   const pageH  = 297
   const margin = 18
 
-  // Renkler
   const RED    : [number,number,number] = [220, 38, 38]
   const DARK   : [number,number,number] = [17, 17, 17]
   const CREAM  : [number,number,number] = [245, 240, 232]
@@ -73,7 +71,6 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
     doc.setFont('NotoSans', 'bold')
     doc.setFontSize(56)
     doc.setTextColor(17, 17, 17)
-    // GState opacity API opsiyonel; varsa kullan
     try {
       const gs = new (doc as any).GState({ opacity: 0.04 })
       doc.saveGraphicsState?.()
@@ -102,12 +99,12 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
   doc.setFont('NotoSans', 'normal')
   doc.setFontSize(9)
   doc.setTextColor(...LGRAY)
-  doc.text('KISISEL ANTRENOR  .  ANTALYA', margin, 35)
+  doc.text('Kişisel Antrenör  ·  Antalya', margin, 35)
 
   doc.setFont('NotoSans', 'bold')
   doc.setFontSize(13)
   doc.setTextColor(...CREAM)
-  doc.text('VUCUT OLCUM RAPORU', W - margin, 26, { align: 'right' })
+  doc.text('Vücut Ölçüm Raporu', W - margin, 26, { align: 'right' })
 
   doc.setFont('NotoSans', 'normal')
   doc.setFontSize(8)
@@ -129,7 +126,7 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
   doc.setTextColor(...LGRAY)
   doc.text(`E-posta: ${member.email}`, margin + 6, y + 15)
   if (member.phone) doc.text(`Tel: ${member.phone}`, margin + 90, y + 15)
-  doc.text(`Uyelik: ${fmtLong(member.start_date)}`, W - margin - 6, y + 15, { align: 'right' })
+  doc.text(`Üyelik: ${fmtLong(member.start_date)}`, W - margin - 6, y + 15, { align: 'right' })
 
   y += 32
 
@@ -144,17 +141,17 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
     doc.setFont('NotoSans', 'bold')
     doc.setFontSize(9)
     doc.setTextColor(...RED)
-    doc.text('SON OLCUM OZETI', margin, y)
+    doc.text('Son Ölçüm Özeti', margin, y)
     doc.setDrawColor(...RED)
     doc.setLineWidth(0.5)
-    doc.line(margin, y + 1, margin + 40, y + 1)
+    doc.line(margin, y + 1, margin + 38, y + 1)
     y += 7
 
     const cards = [
       { label: 'Kilo',     value: latest.weight       ? `${latest.weight} kg`       : '-', color: CREAM  },
-      { label: 'Yag %',    value: latest.body_fat_pct  ? `${latest.body_fat_pct}%`   : '-', color: ORANGE },
+      { label: 'Yağ %',   value: latest.body_fat_pct  ? `${latest.body_fat_pct}%`   : '-', color: ORANGE },
       { label: 'Kategori', value: latest.body_fat_pct  ? getCategory(Number(latest.body_fat_pct)) : '-', color: CREAM },
-      { label: 'Gogus',    value: latest.chest         ? `${latest.chest} cm`        : '-', color: CREAM  },
+      { label: 'Göğüs',   value: latest.chest         ? `${latest.chest} cm`        : '-', color: CREAM  },
       { label: 'Bel',      value: latest.waist         ? `${latest.waist} cm`        : '-', color: CREAM  },
       { label: 'Kol',      value: latest.arm           ? `${latest.arm} cm`          : '-', color: CREAM  },
     ]
@@ -174,18 +171,23 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
     })
     y += 28
 
-    // Yağ/kas kütlesi + bar
+    // Yağ/yağsız kütle + bar
     if (latest.body_fat_pct && latest.weight) {
-      const fatKg  = (Number(latest.body_fat_pct) / 100) * Number(latest.weight)
-      const leanKg = Number(latest.weight) - fatKg
-      const fatPct = (fatKg / Number(latest.weight)) * 100
+      const fatKg   = (Number(latest.body_fat_pct) / 100) * Number(latest.weight)
+      const leanKg  = Number(latest.weight) - fatKg
+      const fatPct  = (fatKg / Number(latest.weight)) * 100
 
       doc.setFont('NotoSans', 'bold')
       doc.setFontSize(8)
       doc.setTextColor(...ORANGE)
-      doc.text(`Yag kutlesi: ${fatKg.toFixed(1)} kg`, margin, y)
+      doc.text(`Yağ Kütlesi: ${fatKg.toFixed(1)} kg`, margin, y)
       doc.setTextColor(...BLUE)
-      doc.text(`Kas kutlesi: ${leanKg.toFixed(1)} kg`, margin + 52, y)
+      doc.text(`Yağsız Kütle: ${leanKg.toFixed(1)} kg`, margin + 52, y)
+
+      doc.setFont('NotoSans', 'normal')
+      doc.setFontSize(6.5)
+      doc.setTextColor(80, 80, 80)
+      doc.text('(kas + kemik + su)', margin + 108, y)
 
       const barX = margin + 106
       const barW = W - margin - barX
@@ -203,8 +205,8 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
       doc.setFontSize(7)
       doc.setTextColor(245, 158, 11)
       const sfParts: string[] = []
-      if (latest.sf_chest)   sfParts.push(`Gogus: ${latest.sf_chest} mm`)
-      if (latest.sf_abdomen) sfParts.push(`Karin: ${latest.sf_abdomen} mm`)
+      if (latest.sf_chest)   sfParts.push(`Göğüs: ${latest.sf_chest} mm`)
+      if (latest.sf_abdomen) sfParts.push(`Karın: ${latest.sf_abdomen} mm`)
       if (latest.sf_thigh)   sfParts.push(`Uyluk: ${latest.sf_thigh} mm`)
       if (latest.sf_chest && latest.sf_abdomen && latest.sf_thigh) {
         sfParts.push(`Toplam: ${Number(latest.sf_chest) + Number(latest.sf_abdomen) + Number(latest.sf_thigh)} mm`)
@@ -219,18 +221,18 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
     doc.setFont('NotoSans', 'bold')
     doc.setFontSize(9)
     doc.setTextColor(...RED)
-    doc.text('GELISIM KARSILASTIRMASI', margin, y + 4)
+    doc.text('Gelişim Karşılaştırması', margin, y + 4)
     doc.setDrawColor(...RED)
-    doc.line(margin, y + 5, margin + 58, y + 5)
+    doc.line(margin, y + 5, margin + 54, y + 5)
     y += 10
 
     const metrics: { key: keyof Measurement; label: string; unit: string; goodDown: boolean }[] = [
-      { key: 'weight',       label: 'Kilo',  unit: 'kg', goodDown: true  },
-      { key: 'body_fat_pct', label: 'Yag %', unit: '%',  goodDown: true  },
-      { key: 'chest',        label: 'Gogus', unit: 'cm', goodDown: false },
-      { key: 'waist',        label: 'Bel',   unit: 'cm', goodDown: true  },
-      { key: 'arm',          label: 'Kol',   unit: 'cm', goodDown: false },
-      { key: 'leg',          label: 'Bacak', unit: 'cm', goodDown: false },
+      { key: 'weight',       label: 'Kilo',   unit: 'kg', goodDown: true  },
+      { key: 'body_fat_pct', label: 'Yağ %',  unit: '%',  goodDown: true  },
+      { key: 'chest',        label: 'Göğüs',  unit: 'cm', goodDown: false },
+      { key: 'waist',        label: 'Bel',    unit: 'cm', goodDown: true  },
+      { key: 'arm',          label: 'Kol',    unit: 'cm', goodDown: false },
+      { key: 'leg',          label: 'Bacak',  unit: 'cm', goodDown: false },
     ]
 
     const compRows = metrics
@@ -246,17 +248,17 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
           `${f} ${m.unit}`,
           `${l} ${m.unit}`,
           `${sign}${d.toFixed(1)} ${m.unit}`,
-          d === 0 ? '-' : isGood ? 'Iyi' : 'Kotu',
+          d === 0 ? '-' : isGood ? 'İyi' : 'Kötü',
         ]
       })
 
     autoTable(doc, {
       startY: y,
       head: [[
-        'Olcum',
-        `Ilk (${fmtShort(first.date)})`,
+        'Ölçüm',
+        `İlk (${fmtShort(first.date)})`,
         `Son (${fmtShort(latest.date)})`,
-        'Degisim',
+        'Değişim',
         'Durum',
       ]],
       body: compRows,
@@ -268,8 +270,8 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
       columnStyles: { 3: { fontStyle: 'bold' }, 4: { halign: 'center', fontStyle: 'bold' } },
       didParseCell: (data) => {
         if (data.column.index === 4 && data.section === 'body') {
-          if (data.cell.text[0] === 'Iyi')  data.cell.styles.textColor = [34, 197, 94]
-          if (data.cell.text[0] === 'Kotu') data.cell.styles.textColor = [239, 68, 68]
+          if (data.cell.text[0] === 'İyi')  data.cell.styles.textColor = [34, 197, 94]
+          if (data.cell.text[0] === 'Kötü') data.cell.styles.textColor = [239, 68, 68]
         }
       },
     })
@@ -280,9 +282,9 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
   doc.setFont('NotoSans', 'bold')
   doc.setFontSize(9)
   doc.setTextColor(...RED)
-  doc.text('OLCUM GECMISI', margin, y)
+  doc.text('Ölçüm Geçmişi', margin, y)
   doc.setDrawColor(...RED)
-  doc.line(margin, y + 1, margin + 36, y + 1)
+  doc.line(margin, y + 1, margin + 32, y + 1)
   y += 6
 
   const histRows = sorted.map((m) => [
@@ -300,7 +302,7 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
 
   autoTable(doc, {
     startY: y,
-    head: [['Tarih', 'Kilo', 'Yag %', 'Gogus', 'Bel', 'Kol', 'Bacak', 'SF Top.']],
+    head: [['Tarih', 'Kilo', 'Yağ %', 'Göğüs', 'Bel', 'Kol', 'Bacak', 'SF Top.']],
     body: histRows,
     margin: { left: margin, right: margin },
     headStyles: { fillColor: DARK, textColor: CREAM, fontSize: 7.5, fontStyle: 'bold', font: 'NotoSans' },
@@ -319,7 +321,7 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
     doc.setFont('NotoSans', 'normal')
     doc.setFontSize(7)
     doc.setTextColor(...GRAY)
-    doc.text('hamzasivrikaya.com  .  0545 681 4776  .  @hamzasivrikayaa', margin, pageH - 4.5)
+    doc.text('hamzasivrikaya.com  ·  0545 681 4776  ·  @hamzasivrikayaa', margin, pageH - 4.5)
     doc.text(`${i} / ${pageCount}`, W - margin, pageH - 4.5, { align: 'right' })
   }
 

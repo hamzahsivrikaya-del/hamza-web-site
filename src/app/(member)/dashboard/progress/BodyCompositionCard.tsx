@@ -11,7 +11,6 @@ function getCategory(pct: number) {
   return               { label: 'Obez',          color: '#EF4444', bg: 'rgba(239,68,68,0.12)' }
 }
 
-/* Dairesel gauge için stroke-dashoffset hesabı */
 function gaugeOffset(pct: number, max = 50): number {
   const r = 56
   const circumference = 2 * Math.PI * r
@@ -24,7 +23,6 @@ interface Props {
 }
 
 export default function BodyCompositionCard({ measurements }: Props) {
-  // Vücut yağ verisi olan son ölçüm
   const withFat = [...measurements].reverse().filter((m) => m.body_fat_pct != null)
   if (withFat.length === 0) return null
 
@@ -32,18 +30,18 @@ export default function BodyCompositionCard({ measurements }: Props) {
   const pct    = Number(latest.body_fat_pct)
   const weight = Number(latest.weight ?? 0)
   const fatKg  = weight > 0 ? (pct / 100) * weight : null
+  // Yağsız Kütle = Toplam - Yağ Kütlesi (kas + kemik + su + organlar)
   const leanKg = weight > 0 && fatKg != null ? weight - fatKg : null
   const fatPct = weight > 0 && fatKg != null ? (fatKg / weight) * 100 : pct
   const cat    = getCategory(pct)
 
-  const r            = 56
+  const r             = 56
   const circumference = 2 * Math.PI * r
-  const offset       = gaugeOffset(pct)
+  const offset        = gaugeOffset(pct)
 
-  // Önceki ölçümle fark
-  const prev      = withFat[1]
-  const prevPct   = prev ? Number(prev.body_fat_pct) : null
-  const fatDiff   = prevPct != null ? pct - prevPct : null
+  const prev    = withFat[1]
+  const prevPct = prev ? Number(prev.body_fat_pct) : null
+  const fatDiff = prevPct != null ? pct - prevPct : null
 
   return (
     <div
@@ -87,9 +85,7 @@ export default function BodyCompositionCard({ measurements }: Props) {
         {/* Gauge */}
         <div style={{ position: 'relative', flexShrink: 0, width: 144, height: 144 }}>
           <svg width="144" height="144" style={{ transform: 'rotate(-90deg)' }}>
-            {/* Arka halka */}
             <circle cx="72" cy="72" r={r} fill="none" stroke="#1E1E1E" strokeWidth="12" />
-            {/* Yağ % halka */}
             <circle
               cx="72" cy="72" r={r}
               fill="none"
@@ -101,7 +97,6 @@ export default function BodyCompositionCard({ measurements }: Props) {
               style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1)' }}
             />
           </svg>
-          {/* Ortadaki yazı */}
           <div style={{
             position: 'absolute', inset: 0,
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -117,7 +112,7 @@ export default function BodyCompositionCard({ measurements }: Props) {
                 marginTop: '3px',
                 fontWeight: 600,
               }}>
-                {fatDiff > 0 ? '▲' : '▼'} {Math.abs(fatDiff).toFixed(1)}%
+                {fatDiff > 0 ? '+' : ''}{fatDiff.toFixed(1)}%
               </span>
             )}
           </div>
@@ -126,15 +121,15 @@ export default function BodyCompositionCard({ measurements }: Props) {
         {/* Metrikler */}
         <div style={{ flex: 1, minWidth: 180, display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* Yağ / Kas split bar */}
+          {/* Yağ / Yağsız kütle split bar */}
           {fatKg != null && leanKg != null && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <span style={{ fontSize: '12px', color: '#F97316', fontWeight: 600 }}>
-                  Yağ {fatKg.toFixed(1)} kg
+                  Yağ Kütlesi {fatKg.toFixed(1)} kg
                 </span>
                 <span style={{ fontSize: '12px', color: '#3B82F6', fontWeight: 600 }}>
-                  Kas {leanKg.toFixed(1)} kg
+                  Yağsız Kütle {leanKg.toFixed(1)} kg
                 </span>
               </div>
               <div style={{ height: '8px', borderRadius: '4px', background: '#1E1E1E', overflow: 'hidden', position: 'relative' }}>
@@ -153,12 +148,16 @@ export default function BodyCompositionCard({ measurements }: Props) {
                   transition: 'width 1s ease',
                 }} />
               </div>
+              {/* Açıklama notu */}
+              <p style={{ fontSize: '10px', color: '#4B5563', marginTop: '5px' }}>
+                * Yağsız Kütle = kas + kemik + su + organlar
+              </p>
             </div>
           )}
 
-          {/* Kilo */}
+          {/* Kilo kartları */}
           {weight > 0 && (
-            <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <div style={{ flex: 1, background: '#1A1A1A', borderRadius: '10px', padding: '12px 14px', border: '1px solid #2A2A2A' }}>
                 <div style={{ fontSize: '20px', fontWeight: 700, color: '#F5F0E8' }}>{weight}</div>
                 <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>Toplam kg</div>
@@ -172,7 +171,8 @@ export default function BodyCompositionCard({ measurements }: Props) {
               {leanKg != null && (
                 <div style={{ flex: 1, background: '#1A1A1A', borderRadius: '10px', padding: '12px 14px', border: '1px solid #2A2A2A' }}>
                   <div style={{ fontSize: '20px', fontWeight: 700, color: '#3B82F6' }}>{leanKg.toFixed(1)}</div>
-                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>Kas kg</div>
+                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>Yağsız kg</div>
+                  <div style={{ fontSize: '9px', color: '#374151', marginTop: '1px' }}>kas+kemik+su</div>
                 </div>
               )}
             </div>
@@ -220,7 +220,7 @@ export default function BodyCompositionCard({ measurements }: Props) {
         </div>
       </div>
 
-      {/* Geçmiş yağ % tablosu (2+ ölçüm varsa) */}
+      {/* Geçmiş yağ % tablosu */}
       {withFat.length > 1 && (
         <div style={{ marginTop: '24px', borderTop: '1px solid #1E1E1E', paddingTop: '20px' }}>
           <p style={{ fontSize: '10px', color: '#6B7280', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '12px' }}>
@@ -228,10 +228,10 @@ export default function BodyCompositionCard({ measurements }: Props) {
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {withFat.slice(0, 8).reverse().map((m, i, arr) => {
-              const p   = Number(m.body_fat_pct)
+              const p    = Number(m.body_fat_pct)
               const prev = arr[i - 1]
-              const d   = prev ? p - Number(prev.body_fat_pct) : null
-              const c   = getCategory(p)
+              const d    = prev ? p - Number(prev.body_fat_pct) : null
+              const c    = getCategory(p)
               return (
                 <div key={m.id} style={{
                   background: '#1A1A1A', border: '1px solid #2A2A2A',
@@ -242,7 +242,7 @@ export default function BodyCompositionCard({ measurements }: Props) {
                   <div style={{ fontSize: '10px', color: '#4B5563', marginTop: '2px' }}>{formatDateShort(m.date)}</div>
                   {d != null && d !== 0 && (
                     <div style={{ fontSize: '10px', color: d < 0 ? '#22C55E' : '#EF4444', marginTop: '2px', fontWeight: 600 }}>
-                      {d > 0 ? '▲' : '▼'}{Math.abs(d).toFixed(1)}
+                      {d > 0 ? '+' : ''}{d.toFixed(1)}
                     </div>
                   )}
                 </div>
