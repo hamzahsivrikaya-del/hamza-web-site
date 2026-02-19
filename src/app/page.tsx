@@ -162,7 +162,7 @@ export default async function HomePage() {
               </h2>
               <div className="space-y-4 text-text-secondary leading-relaxed">
                 <p>
-                  Antalya&apos;da sertifikalı kişisel antrenör olarak CrossFit, fonksiyonel
+                  Antalya&apos;da sertifikalı kişisel antrenör olarak fitness, fonksiyonel
                   antrenman ve atletik performans alanlarında 5 yılı aşkın deneyimle
                   hizmet veriyorum.
                 </p>
