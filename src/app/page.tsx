@@ -164,7 +164,8 @@ export default async function HomePage() {
                 <p>
                   Antalya&apos;da sertifikalı kişisel antrenör olarak fitness, fonksiyonel
                   antrenman ve atletik performans alanlarında 5 yılı aşkın deneyimle
-                  hizmet veriyorum.
+                  hizmet veriyorum. CrossFit metodolojisini de bilen biri olarak her
+                  seviyeye uygun antrenman tasarlıyorum.
                 </p>
                 <p>
                   Spor benim için hep bir araç oldu — sadece daha iyi görünmek için değil,
