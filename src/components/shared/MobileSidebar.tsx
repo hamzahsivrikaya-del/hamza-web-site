@@ -1,0 +1,31 @@
+'use client'
+
+import { useState } from 'react'
+import Sidebar from './Sidebar'
+
+export default function MobileSidebar() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      {/* Hamburger butonu - sadece mobilde görünür */}
+      <button
+        onClick={() => setOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-surface rounded-lg border border-border cursor-pointer"
+      >
+        <svg className="w-5 h-5 text-text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Overlay */}
+      {open && (
+        <div className="md:hidden fixed inset-0 z-40 bg-black/60" onClick={() => setOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Sidebar />
+          </div>
+        </div>
+      )}
+    </>
+  )
+}

@@ -1,0 +1,29 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import ProgressChart from './ProgressChart'
+
+export default async function ProgressPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: measurements } = await supabase
+    .from('measurements')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('date', { ascending: true })
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <a href="/dashboard" className="text-text-secondary hover:text-text-primary transition-colors">
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </a>
+        <h1 className="text-2xl font-bold">İlerleme</h1>
+      </div>
+      <ProgressChart measurements={measurements || []} />
+    </div>
+  )
+}
