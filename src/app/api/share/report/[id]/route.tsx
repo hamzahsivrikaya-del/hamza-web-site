@@ -293,7 +293,7 @@ export async function GET(
               Kisisel Antrenor
             </div>
             <div style={{ display: 'flex', fontSize: '15px', color: '#444', letterSpacing: '1px' }}>
-              Istanbul
+              Antalya
             </div>
           </div>
         </div>

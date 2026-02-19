@@ -162,17 +162,21 @@ export default async function HomePage() {
               </h2>
               <div className="space-y-4 text-text-secondary leading-relaxed">
                 <p>
-                  Hamza Sivrikaya. Antalya merkezli kişisel antrenör olarak sporcularıma
-                  birebir antrenman programları sunuyorum.
+                  Antalya'da sertifikalı kişisel antrenör olarak CrossFit, fonksiyonel
+                  antrenman ve atletik performans alanlarında 5 yılı aşkın deneyimle
+                  sporcularıma hizmet veriyorum.
                 </p>
                 <p>
-                  Hamza Sivrikaya olarak amacım, her bireyin kendi potansiyeline ulaşmasını
-                  sağlamak. Kişiye özel programlar, düzenli ölçümler ve sürekli motivasyonla
-                  hedefinize birlikte yürüyoruz.
+                  Spor benim için hep bir araç oldu — sadece daha iyi görünmek için değil,
+                  daha güçlü, daha dayanıklı ve yaşama daha hazır olmak için. CrossFit ile
+                  tanıştığımda antrenmanın ne kadar kişisel ve dönüştürücü olabileceğini
+                  bizzat yaşadım; şimdi aynı dönüşümü sizinle yaşatmak istiyorum.
                 </p>
                 <p>
-                  Hamza Sivrikaya — fitness, fonksiyonel antrenman ve beslenme danışmanlığı
-                  alanlarında hizmet veriyorum.
+                  Her üyemi dinleyerek başlıyorum. Hedef ne olursa olsun — güç kazanmak,
+                  yağ yakmak ya da performansını üst seviyeye taşımak — kişiye özel program,
+                  düzenli ölçüm takibi ve dürüst geri bildirimle ilerliyoruz. Burada kısa
+                  vadeli sonuçlar değil, kalıcı alışkanlıklar inşa ediyoruz.
                 </p>
               </div>
               <a
