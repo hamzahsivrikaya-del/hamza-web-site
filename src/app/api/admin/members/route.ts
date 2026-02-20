@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { email, password, full_name, phone } = body
+  const { email, password, full_name, phone, gender } = body
 
   if (!email || !password || !full_name) {
     return NextResponse.json({ error: 'Gerekli alanlar eksik' }, { status: 400 })
@@ -41,11 +41,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: authError.message }, { status: 400 })
   }
 
-  // Profil güncelle (trigger otomatik oluşturur ama phone ekleyelim)
-  if (phone) {
+  // Profil güncelle (trigger otomatik oluşturur ama phone + gender ekleyelim)
+  const profileUpdate: Record<string, string> = {}
+  if (phone) profileUpdate.phone = phone
+  if (gender) profileUpdate.gender = gender
+  if (Object.keys(profileUpdate).length > 0) {
     await adminClient
       .from('users')
-      .update({ phone })
+      .update(profileUpdate)
       .eq('id', authData.user.id)
   }
 

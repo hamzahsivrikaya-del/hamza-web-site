@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import { formatDate, formatDateShort } from '@/lib/utils'
-import type { Measurement } from '@/lib/types'
+import type { Gender, Measurement } from '@/lib/types'
 import BodyCompositionCard from './BodyCompositionCard'
 
 const metricOptions = [
@@ -18,7 +18,7 @@ const metricOptions = [
 
 type MetricKey = typeof metricOptions[number]['key']
 
-export default function ProgressChart({ measurements }: { measurements: Measurement[] }) {
+export default function ProgressChart({ measurements, gender }: { measurements: Measurement[]; gender?: Gender | null }) {
   const [selectedMetrics, setSelectedMetrics] = useState<MetricKey[]>(['weight'])
 
   const toggleMetric = (key: MetricKey) => {
@@ -67,12 +67,12 @@ export default function ProgressChart({ measurements }: { measurements: Measurem
             Grafik için en az 2 ölçüm gerekli
           </p>
         ) : (
-          <div className="h-[300px]">
+          <div className="h-[220px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" />
-                <XAxis dataKey="date" stroke="#9CA3AF" fontSize={12} />
-                <YAxis stroke="#9CA3AF" fontSize={12} />
+                <XAxis dataKey="date" stroke="#9CA3AF" fontSize={11} tick={{ fontSize: 10 }} />
+                <YAxis stroke="#9CA3AF" fontSize={11} tick={{ fontSize: 10 }} width={35} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#1A1A1A',
@@ -103,7 +103,7 @@ export default function ProgressChart({ measurements }: { measurements: Measurem
       </Card>
 
       {/* Vücut Kompozisyonu kartı */}
-      <BodyCompositionCard measurements={measurements} />
+      <BodyCompositionCard measurements={measurements} gender={gender ?? undefined} />
 
       {/* Güncel ölçümler kartı */}
       {latest && (
@@ -142,34 +142,34 @@ export default function ProgressChart({ measurements }: { measurements: Measurem
         <Card>
           <CardHeader><CardTitle>Ölçüm Geçmişi</CardTitle></CardHeader>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-xs sm:text-sm">
               <thead>
                 <tr className="border-b border-border text-text-secondary">
-                  <th className="text-left py-2 pr-4">Tarih</th>
-                  <th className="text-right py-2 px-2">Kilo</th>
-                  <th className="text-right py-2 px-2">Yağ %</th>
-                  <th className="text-right py-2 px-2">Göğüs</th>
-                  <th className="text-right py-2 px-2">Bel</th>
-                  <th className="text-right py-2 px-2">Kol</th>
-                  <th className="text-right py-2 px-2">Bacak</th>
-                  <th className="text-right py-2 px-2 text-orange-400/70">SF Göğüs</th>
-                  <th className="text-right py-2 px-2 text-orange-400/70">SF Karın</th>
-                  <th className="text-right py-2 px-2 text-orange-400/70">SF Uyluk</th>
+                  <th className="text-left py-2 pr-2 sm:pr-4 sticky left-0 bg-surface z-10">Tarih</th>
+                  <th className="text-right py-2 px-1.5 sm:px-2">Kilo</th>
+                  <th className="text-right py-2 px-1.5 sm:px-2">Yağ %</th>
+                  <th className="text-right py-2 px-1.5 sm:px-2">Göğüs</th>
+                  <th className="text-right py-2 px-1.5 sm:px-2">Bel</th>
+                  <th className="text-right py-2 px-1.5 sm:px-2">Kol</th>
+                  <th className="text-right py-2 px-1.5 sm:px-2">Bacak</th>
+                  <th className="text-right py-2 px-1.5 sm:px-2 text-orange-400/70">SF G.</th>
+                  <th className="text-right py-2 px-1.5 sm:px-2 text-orange-400/70">SF K.</th>
+                  <th className="text-right py-2 px-1.5 sm:px-2 text-orange-400/70">SF U.</th>
                 </tr>
               </thead>
               <tbody>
                 {[...measurements].reverse().map((m) => (
                   <tr key={m.id} className="border-b border-border/50">
-                    <td className="py-2 pr-4">{formatDateShort(m.date)}</td>
-                    <td className="text-right py-2 px-2">{m.weight || '-'}</td>
-                    <td className="text-right py-2 px-2 text-orange-400 font-medium">{m.body_fat_pct ? `${m.body_fat_pct}%` : '-'}</td>
-                    <td className="text-right py-2 px-2">{m.chest || '-'}</td>
-                    <td className="text-right py-2 px-2">{m.waist || '-'}</td>
-                    <td className="text-right py-2 px-2">{m.arm || '-'}</td>
-                    <td className="text-right py-2 px-2">{m.leg || '-'}</td>
-                    <td className="text-right py-2 px-2 text-orange-400/80">{m.sf_chest || '-'}</td>
-                    <td className="text-right py-2 px-2 text-orange-400/80">{m.sf_abdomen || '-'}</td>
-                    <td className="text-right py-2 px-2 text-orange-400/80">{m.sf_thigh || '-'}</td>
+                    <td className="py-2 pr-2 sm:pr-4 whitespace-nowrap sticky left-0 bg-surface z-10">{formatDateShort(m.date)}</td>
+                    <td className="text-right py-2 px-1.5 sm:px-2">{m.weight || '-'}</td>
+                    <td className="text-right py-2 px-1.5 sm:px-2 text-orange-400 font-medium">{m.body_fat_pct ? `${m.body_fat_pct}%` : '-'}</td>
+                    <td className="text-right py-2 px-1.5 sm:px-2">{m.chest || '-'}</td>
+                    <td className="text-right py-2 px-1.5 sm:px-2">{m.waist || '-'}</td>
+                    <td className="text-right py-2 px-1.5 sm:px-2">{m.arm || '-'}</td>
+                    <td className="text-right py-2 px-1.5 sm:px-2">{m.leg || '-'}</td>
+                    <td className="text-right py-2 px-1.5 sm:px-2 text-orange-400/80">{m.sf_chest || '-'}</td>
+                    <td className="text-right py-2 px-1.5 sm:px-2 text-orange-400/80">{m.sf_abdomen || '-'}</td>
+                    <td className="text-right py-2 px-1.5 sm:px-2 text-orange-400/80">{m.sf_thigh || '-'}</td>
                   </tr>
                 ))}
               </tbody>

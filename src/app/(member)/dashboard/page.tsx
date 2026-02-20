@@ -59,7 +59,10 @@ export default async function MemberDashboard() {
     if (remaining <= 0) {
       statusLabel = 'Bitti'
       statusVariant = 'danger'
-    } else if (remaining <= 2) {
+    } else if (remaining === 1) {
+      statusLabel = 'Son Ders'
+      statusVariant = 'danger'
+    } else if (remaining === 2) {
       statusLabel = 'Son 2 Ders'
       statusVariant = 'warning'
     } else if (days <= 7) {
@@ -139,7 +142,15 @@ export default async function MemberDashboard() {
       )}
 
       {/* Hızlı linkler */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Link href="/dashboard/program">
+          <Card className="hover-lift card-glow text-center cursor-pointer animate-fade-up delay-200">
+            <svg className="w-6 h-6 mx-auto text-primary mb-2" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
+            </svg>
+            <span className="text-sm font-medium">Programım</span>
+          </Card>
+        </Link>
         <Link href="/dashboard/progress">
           <Card className="hover-lift card-glow text-center cursor-pointer animate-fade-up delay-300">
             <svg className="w-6 h-6 mx-auto text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -174,7 +185,7 @@ export default async function MemberDashboard() {
         <Card>
           <CardHeader><CardTitle>Son Ölçüm</CardTitle></CardHeader>
           <div className="text-xs text-text-secondary mb-3">{formatDate(recentMeasurement.date)}</div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {recentMeasurement.weight && (
               <div className="text-center">
                 <div className="text-lg font-bold">{recentMeasurement.weight}</div>

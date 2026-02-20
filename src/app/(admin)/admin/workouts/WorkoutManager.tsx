@@ -1,0 +1,606 @@
+'use client'
+
+import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Textarea from '@/components/ui/Textarea'
+import Modal from '@/components/ui/Modal'
+import Select from '@/components/ui/Select'
+import { getDayName, formatWeekRange, getAdjacentWeek, getMonday, getTodayDayIndex } from '@/lib/utils'
+import type { Workout, WorkoutExercise, User } from '@/lib/types'
+
+interface ExerciseForm {
+  name: string
+  sets: string
+  reps: string
+  weight: string
+  rest: string
+  notes: string
+}
+
+const emptyExercise: ExerciseForm = { name: '', sets: '', reps: '', weight: '', rest: '', notes: '' }
+
+interface Props {
+  initialWorkouts: Workout[]
+  members: User[]
+  initialWeek: string
+}
+
+export default function WorkoutManager({ initialWorkouts, members, initialWeek }: Props) {
+  const router = useRouter()
+  const supabase = createClient()
+
+  const [tab, setTab] = useState<'public' | 'member'>('public')
+  const [weekStart, setWeekStart] = useState(initialWeek)
+  const [workouts, setWorkouts] = useState<Workout[]>(initialWorkouts)
+  const [loading, setLoading] = useState(false)
+
+  // Üye programları
+  const [selectedMemberId, setSelectedMemberId] = useState('')
+  const [memberWorkouts, setMemberWorkouts] = useState<Workout[]>([])
+
+  // Modal
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingDay, setEditingDay] = useState<number>(0)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  // Form
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [exercises, setExercises] = useState<ExerciseForm[]>([{ ...emptyExercise }])
+  const [editingWorkoutId, setEditingWorkoutId] = useState<string | null>(null)
+
+  const currentMonday = getMonday()
+  const isCurrentWeek = weekStart === currentMonday
+  const todayIndex = getTodayDayIndex()
+
+  // Hafta değiştir
+  const changeWeek = useCallback(async (newWeek: string) => {
+    setWeekStart(newWeek)
+    setLoading(true)
+    const type = tab === 'public' ? 'public' : 'member'
+    let query = supabase
+      .from('workouts')
+      .select('*, exercises:workout_exercises(*)')
+      .eq('type', type)
+      .eq('week_start', newWeek)
+      .order('day_index')
+
+    if (type === 'member' && selectedMemberId) {
+      query = query.eq('user_id', selectedMemberId)
+    }
+
+    const { data } = await query
+    if (tab === 'public') {
+      setWorkouts(data || [])
+    } else {
+      setMemberWorkouts(data || [])
+    }
+    setLoading(false)
+  }, [tab, selectedMemberId, supabase])
+
+  // Üye seç
+  async function handleMemberSelect(memberId: string) {
+    setSelectedMemberId(memberId)
+    if (!memberId) { setMemberWorkouts([]); return }
+    setLoading(true)
+    const { data } = await supabase
+      .from('workouts')
+      .select('*, exercises:workout_exercises(*)')
+      .eq('type', 'member')
+      .eq('user_id', memberId)
+      .eq('week_start', weekStart)
+      .order('day_index')
+    setMemberWorkouts(data || [])
+    setLoading(false)
+  }
+
+  // Tab değiştir
+  async function handleTabChange(newTab: 'public' | 'member') {
+    setTab(newTab)
+    if (newTab === 'public') {
+      setLoading(true)
+      const { data } = await supabase
+        .from('workouts')
+        .select('*, exercises:workout_exercises(*)')
+        .eq('type', 'public')
+        .eq('week_start', weekStart)
+        .order('day_index')
+      setWorkouts(data || [])
+      setLoading(false)
+    } else {
+      if (selectedMemberId) {
+        handleMemberSelect(selectedMemberId)
+      }
+    }
+  }
+
+  // Kart tıklama → modal aç
+  function openWorkoutModal(dayIndex: number) {
+    const list = tab === 'public' ? workouts : memberWorkouts
+    const existing = list.find(w => w.day_index === dayIndex)
+
+    setEditingDay(dayIndex)
+    setError('')
+
+    if (existing) {
+      setEditingWorkoutId(existing.id)
+      setTitle(existing.title)
+      setContent(existing.content || '')
+      setExercises(
+        existing.exercises && existing.exercises.length > 0
+          ? existing.exercises
+              .sort((a, b) => a.order_num - b.order_num)
+              .map(e => ({
+                name: e.name,
+                sets: e.sets?.toString() || '',
+                reps: e.reps || '',
+                weight: e.weight || '',
+                rest: e.rest || '',
+                notes: e.notes || '',
+              }))
+          : [{ ...emptyExercise }]
+      )
+    } else {
+      setEditingWorkoutId(null)
+      setTitle(dayIndex === 6 ? 'Aktif Dinlenme' : '')
+      setContent(dayIndex === 6 ? 'Yürüyüş, yoga veya hafif esneme ile aktif toparlanma.' : '')
+      setExercises([{ ...emptyExercise }])
+    }
+    setModalOpen(true)
+  }
+
+  // Egzersiz satırı işlemleri
+  function updateExercise(idx: number, field: keyof ExerciseForm, value: string) {
+    setExercises(prev => prev.map((e, i) => i === idx ? { ...e, [field]: value } : e))
+  }
+  function addExercise() {
+    setExercises(prev => [...prev, { ...emptyExercise }])
+  }
+  function removeExercise(idx: number) {
+    setExercises(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev)
+  }
+
+  // Kaydet
+  async function handleSave() {
+    if (!title.trim()) { setError('Başlık gerekli'); return }
+    setSaving(true)
+    setError('')
+
+    const workoutData = {
+      type: tab,
+      user_id: tab === 'member' ? selectedMemberId : null,
+      week_start: weekStart,
+      day_index: editingDay,
+      title: title.trim(),
+      content: content.trim() || null,
+    }
+
+    let workoutId = editingWorkoutId
+
+    if (workoutId) {
+      // Güncelle
+      const { error: updateErr } = await supabase
+        .from('workouts')
+        .update(workoutData)
+        .eq('id', workoutId)
+      if (updateErr) { setError(updateErr.message); setSaving(false); return }
+
+      // Mevcut egzersizleri sil
+      await supabase.from('workout_exercises').delete().eq('workout_id', workoutId)
+    } else {
+      // Yeni oluştur
+      const { data: newWorkout, error: insertErr } = await supabase
+        .from('workouts')
+        .insert(workoutData)
+        .select('id')
+        .single()
+      if (insertErr || !newWorkout) { setError(insertErr?.message || 'Hata oluştu'); setSaving(false); return }
+      workoutId = newWorkout.id
+    }
+
+    // Egzersizleri ekle
+    const validExercises = exercises.filter(e => e.name.trim())
+    if (validExercises.length > 0) {
+      const { error: exErr } = await supabase.from('workout_exercises').insert(
+        validExercises.map((e, i) => ({
+          workout_id: workoutId,
+          order_num: i,
+          name: e.name.trim(),
+          sets: e.sets ? parseInt(e.sets) : null,
+          reps: e.reps.trim() || null,
+          weight: e.weight.trim() || null,
+          rest: e.rest.trim() || null,
+          notes: e.notes.trim() || null,
+        }))
+      )
+      if (exErr) { setError(exErr.message); setSaving(false); return }
+    }
+
+    setSaving(false)
+    setModalOpen(false)
+
+    // Listeyi yenile
+    const type = tab
+    let query = supabase
+      .from('workouts')
+      .select('*, exercises:workout_exercises(*)')
+      .eq('type', type)
+      .eq('week_start', weekStart)
+      .order('day_index')
+    if (type === 'member' && selectedMemberId) {
+      query = query.eq('user_id', selectedMemberId)
+    }
+    const { data } = await query
+    if (type === 'public') setWorkouts(data || [])
+    else setMemberWorkouts(data || [])
+  }
+
+  // Sil
+  async function handleDelete() {
+    if (!editingWorkoutId) return
+    setSaving(true)
+    await supabase.from('workouts').delete().eq('id', editingWorkoutId)
+    setSaving(false)
+    setModalOpen(false)
+
+    // Listeyi yenile
+    if (tab === 'public') {
+      setWorkouts(prev => prev.filter(w => w.id !== editingWorkoutId))
+    } else {
+      setMemberWorkouts(prev => prev.filter(w => w.id !== editingWorkoutId))
+    }
+  }
+
+  // Bildirim gönder
+  async function sendProgramNotification() {
+    if (!selectedMemberId) return
+    const member = members.find(m => m.id === selectedMemberId)
+    if (!member) return
+
+    await supabase.from('notifications').insert({
+      user_id: selectedMemberId,
+      type: 'manual',
+      title: 'Programın Hazır!',
+      message: `Bu haftanın antrenman programın hazırlandı. Dashboard'dan kontrol edebilirsin.`,
+    })
+
+    // Push notification
+    const { sendManualPush } = await import('../notifications/actions')
+    await sendManualPush([selectedMemberId], 'Programın Hazır!', 'Bu haftanın antrenman programın hazırlandı.')
+
+    alert('Bildirim gönderildi!')
+  }
+
+  // Haftayı kopyala
+  async function copyWeekToNext() {
+    const sourceWorkouts = tab === 'public' ? workouts : memberWorkouts
+    if (sourceWorkouts.length === 0) return
+
+    const nextWeek = getAdjacentWeek(weekStart, 1)
+    setSaving(true)
+
+    for (const w of sourceWorkouts) {
+      const { data: newWorkout } = await supabase
+        .from('workouts')
+        .upsert({
+          type: w.type,
+          user_id: w.user_id,
+          week_start: nextWeek,
+          day_index: w.day_index,
+          title: w.title,
+          content: w.content,
+        }, { onConflict: 'week_start,day_index', ignoreDuplicates: false })
+        .select('id')
+        .single()
+
+      if (newWorkout && w.exercises && w.exercises.length > 0) {
+        await supabase.from('workout_exercises').delete().eq('workout_id', newWorkout.id)
+        await supabase.from('workout_exercises').insert(
+          w.exercises.map((e, i) => ({
+            workout_id: newWorkout.id,
+            order_num: i,
+            name: e.name,
+            sets: e.sets,
+            reps: e.reps,
+            weight: e.weight,
+            rest: e.rest,
+            notes: e.notes,
+          }))
+        )
+      }
+    }
+
+    setSaving(false)
+    alert(`Program sonraki haftaya (${formatWeekRange(nextWeek)}) kopyalandı!`)
+  }
+
+  const activeWorkouts = tab === 'public' ? workouts : memberWorkouts
+
+  return (
+    <div className="space-y-6">
+      {/* Başlık */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Antrenmanlar</h1>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-background rounded-lg p-1">
+        <button
+          onClick={() => handleTabChange('public')}
+          className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+            tab === 'public' ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Haftalık Program
+        </button>
+        <button
+          onClick={() => handleTabChange('member')}
+          className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+            tab === 'member' ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Üye Programları
+        </button>
+      </div>
+
+      {/* Üye seçici (member tab) */}
+      {tab === 'member' && (
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <Select
+              value={selectedMemberId}
+              onChange={(e) => handleMemberSelect(e.target.value)}
+              options={[
+                { value: '', label: 'Üye seçin...' },
+                ...members.map(m => ({ value: m.id, label: m.full_name })),
+              ]}
+            />
+          </div>
+          {selectedMemberId && memberWorkouts.length > 0 && (
+            <Button onClick={sendProgramNotification} variant="secondary">
+              Bildirim Gönder
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Hafta gezinme */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => changeWeek(getAdjacentWeek(weekStart, -1))}
+          className="p-2 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer text-text-secondary hover:text-text-primary"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div className="text-center">
+          <div className="text-lg font-semibold">{formatWeekRange(weekStart)}</div>
+          {isCurrentWeek && <div className="text-xs text-primary font-medium">Bu Hafta</div>}
+        </div>
+        <button
+          onClick={() => changeWeek(getAdjacentWeek(weekStart, 1))}
+          className="p-2 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer text-text-secondary hover:text-text-primary"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
+      {/* 7 gün grid */}
+      {loading ? (
+        <div className="text-center py-12 text-text-secondary">Yükleniyor...</div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {Array.from({ length: 7 }, (_, i) => {
+              const workout = activeWorkouts.find(w => w.day_index === i)
+              const isToday = isCurrentWeek && i === todayIndex
+              const isSunday = i === 6
+
+              return (
+                <button
+                  key={i}
+                  onClick={() => {
+                    if (tab === 'member' && !selectedMemberId) return
+                    openWorkoutModal(i)
+                  }}
+                  disabled={tab === 'member' && !selectedMemberId}
+                  className={`text-left p-4 rounded-xl border transition-all cursor-pointer min-h-[120px] flex flex-col disabled:opacity-40 disabled:cursor-not-allowed ${
+                    isToday
+                      ? 'border-primary/50 bg-primary/5 hover:bg-primary/10'
+                      : workout
+                        ? 'border-border bg-surface hover:bg-surface-hover'
+                        : 'border-border/50 bg-surface/50 hover:bg-surface hover:border-border'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-xs font-semibold uppercase tracking-wider ${
+                      isToday ? 'text-primary' : 'text-text-secondary'
+                    }`}>
+                      {getDayName(i)}
+                    </span>
+                    {isToday && (
+                      <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-medium">
+                        BUGÜN
+                      </span>
+                    )}
+                  </div>
+
+                  {workout ? (
+                    <>
+                      <h3 className="font-semibold text-sm text-text-primary mb-1">{workout.title}</h3>
+                      {workout.exercises && workout.exercises.length > 0 && (
+                        <p className="text-xs text-text-secondary">
+                          {workout.exercises.length} egzersiz
+                        </p>
+                      )}
+                      {workout.content && !workout.exercises?.length && (
+                        <p className="text-xs text-text-secondary line-clamp-2">{workout.content}</p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex-1 flex items-center justify-center">
+                      {isSunday ? (
+                        <span className="text-xs text-text-secondary">Dinlenme günü</span>
+                      ) : (
+                        <svg className="w-8 h-8 text-border" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v12m6-6H6" />
+                        </svg>
+                      )}
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Haftayı kopyala */}
+          {activeWorkouts.length > 0 && (
+            <div className="flex justify-end">
+              <Button variant="secondary" onClick={copyWeekToNext} disabled={saving}>
+                {saving ? 'Kopyalanıyor...' : 'Sonraki Haftaya Kopyala'}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Antrenman Düzenleme Modal */}
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={`${getDayName(editingDay)} — Antrenman`}
+        size="lg"
+      >
+        <div className="space-y-5">
+          {error && (
+            <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+              {error}
+            </div>
+          )}
+
+          {/* Başlık */}
+          <Input
+            label="Başlık"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Örn: Upper Body, Bacak Günü, AMRAP 20"
+          />
+
+          {/* Egzersizler */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-medium text-text-primary">Egzersizler</label>
+              <button
+                type="button"
+                onClick={addExercise}
+                className="text-xs text-primary hover:text-primary-hover transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
+                </svg>
+                Egzersiz Ekle
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {exercises.map((ex, idx) => (
+                <div key={idx} className="bg-background rounded-lg p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-text-secondary font-mono w-5 text-center">{idx + 1}</span>
+                    <input
+                      value={ex.name}
+                      onChange={(e) => updateExercise(idx, 'name', e.target.value)}
+                      placeholder="Egzersiz adı"
+                      className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                    />
+                    {exercises.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeExercise(idx)}
+                        className="p-1.5 text-text-secondary hover:text-red-400 transition-colors cursor-pointer"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pl-7">
+                    <input
+                      value={ex.sets}
+                      onChange={(e) => updateExercise(idx, 'sets', e.target.value)}
+                      placeholder="Set"
+                      className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                    />
+                    <input
+                      value={ex.reps}
+                      onChange={(e) => updateExercise(idx, 'reps', e.target.value)}
+                      placeholder="Tekrar"
+                      className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                    />
+                    <input
+                      value={ex.weight}
+                      onChange={(e) => updateExercise(idx, 'weight', e.target.value)}
+                      placeholder="Ağırlık"
+                      className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                    />
+                    <input
+                      value={ex.rest}
+                      onChange={(e) => updateExercise(idx, 'rest', e.target.value)}
+                      placeholder="Dinlenme"
+                      className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                    />
+                  </div>
+                  <div className="pl-7">
+                    <input
+                      value={ex.notes}
+                      onChange={(e) => updateExercise(idx, 'notes', e.target.value)}
+                      placeholder="Not (opsiyonel)"
+                      className="w-full bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Serbest metin */}
+          <Textarea
+            label="Serbest Metin (AMRAP, EMOM, açıklama vs.)"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Örn: 5 Rounds For Time: 10 Push-ups, 15 Air Squats, 200m Run"
+            rows={3}
+          />
+
+          {/* Butonlar */}
+          <div className="flex items-center justify-between pt-2">
+            <div>
+              {editingWorkoutId && (
+                <Button variant="secondary" onClick={handleDelete} disabled={saving}>
+                  Sil
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => setModalOpen(false)}>
+                İptal
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? 'Kaydediliyor...' : editingWorkoutId ? 'Güncelle' : 'Kaydet'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  )
+}

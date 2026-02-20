@@ -7,11 +7,18 @@ export default async function ProgressPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: measurements } = await supabase
-    .from('measurements')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('date', { ascending: true })
+  const [{ data: measurements }, { data: profile }] = await Promise.all([
+    supabase
+      .from('measurements')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('date', { ascending: true }),
+    supabase
+      .from('users')
+      .select('gender')
+      .eq('id', user.id)
+      .single(),
+  ])
 
   return (
     <div className="space-y-6">
@@ -23,7 +30,7 @@ export default async function ProgressPage() {
         </a>
         <h1 className="text-2xl font-bold">İlerleme</h1>
       </div>
-      <ProgressChart measurements={measurements || []} />
+      <ProgressChart measurements={measurements || []} gender={profile?.gender} />
     </div>
   )
 }

@@ -1,39 +1,12 @@
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
 import AnimatedCounter from '@/components/shared/AnimatedCounter'
+import LandingNavbar from '@/components/shared/LandingNavbar'
 
-export default async function HomePage() {
-  const supabase = await createClient()
-  const { data: blogPosts } = await supabase
-    .from('blog_posts')
-    .select('id, title, slug, published_at, content')
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .limit(3)
-
+export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="font-display text-xl tracking-wider text-primary">
-            HAMZA SİVRİKAYA
-          </Link>
-          <div className="flex items-center gap-6">
-            <a href="#hakkimda" className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:block">Hakkımda</a>
-            <a href="#hizmetler" className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:block">Hizmetler</a>
-            <a href="#hesaplayicilar" className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:block">Hesaplayıcılar</a>
-            <a href="#blog" className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:block">Blog</a>
-            <a href="#iletisim" className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:block">İletişim</a>
-            <Link
-              href="/login"
-              className="text-sm px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors press-effect"
-            >
-              Üye Girişi
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <LandingNavbar />
 
       {/* Hero */}
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
@@ -272,135 +245,71 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Ücretsiz Araçlar */}
-      <section id="hesaplayicilar" className="relative py-20 px-4 overflow-hidden">
+      {/* Keşfet */}
+      <section className="relative py-20 px-4 overflow-hidden">
         <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-primary/6 rounded-full blur-[100px]" />
         <div className="relative max-w-6xl mx-auto">
           <div className="text-center mb-12 animate-fade-up">
-            <h2 className="font-display text-4xl sm:text-5xl tracking-wider">HESAPLAYICILAR</h2>
-            <p className="text-text-secondary mt-3">Fitness yolculuğunda sana yardımcı olacak ücretsiz hesaplayıcılar</p>
+            <h2 className="font-display text-4xl sm:text-5xl tracking-wider">KEŞFET</h2>
+            <p className="text-text-secondary mt-3">Ücretsiz içerikler ve araçlar</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                href: '/araclar/kalori-hesaplayici',
-                icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z',
-                title: 'Kalori & Makro',
-                desc: 'Günlük kalori, protein, yağ ve karbonhidrat ihtiyacını hesapla.',
-                color: 'text-primary',
-                bg: 'bg-primary/10',
-                bgHover: 'group-hover:bg-primary/20',
-              },
-              {
-                href: '/araclar/1rm-hesaplayici',
-                icon: 'M3 6h18M3 12h18M3 18h18',
-                title: '1RM Hesaplayıcı',
-                desc: 'Tahmini maksimum kaldırma ağırlığını ve yüzdelik tabloyu öğren.',
-                color: 'text-orange-500',
-                bg: 'bg-orange-500/10',
-                bgHover: 'group-hover:bg-orange-500/20',
-              },
-              {
-                href: '/araclar/bki-hesaplayici',
-                icon: 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3',
-                title: 'BMI Hesaplayıcı',
-                desc: 'Vücut Kitle İndeksini hesapla, sağlıklı aralığı öğren.',
-                color: 'text-green-500',
-                bg: 'bg-green-500/10',
-                bgHover: 'group-hover:bg-green-500/20',
-              },
-              {
-                href: '/araclar/su-ihtiyaci-hesaplayici',
-                icon: 'M12 3v1m0 16v1m-6.364-2.636l.707-.707m10.314-10.314l.707-.707M3 12h1m16 0h1m-2.636 6.364l-.707-.707M6.343 6.343l-.707-.707',
-                title: 'Su İhtiyacı',
-                desc: 'Günlük su ihtiyacını ve içme planını hesapla.',
-                color: 'text-blue-400',
-                bg: 'bg-blue-400/10',
-                bgHover: 'group-hover:bg-blue-400/20',
-              },
-              {
-                href: '/araclar/ideal-kilo-hesaplayici',
-                icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-                title: 'İdeal Kilo',
-                desc: '4 bilimsel formülle ideal kilonu öğren.',
-                color: 'text-emerald-400',
-                bg: 'bg-emerald-400/10',
-                bgHover: 'group-hover:bg-emerald-400/20',
-              },
-            ].map((tool, i) => (
-              <Link
-                key={tool.href}
-                href={tool.href}
-                className={`group bg-surface/80 backdrop-blur-sm rounded-xl border border-border p-6 hover-lift card-glow animate-fade-up delay-${(i + 1) * 100}`}
-              >
-                <div className={`w-12 h-12 ${tool.bg} rounded-xl flex items-center justify-center mb-4 ${tool.bgHover} transition-colors`}>
-                  <svg className={`w-6 h-6 ${tool.color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={tool.icon} />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">{tool.title}</h3>
-                <p className="text-sm text-text-secondary leading-relaxed">{tool.desc}</p>
-                <div className={`mt-4 text-sm ${tool.color} font-medium flex items-center gap-1`}>
-                  Hesapla
-                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </Link>
-            ))}
+          <div className="grid sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            <Link
+              href="/antrenmanlar"
+              className="group bg-surface/80 backdrop-blur-sm rounded-xl border border-border p-6 text-center hover-lift card-glow animate-fade-up delay-100"
+            >
+              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                <svg className="w-7 h-7 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors">Antrenmanlar</h3>
+              <p className="text-sm text-text-secondary">Haftalık ücretsiz antrenman programı</p>
+              <div className="mt-3 text-sm text-primary font-medium flex items-center justify-center gap-1">
+                Programa Git
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+            <Link
+              href="/araclar"
+              className="group bg-surface/80 backdrop-blur-sm rounded-xl border border-border p-6 text-center hover-lift card-glow animate-fade-up delay-200"
+            >
+              <div className="w-14 h-14 bg-orange-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-500/20 transition-colors">
+                <svg className="w-7 h-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors">Hesaplayıcılar</h3>
+              <p className="text-sm text-text-secondary">Kalori, 1RM, BMI ve daha fazlası</p>
+              <div className="mt-3 text-sm text-orange-500 font-medium flex items-center justify-center gap-1">
+                Hesapla
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+            <Link
+              href="/blog"
+              className="group bg-surface/80 backdrop-blur-sm rounded-xl border border-border p-6 text-center hover-lift card-glow animate-fade-up delay-300"
+            >
+              <div className="w-14 h-14 bg-blue-400/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-400/20 transition-colors">
+                <svg className="w-7 h-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors">Blog</h3>
+              <p className="text-sm text-text-secondary">Fitness ve sağlıklı yaşam yazıları</p>
+              <div className="mt-3 text-sm text-blue-400 font-medium flex items-center justify-center gap-1">
+                Yazıları Oku
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Blog */}
-      <section id="blog" className="relative py-20 px-4 overflow-hidden">
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[400px] h-[400px] bg-primary/6 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-orange-500/5 rounded-full blur-[100px]" />
-        <div className="relative max-w-6xl mx-auto">
-          <div className="text-center mb-12 animate-fade-up">
-            <h2 className="font-display text-4xl sm:text-5xl tracking-wider">BLOG</h2>
-            <p className="text-text-secondary mt-3">Fitness ve sağlıklı yaşam hakkında yazılar</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogPosts && blogPosts.length > 0 ? (
-              blogPosts.map((post, i) => (
-                <Link
-                  key={post.id}
-                  href={`/blog/${post.slug}`}
-                  className={`group bg-surface rounded-xl border border-border p-6 hover-lift card-glow animate-fade-up delay-${(i + 1) * 100}`}
-                >
-                  <div className="text-xs text-text-secondary mb-3">
-                    {post.published_at
-                      ? new Date(post.published_at).toLocaleDateString('tr-TR', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })
-                      : ''}
-                  </div>
-                  <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-sm text-text-secondary line-clamp-3">
-                    {post.content?.slice(0, 120)}...
-                  </p>
-                </Link>
-              ))
-            ) : (
-              <p className="text-text-secondary col-span-full text-center">Henüz yazı yok</p>
-            )}
-          </div>
-          {blogPosts && blogPosts.length > 0 && (
-            <div className="text-center mt-8">
-              <Link
-                href="/blog"
-                className="text-primary hover:underline text-sm font-medium"
-              >
-                Tüm yazıları gör →
-              </Link>
-            </div>
-          )}
         </div>
       </section>
 

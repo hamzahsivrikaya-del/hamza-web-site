@@ -10,7 +10,8 @@ import Input from '@/components/ui/Input'
 import Modal from '@/components/ui/Modal'
 import { formatDate, formatDateShort, getPackageStatusLabel } from '@/lib/utils'
 import ProgressChart from '@/app/(member)/dashboard/progress/ProgressChart'
-import type { User, Package, Measurement, Lesson } from '@/lib/types'
+import Select from '@/components/ui/Select'
+import type { User, Package, Measurement, Lesson, Gender } from '@/lib/types'
 
 type Tab = 'overview' | 'measurements' | 'packages' | 'lessons'
 
@@ -28,6 +29,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
   const [editForm, setEditForm] = useState({
     full_name: member.full_name,
     phone: member.phone || '',
+    gender: (member.gender || '') as '' | Gender,
     is_active: member.is_active,
   })
   const [saving, setSaving] = useState(false)
@@ -45,6 +47,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
       .update({
         full_name: editForm.full_name,
         phone: editForm.phone || null,
+        gender: editForm.gender || null,
         is_active: editForm.is_active,
       })
       .eq('id', member.id)
@@ -65,10 +68,10 @@ export default function MemberDetail({ member, packages, measurements, lessons }
 
       {/* ── Hero + Tab bar ── */}
       <div style={{ background: '#0D0D0D', borderBottom: '1px solid #1E1E1E' }}>
-        <div className="max-w-5xl mx-auto px-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
 
           {/* Üst satır: Geri + Aksiyonlar */}
-          <div className="flex items-center justify-between pt-6 pb-5">
+          <div className="flex items-center justify-between pt-4 sm:pt-6 pb-4 sm:pb-5">
             <button
               onClick={() => router.back()}
               className="flex items-center gap-1.5 text-[#4B5563] hover:text-[#F5F0E8] transition-colors text-sm cursor-pointer"
@@ -101,38 +104,29 @@ export default function MemberDetail({ member, packages, measurements, lessons }
           </div>
 
           {/* Üye kimliği */}
-          <div className="flex items-center gap-4 pb-5">
+          <div className="flex items-center gap-3 sm:gap-4 pb-4 sm:pb-5">
             {/* Monogram avatar */}
-            <div className="relative flex-shrink-0">
-              <div
-                style={{
-                  width: 56, height: 56, borderRadius: 14,
-                  background: 'rgba(220,38,38,0.1)',
-                  border: '1px solid rgba(220,38,38,0.25)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
+            <div className="relative shrink-0">
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center"
+                style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.25)' }}
               >
-                <span style={{ fontSize: 18, fontWeight: 700, color: '#DC2626', letterSpacing: -1 }}>{initials}</span>
+                <span className="text-base sm:text-lg font-bold text-[#DC2626] -tracking-wide">{initials}</span>
               </div>
               <div
-                style={{
-                  position: 'absolute', bottom: -3, right: -3,
-                  width: 14, height: 14, borderRadius: '50%',
-                  background: member.is_active ? '#22C55E' : '#374151',
-                  border: '2px solid #0D0D0D',
-                }}
+                className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border-2 border-[#0D0D0D]"
+                style={{ background: member.is_active ? '#22C55E' : '#374151' }}
               />
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-xl font-bold text-[#F5F0E8] tracking-tight truncate">{member.full_name}</h1>
+              <div className="flex items-center gap-2 sm:gap-3 mb-1">
+                <h1 className="text-lg sm:text-xl font-bold text-[#F5F0E8] tracking-tight truncate">{member.full_name}</h1>
                 <Badge variant={member.is_active ? 'success' : 'default'}>
                   {member.is_active ? 'Aktif' : 'Pasif'}
                 </Badge>
               </div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#4B5563]">
-                <span>{member.email}</span>
+              <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-xs sm:text-sm text-[#4B5563]">
+                <span className="truncate max-w-[180px] sm:max-w-none">{member.email}</span>
                 {member.phone && (
                   <>
                     <span className="text-[#2A2A2A]">·</span>
@@ -147,14 +141,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
 
           {/* Özet çubuk */}
           {(activePackage || latestMeasurement) && (
-            <div
-              style={{
-                display: 'flex', flexWrap: 'wrap', gap: '24px',
-                padding: '14px 0',
-                borderTop: '1px solid #1A1A1A',
-                marginBottom: '2px',
-              }}
-            >
+            <div className="flex flex-wrap gap-4 sm:gap-6 py-3 border-t border-[#1A1A1A] mb-0.5">
               {activePackage && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div>
@@ -207,12 +194,12 @@ export default function MemberDetail({ member, packages, measurements, lessons }
           )}
 
           {/* Tab bar */}
-          <div className="flex gap-0 -mb-px">
+          <div className="flex gap-0 -mb-px overflow-x-auto scrollbar-none">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === tab.key
                     ? 'border-[#DC2626] text-[#F5F0E8]'
                     : 'border-transparent text-[#4B5563] hover:text-[#9CA3AF]'
@@ -237,7 +224,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
       </div>
 
       {/* ── Tab içerikleri ── */}
-      <div className="max-w-5xl mx-auto px-6 py-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
 
         {/* GENEL BAKIŞ */}
         {activeTab === 'overview' && (
@@ -255,6 +242,12 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   <div>
                     <p className="text-xs text-[#374151] mb-0.5">Telefon</p>
                     <p className="text-sm text-[#F5F0E8]">{member.phone || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[#374151] mb-0.5">Cinsiyet</p>
+                    <p className="text-sm text-[#F5F0E8]">
+                      {member.gender === 'male' ? 'Erkek' : member.gender === 'female' ? 'Kadın' : '—'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-[#374151] mb-0.5">Üyelik Başlangıcı</p>
@@ -354,7 +347,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                     >
                       <span className="text-sm text-[#9CA3AF]">{formatDate(lesson.date)}</span>
                       {lesson.notes && (
-                        <span className="text-sm text-[#374151] truncate max-w-[200px]">{lesson.notes}</span>
+                        <span className="text-sm text-[#374151] truncate max-w-[120px] sm:max-w-[200px]">{lesson.notes}</span>
                       )}
                     </div>
                   ))}
@@ -370,7 +363,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
         {activeTab === 'measurements' && (
           <div>
             {measurements.length > 0 ? (
-              <ProgressChart measurements={[...measurements].reverse()} />
+              <ProgressChart measurements={[...measurements].reverse()} gender={member.gender} />
             ) : (
               <div className="rounded-xl border border-[#1E1E1E] p-16 text-center" style={{ background: '#0D0D0D' }}>
                 <p className="text-[#374151]">Henüz ölçüm kaydı yok</p>
@@ -436,10 +429,10 @@ export default function MemberDetail({ member, packages, measurements, lessons }
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ borderBottom: '1px solid #1A1A1A' }}>
-                    <th className="text-left px-5 py-3 text-[10px] text-[#374151] uppercase tracking-widest font-medium">
+                    <th className="text-left px-3 sm:px-5 py-3 text-[10px] text-[#374151] uppercase tracking-widest font-medium">
                       Tarih
                     </th>
-                    <th className="text-left px-5 py-3 text-[10px] text-[#374151] uppercase tracking-widest font-medium">
+                    <th className="text-left px-3 sm:px-5 py-3 text-[10px] text-[#374151] uppercase tracking-widest font-medium">
                       Not
                     </th>
                   </tr>
@@ -450,8 +443,8 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                       key={lesson.id}
                       style={{ borderBottom: i < lessons.length - 1 ? '1px solid #111' : 'none' }}
                     >
-                      <td className="px-5 py-3 text-[#9CA3AF]">{formatDate(lesson.date)}</td>
-                      <td className="px-5 py-3 text-[#374151]">{lesson.notes || '—'}</td>
+                      <td className="px-3 sm:px-5 py-3 text-[#9CA3AF] whitespace-nowrap">{formatDate(lesson.date)}</td>
+                      <td className="px-3 sm:px-5 py-3 text-[#374151] truncate max-w-[150px] sm:max-w-none">{lesson.notes || '—'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -478,6 +471,16 @@ export default function MemberDetail({ member, packages, measurements, lessons }
             type="tel"
             value={editForm.phone}
             onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+          />
+          <Select
+            label="Cinsiyet"
+            value={editForm.gender}
+            onChange={(e) => setEditForm({ ...editForm, gender: e.target.value as '' | Gender })}
+            options={[
+              { value: '', label: 'Seçiniz' },
+              { value: 'male', label: 'Erkek' },
+              { value: 'female', label: 'Kadın' },
+            ]}
           />
           <div className="flex items-center gap-2">
             <input

@@ -21,7 +21,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={inputId}
-          className={`w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-text-primary
+          className={`w-full rounded-lg border border-border bg-surface px-3 sm:px-4 py-3 text-text-primary
             placeholder:text-text-secondary/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary
             transition-colors ${error ? 'border-danger' : ''} ${className}`}
           {...props}

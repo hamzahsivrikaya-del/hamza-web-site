@@ -29,19 +29,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="border-b border-border">
+      <header className="border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div></div>
-          <Link href="/login" className="text-sm text-text-secondary hover:text-text-primary transition-colors">
-            Giriş
+          <Link href="/" className="font-display text-lg tracking-wider text-primary hover:opacity-80 transition-opacity">
+            HAMZA SİVRİKAYA
+          </Link>
+          <Link href="/blog" className="text-sm text-text-secondary hover:text-text-primary transition-colors">
+            Tüm Yazılar
           </Link>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
-        <Link href="/blog" className="text-sm text-text-secondary hover:text-primary transition-colors mb-6 inline-block">
-          ← Tüm yazılar
-        </Link>
 
         {post.cover_image && (
           <img

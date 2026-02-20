@@ -9,7 +9,8 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Input from '@/components/ui/Input'
 import Modal from '@/components/ui/Modal'
-import type { User, Package } from '@/lib/types'
+import Select from '@/components/ui/Select'
+import type { User, Package, Gender } from '@/lib/types'
 
 type MemberWithPackages = User & { packages: Package[] }
 
@@ -27,6 +28,7 @@ export default function MembersList({ initialMembers }: { initialMembers: Member
     password: '',
     full_name: '',
     phone: '',
+    gender: '' as '' | Gender,
   })
   const [adding, setAdding] = useState(false)
   const [addError, setAddError] = useState('')
@@ -57,7 +59,7 @@ export default function MembersList({ initialMembers }: { initialMembers: Member
       }
 
       setShowAddModal(false)
-      setNewMember({ email: '', password: '', full_name: '', phone: '' })
+      setNewMember({ email: '', password: '', full_name: '', phone: '', gender: '' })
       router.refresh()
     } catch (err: unknown) {
       setAddError(err instanceof Error ? err.message : 'Bir hata oluştu')
@@ -207,6 +209,17 @@ export default function MembersList({ initialMembers }: { initialMembers: Member
             type="tel"
             value={newMember.phone}
             onChange={(e) => setNewMember({ ...newMember, phone: e.target.value })}
+          />
+          <Select
+            label="Cinsiyet"
+            value={newMember.gender}
+            onChange={(e) => setNewMember({ ...newMember, gender: e.target.value as '' | Gender })}
+            options={[
+              { value: '', label: 'Seçiniz' },
+              { value: 'male', label: 'Erkek' },
+              { value: 'female', label: 'Kadın' },
+            ]}
+            required
           />
           {addError && <p className="text-sm text-danger">{addError}</p>}
           <div className="flex gap-3 justify-end">

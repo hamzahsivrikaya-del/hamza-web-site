@@ -1,11 +1,14 @@
 export type UserRole = 'admin' | 'member'
 
+export type Gender = 'male' | 'female'
+
 export interface User {
   id: string
   email: string
   full_name: string
   phone: string | null
   role: UserRole
+  gender: Gender | null
   start_date: string
   is_active: boolean
   created_at: string
@@ -69,6 +72,33 @@ export interface BlogPost {
   status: BlogPostStatus
   published_at: string | null
   created_at: string
+}
+
+export type WorkoutType = 'public' | 'member'
+
+export interface WorkoutExercise {
+  id: string
+  workout_id: string
+  order_num: number
+  name: string
+  sets: number | null
+  reps: string | null
+  weight: string | null
+  rest: string | null
+  notes: string | null
+}
+
+export interface Workout {
+  id: string
+  type: WorkoutType
+  user_id: string | null
+  week_start: string
+  day_index: number
+  title: string
+  content: string | null
+  created_at: string
+  exercises?: WorkoutExercise[]
+  user?: User
 }
 
 export type NotificationType = 'low_lessons' | 'weekly_report' | 'inactive' | 'manual'

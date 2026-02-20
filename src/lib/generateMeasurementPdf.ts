@@ -12,13 +12,21 @@ function fmtShort(iso: string): string {
   })
 }
 
-/* ─── Vücut yağ kategorisi ─────────────────────────────── */
-function getCategory(pct: number): string {
-  if (pct < 6)  return 'Elite Sporcu'
-  if (pct < 14) return 'Fit'
-  if (pct < 18) return 'Ortalama'
-  if (pct < 25) return 'Fazla Yağlı'
-  return 'Obez'
+/* ─── Vücut yağ kategorisi (ACE sınıflandırması) ──────── */
+function getCategory(pct: number, gender: 'male' | 'female' = 'male'): string {
+  if (gender === 'female') {
+    if (pct <= 13) return 'Temel Yağ'
+    if (pct <= 20) return 'Sporcu'
+    if (pct <= 24) return 'Fit'
+    if (pct <= 31) return 'Normal'
+    return 'Yüksek'
+  }
+  // male
+  if (pct <= 5)  return 'Temel Yağ'
+  if (pct <= 13) return 'Sporcu'
+  if (pct <= 17) return 'Fit'
+  if (pct <= 24) return 'Normal'
+  return 'Yüksek'
 }
 
 /* ─── Local font TTF yükle → base64 ──────────────────── */
@@ -66,19 +74,19 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
   const ORANGE : [number,number,number] = [249, 115, 22]
   const BLUE   : [number,number,number] = [59, 130, 246]
 
-  /* ── Filigran ── */
+  /* ── Filigran (açık kırmızı) ── */
   const drawWatermark = () => {
     doc.setFont('NotoSans', 'bold')
     doc.setFontSize(56)
-    doc.setTextColor(17, 17, 17)
+    doc.setTextColor(220, 38, 38)
     try {
-      const gs = new (doc as any).GState({ opacity: 0.04 })
+      const gs = new (doc as any).GState({ opacity: 0.06 })
       doc.saveGraphicsState?.()
       doc.setGState?.(gs)
     } catch { /* yok */ }
     const cx = W / 2, cy = pageH / 2
-    doc.text('HAMZA', cx, cy - 12, { angle: 45, align: 'center' })
-    doc.text('SIVRIKAYA', cx, cy + 12, { angle: 45, align: 'center' })
+    doc.text('HAMZA', cx, cy - 28, { angle: 45, align: 'center' })
+    doc.text('SİVRİKAYA', cx, cy + 28, { angle: 45, align: 'center' })
     try { doc.restoreGraphicsState?.() } catch { /* yok */ }
   }
   drawWatermark()
@@ -94,7 +102,7 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
   doc.setFont('NotoSans', 'bold')
   doc.setFontSize(20)
   doc.setTextColor(...RED)
-  doc.text('HAMZA SIVRIKAYA', margin, 28)
+  doc.text('HAMZA SİVRİKAYA', margin, 28)
 
   doc.setFont('NotoSans', 'normal')
   doc.setFontSize(9)
@@ -150,7 +158,7 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
     const cards = [
       { label: 'Kilo',     value: latest.weight       ? `${latest.weight} kg`       : '-', color: CREAM  },
       { label: 'Yağ %',   value: latest.body_fat_pct  ? `${latest.body_fat_pct}%`   : '-', color: ORANGE },
-      { label: 'Kategori', value: latest.body_fat_pct  ? getCategory(Number(latest.body_fat_pct)) : '-', color: CREAM },
+      { label: 'Kategori', value: latest.body_fat_pct  ? getCategory(Number(latest.body_fat_pct), member.gender ?? 'male') : '-', color: CREAM },
       { label: 'Göğüs',   value: latest.chest         ? `${latest.chest} cm`        : '-', color: CREAM  },
       { label: 'Bel',      value: latest.waist         ? `${latest.waist} cm`        : '-', color: CREAM  },
       { label: 'Kol',      value: latest.arm           ? `${latest.arm} cm`          : '-', color: CREAM  },
@@ -226,13 +234,13 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
     doc.line(margin, y + 5, margin + 54, y + 5)
     y += 10
 
-    const metrics: { key: keyof Measurement; label: string; unit: string; goodDown: boolean }[] = [
-      { key: 'weight',       label: 'Kilo',   unit: 'kg', goodDown: true  },
-      { key: 'body_fat_pct', label: 'Yağ %',  unit: '%',  goodDown: true  },
-      { key: 'chest',        label: 'Göğüs',  unit: 'cm', goodDown: false },
-      { key: 'waist',        label: 'Bel',    unit: 'cm', goodDown: true  },
-      { key: 'arm',          label: 'Kol',    unit: 'cm', goodDown: false },
-      { key: 'leg',          label: 'Bacak',  unit: 'cm', goodDown: false },
+    const metrics: { key: keyof Measurement; label: string; unit: string }[] = [
+      { key: 'weight',       label: 'Kilo',   unit: 'kg' },
+      { key: 'body_fat_pct', label: 'Yağ %',  unit: '%'  },
+      { key: 'chest',        label: 'Göğüs',  unit: 'cm' },
+      { key: 'waist',        label: 'Bel',    unit: 'cm' },
+      { key: 'arm',          label: 'Kol',    unit: 'cm' },
+      { key: 'leg',          label: 'Bacak',  unit: 'cm' },
     ]
 
     const compRows = metrics
@@ -241,14 +249,12 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
         const f  = Number(first[m.key])
         const l  = Number(latest[m.key])
         const d  = l - f
-        const isGood = m.goodDown ? d < 0 : d > 0
         const sign   = d > 0 ? '+' : ''
         return [
           m.label,
           `${f} ${m.unit}`,
           `${l} ${m.unit}`,
           `${sign}${d.toFixed(1)} ${m.unit}`,
-          d === 0 ? '-' : isGood ? 'İyi' : 'Kötü',
         ]
       })
 
@@ -259,7 +265,6 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
         `İlk (${fmtShort(first.date)})`,
         `Son (${fmtShort(latest.date)})`,
         'Değişim',
-        'Durum',
       ]],
       body: compRows,
       margin: { left: margin, right: margin },
@@ -267,13 +272,7 @@ export async function generateMeasurementPdf(member: User, measurements: Measure
       bodyStyles: { fontSize: 8, textColor: [200, 200, 200], font: 'NotoSans' },
       alternateRowStyles: { fillColor: [22, 22, 22] },
       styles: { fillColor: [17, 17, 17], lineColor: [40, 40, 40], lineWidth: 0.3, font: 'NotoSans' },
-      columnStyles: { 3: { fontStyle: 'bold' }, 4: { halign: 'center', fontStyle: 'bold' } },
-      didParseCell: (data) => {
-        if (data.column.index === 4 && data.section === 'body') {
-          if (data.cell.text[0] === 'İyi')  data.cell.styles.textColor = [34, 197, 94]
-          if (data.cell.text[0] === 'Kötü') data.cell.styles.textColor = [239, 68, 68]
-        }
-      },
+      columnStyles: { 3: { fontStyle: 'bold' } },
     })
     y = (doc as any).lastAutoTable.finalY + 12
   }

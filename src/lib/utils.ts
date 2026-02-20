@@ -72,3 +72,54 @@ export function timeAgo(date: string): string {
   if (days < 7) return `${days} gün önce`
   return formatDate(date)
 }
+
+// Local YYYY-MM-DD (timezone-safe, toISOString kullanma!)
+function toDateStr(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${dd}`
+}
+
+// Haftanın pazartesi tarihini al (YYYY-MM-DD)
+export function getMonday(date: Date = new Date()): string {
+  const d = new Date(date)
+  const day = d.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  d.setDate(d.getDate() + diff)
+  return toDateStr(d)
+}
+
+const DAY_NAMES = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
+
+// Gün adı (0=Pazartesi ... 6=Pazar)
+export function getDayName(dayIndex: number): string {
+  return DAY_NAMES[dayIndex] || ''
+}
+
+// Hafta aralığı formatı: "17-23 Şub 2026"
+export function formatWeekRange(mondayStr: string): string {
+  const monday = new Date(mondayStr + 'T00:00:00')
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+
+  const monthNames = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+
+  if (monday.getMonth() === sunday.getMonth()) {
+    return `${monday.getDate()}-${sunday.getDate()} ${monthNames[monday.getMonth()]} ${monday.getFullYear()}`
+  }
+  return `${monday.getDate()} ${monthNames[monday.getMonth()]} - ${sunday.getDate()} ${monthNames[sunday.getMonth()]} ${sunday.getFullYear()}`
+}
+
+// Önceki/sonraki hafta pazartesi tarihi
+export function getAdjacentWeek(mondayStr: string, direction: -1 | 1): string {
+  const d = new Date(mondayStr + 'T00:00:00')
+  d.setDate(d.getDate() + direction * 7)
+  return toDateStr(d)
+}
+
+// Bugünün gün indexi (0=Pazartesi ... 6=Pazar)
+export function getTodayDayIndex(): number {
+  const day = new Date().getDay()
+  return day === 0 ? 6 : day - 1
+}

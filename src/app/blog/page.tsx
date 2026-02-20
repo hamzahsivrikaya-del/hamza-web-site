@@ -15,17 +15,17 @@ export default async function BlogPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="border-b border-border">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div></div>
-          <Link href="/login" className="text-sm text-text-secondary hover:text-text-primary transition-colors">
-            Giriş
+      <header className="border-b border-border bg-background/80 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10 text-center">
+          <Link href="/" className="inline-block font-display text-lg tracking-wider text-primary mb-4 hover:opacity-80 transition-opacity">
+            HAMZA SİVRİKAYA
           </Link>
+          <h1 className="font-display text-3xl sm:text-4xl tracking-wider mb-2">BLOG</h1>
+          <p className="text-sm sm:text-base text-text-secondary">Fitness ve sağlıklı yaşam hakkında yazılar</p>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Blog</h1>
 
         {posts && posts.length > 0 ? (
           <div className="space-y-4">
@@ -55,6 +55,11 @@ export default async function BlogPage() {
             <p className="text-text-secondary text-center py-8">Henüz yazı yok</p>
           </Card>
         )}
+        <div className="mt-8 text-center">
+          <Link href="/" className="text-primary hover:underline text-sm font-medium">
+            ← Ana Sayfaya Dön
+          </Link>
+        </div>
       </main>
     </div>
   )

@@ -53,6 +53,12 @@ export default function Navbar({ showNotifications = true }: NavbarProps) {
           {showNotifications && <NotificationBell />}
           <span className="text-sm font-bold text-text-primary uppercase hidden sm:block">{userName}</span>
           <Link
+            href="/dashboard/program"
+            className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:block"
+          >
+            Programım
+          </Link>
+          <Link
             href="/dashboard/haftalik-ozet"
             className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:block"
           >
