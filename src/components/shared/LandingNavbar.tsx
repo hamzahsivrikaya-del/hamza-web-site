@@ -18,9 +18,7 @@ export default function LandingNavbar() {
   return (
     <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-sm border-b border-border">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="font-display text-xl tracking-wider text-primary">
-          HAMZA SİVRİKAYA
-        </Link>
+        <div />
         <div className="flex items-center gap-4 sm:gap-6">
           {/* Desktop linkler */}
           {navLinks.map((link) => (

@@ -74,41 +74,78 @@ export default function WorkoutDayCard({ dayIndex, workout, isToday, colSpan }: 
           <div className="border-t border-border/50 pt-4">
             {workout.exercises && workout.exercises.length > 0 && (
               <div className="space-y-2 mb-3">
-                {workout.exercises
-                  .sort((a, b) => a.order_num - b.order_num)
-                  .map((ex, j) => (
-                  <div key={ex.id} className="flex items-start gap-3 py-2 border-b border-border/50 last:border-0">
-                    <span className="text-xs font-mono text-text-secondary w-5 pt-0.5">{j + 1}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm text-text-primary">{ex.name}</div>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {ex.sets && (
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                            {ex.sets} set
-                          </span>
+                {(() => {
+                  const sorted = [...workout.exercises].sort((a, b) => a.order_num - b.order_num)
+                  return sorted.map((ex, j) => {
+                    const prevEx = j > 0 ? sorted[j - 1] : null
+                    const nextEx = j < sorted.length - 1 ? sorted[j + 1] : null
+                    const inSuperset = ex.superset_group != null
+                    const isFirstInGroup = inSuperset && (!prevEx || prevEx.superset_group !== ex.superset_group)
+                    const isLastInGroup = inSuperset && (!nextEx || nextEx.superset_group !== ex.superset_group)
+                    const isMidGroup = inSuperset && !isFirstInGroup && !isLastInGroup
+
+                    return (
+                      <div key={ex.id} className="relative">
+                        {/* Superset sol çizgi */}
+                        {inSuperset && (
+                          <div className={`absolute left-0 w-1 bg-primary rounded-full ${
+                            isFirstInGroup && isLastInGroup ? 'top-2 bottom-2'
+                            : isFirstInGroup ? 'top-2 bottom-0'
+                            : isLastInGroup ? 'top-0 bottom-2'
+                            : 'top-0 bottom-0'
+                          }`} />
                         )}
-                        {ex.reps && (
-                          <span className="text-xs bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded">
-                            {ex.reps} tekrar
-                          </span>
+                        {/* Superset etiketi */}
+                        {isFirstInGroup && (
+                          <div className="ml-4 mb-1">
+                            <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Süper Set</span>
+                          </div>
                         )}
-                        {ex.weight && (
-                          <span className="text-xs bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded">
-                            {ex.weight}
-                          </span>
-                        )}
-                        {ex.rest && (
-                          <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded">
-                            {ex.rest} din.
-                          </span>
+                        <div className={`flex items-start gap-3 py-2 ${!isLastInGroup && !isMidGroup ? 'border-b border-border/50' : ''} ${inSuperset ? 'ml-4' : ''}`}>
+                          {!inSuperset && <span className="text-xs font-mono text-text-secondary w-5 pt-0.5">{j + 1}</span>}
+                          {inSuperset && !isFirstInGroup && (
+                            <span className="text-xs font-mono text-primary w-5 pt-0.5">+</span>
+                          )}
+                          {inSuperset && isFirstInGroup && (
+                            <span className="text-xs font-mono text-primary w-5 pt-0.5">{j + 1}</span>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm text-text-primary">{ex.name}</div>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {ex.sets && (
+                                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                  {ex.sets} set
+                                </span>
+                              )}
+                              {ex.reps && (
+                                <span className="text-xs bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded">
+                                  {ex.reps} tekrar
+                                </span>
+                              )}
+                              {ex.weight && (
+                                <span className="text-xs bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded">
+                                  {ex.weight}
+                                </span>
+                              )}
+                              {ex.rest && (
+                                <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded">
+                                  {ex.rest} din.
+                                </span>
+                              )}
+                            </div>
+                            {ex.notes && (
+                              <p className="text-xs text-text-secondary mt-1 italic">{ex.notes}</p>
+                            )}
+                          </div>
+                        </div>
+                        {/* Superset son egzersiz sonrası ayırıcı */}
+                        {isLastInGroup && j < sorted.length - 1 && (
+                          <div className="border-b border-border/50 mt-2" />
                         )}
                       </div>
-                      {ex.notes && (
-                        <p className="text-xs text-text-secondary mt-1 italic">{ex.notes}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                    )
+                  })
+                })()}
               </div>
             )}
 

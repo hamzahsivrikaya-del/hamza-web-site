@@ -16,15 +16,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   if (!post) notFound()
 
-  // Basit markdown -> HTML dönüşümü
-  const htmlContent = post.content
-    .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mt-6 mb-2">$1</h3>')
-    .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mt-8 mb-3">$1</h2>')
-    .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mt-8 mb-4">$1</h1>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/\n\n/g, '</p><p class="mb-4">')
-    .replace(/\n/g, '<br/>')
+  // Tiptap HTML çıktısını render et (eski markdown içerikler de desteklenir)
+  const isHtml = post.content.trim().startsWith('<')
+  const htmlContent = isHtml
+    ? post.content
+    : post.content
+        .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br/>')
 
   return (
     <div className="min-h-screen">
@@ -56,8 +59,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </p>
 
         <div
-          className="prose prose-invert max-w-none text-text-primary leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: `<p class="mb-4">${htmlContent}</p>` }}
+          className="blog-content max-w-none text-text-primary leading-relaxed [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-8 [&_h1]:mb-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-8 [&_h2]:mb-3 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_li]:mb-1 [&_img]:rounded-xl [&_img]:my-6 [&_img]:max-w-full [&_strong]:font-semibold [&_em]:italic [&_u]:underline"
+          dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
       </main>
     </div>

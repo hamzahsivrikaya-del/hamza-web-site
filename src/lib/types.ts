@@ -86,6 +86,7 @@ export interface WorkoutExercise {
   weight: string | null
   rest: string | null
   notes: string | null
+  superset_group: number | null
 }
 
 export interface Workout {

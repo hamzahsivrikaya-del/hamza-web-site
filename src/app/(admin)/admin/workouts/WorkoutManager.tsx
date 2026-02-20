@@ -19,9 +19,10 @@ interface ExerciseForm {
   weight: string
   rest: string
   notes: string
+  superset_group: string
 }
 
-const emptyExercise: ExerciseForm = { name: '', sets: '', reps: '', weight: '', rest: '', notes: '' }
+const emptyExercise: ExerciseForm = { name: '', sets: '', reps: '', weight: '', rest: '', notes: '', superset_group: '' }
 
 interface Props {
   initialWorkouts: Workout[]
@@ -142,6 +143,7 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
                 weight: e.weight || '',
                 rest: e.rest || '',
                 notes: e.notes || '',
+                superset_group: e.superset_group?.toString() || '',
               }))
           : [{ ...emptyExercise }]
       )
@@ -216,6 +218,7 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
           weight: e.weight.trim() || null,
           rest: e.rest.trim() || null,
           notes: e.notes.trim() || null,
+          superset_group: e.superset_group ? parseInt(e.superset_group) : null,
         }))
       )
       if (exErr) { setError(exErr.message); setSaving(false); return }
@@ -310,6 +313,7 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
             weight: e.weight,
             rest: e.rest,
             notes: e.notes,
+            superset_group: e.superset_group,
           }))
         )
       }
@@ -511,64 +515,100 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
             </div>
 
             <div className="space-y-3">
-              {exercises.map((ex, idx) => (
-                <div key={idx} className="bg-background rounded-lg p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-text-secondary font-mono w-5 text-center">{idx + 1}</span>
-                    <input
-                      value={ex.name}
-                      onChange={(e) => updateExercise(idx, 'name', e.target.value)}
-                      placeholder="Egzersiz adı"
-                      className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                    />
-                    {exercises.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeExercise(idx)}
-                        className="p-1.5 text-text-secondary hover:text-red-400 transition-colors cursor-pointer"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+              {exercises.map((ex, idx) => {
+                const hasSuperset = ex.superset_group !== ''
+                const prevSameGroup = idx > 0 && ex.superset_group !== '' && exercises[idx - 1].superset_group === ex.superset_group
+                const nextSameGroup = idx < exercises.length - 1 && ex.superset_group !== '' && exercises[idx + 1]?.superset_group === ex.superset_group
+
+                return (
+                  <div key={idx} className="relative">
+                    {/* Superset sol çizgi */}
+                    {hasSuperset && (prevSameGroup || nextSameGroup) && (
+                      <div className={`absolute left-0 w-1 bg-primary rounded-full ${
+                        prevSameGroup && nextSameGroup ? 'top-0 bottom-0'
+                        : prevSameGroup ? 'top-0 bottom-1/2'
+                        : 'top-1/2 bottom-0'
+                      }`} />
                     )}
+                    <div className={`bg-background rounded-lg p-3 space-y-2 ${hasSuperset && (prevSameGroup || nextSameGroup) ? 'ml-3' : ''}`}>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (hasSuperset) {
+                              updateExercise(idx, 'superset_group', '')
+                            } else {
+                              // Sonraki mevcut en yüksek grup + 1 ata
+                              const groups = exercises.map(e => e.superset_group ? parseInt(e.superset_group) : 0)
+                              const nextGroup = Math.max(...groups, 0) + 1
+                              updateExercise(idx, 'superset_group', nextGroup.toString())
+                            }
+                          }}
+                          className={`text-[10px] font-bold w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer ${
+                            hasSuperset
+                              ? 'bg-primary text-white'
+                              : 'bg-surface border border-border text-text-secondary hover:border-primary/50'
+                          }`}
+                          title={hasSuperset ? `Süper Set ${ex.superset_group}` : 'Süper set olarak işaretle'}
+                        >
+                          {hasSuperset ? ex.superset_group : 'SS'}
+                        </button>
+                        <input
+                          value={ex.name}
+                          onChange={(e) => updateExercise(idx, 'name', e.target.value)}
+                          placeholder="Egzersiz adı"
+                          className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                        />
+                        {exercises.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeExercise(idx)}
+                            className="p-1.5 text-text-secondary hover:text-red-400 transition-colors cursor-pointer"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pl-7">
+                        <input
+                          value={ex.sets}
+                          onChange={(e) => updateExercise(idx, 'sets', e.target.value)}
+                          placeholder="Set"
+                          className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                        />
+                        <input
+                          value={ex.reps}
+                          onChange={(e) => updateExercise(idx, 'reps', e.target.value)}
+                          placeholder="Tekrar"
+                          className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                        />
+                        <input
+                          value={ex.weight}
+                          onChange={(e) => updateExercise(idx, 'weight', e.target.value)}
+                          placeholder="Ağırlık"
+                          className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                        />
+                        <input
+                          value={ex.rest}
+                          onChange={(e) => updateExercise(idx, 'rest', e.target.value)}
+                          placeholder="Dinlenme"
+                          className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                        />
+                      </div>
+                      <div className="pl-7">
+                        <input
+                          value={ex.notes}
+                          onChange={(e) => updateExercise(idx, 'notes', e.target.value)}
+                          placeholder="Not (opsiyonel)"
+                          className="w-full bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pl-7">
-                    <input
-                      value={ex.sets}
-                      onChange={(e) => updateExercise(idx, 'sets', e.target.value)}
-                      placeholder="Set"
-                      className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                    />
-                    <input
-                      value={ex.reps}
-                      onChange={(e) => updateExercise(idx, 'reps', e.target.value)}
-                      placeholder="Tekrar"
-                      className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                    />
-                    <input
-                      value={ex.weight}
-                      onChange={(e) => updateExercise(idx, 'weight', e.target.value)}
-                      placeholder="Ağırlık"
-                      className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                    />
-                    <input
-                      value={ex.rest}
-                      onChange={(e) => updateExercise(idx, 'rest', e.target.value)}
-                      placeholder="Dinlenme"
-                      className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                    />
-                  </div>
-                  <div className="pl-7">
-                    <input
-                      value={ex.notes}
-                      onChange={(e) => updateExercise(idx, 'notes', e.target.value)}
-                      placeholder="Not (opsiyonel)"
-                      className="w-full bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 

@@ -154,8 +154,13 @@ export default function MembersList({ initialMembers }: { initialMembers: Member
                           <div className="text-sm font-medium">
                             {activePackage.used_lessons}/{activePackage.total_lessons} ders
                           </div>
-                          <Badge variant={remaining <= 2 ? 'warning' : 'primary'}>
-                            {remaining} kaldı
+                          <Badge variant={
+                            remaining <= 0 ? 'danger'
+                            : remaining / activePackage.total_lessons <= 0.25 ? 'danger'
+                            : remaining / activePackage.total_lessons <= 0.5 ? 'warning'
+                            : 'success'
+                          }>
+                            {remaining <= 0 ? 'Bitti' : `${remaining} kaldı`}
                           </Badge>
                         </>
                       ) : (

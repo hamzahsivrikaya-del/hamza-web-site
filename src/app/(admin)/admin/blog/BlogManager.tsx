@@ -7,7 +7,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Input from '@/components/ui/Input'
-import Textarea from '@/components/ui/Textarea'
+import RichTextEditor from '@/components/shared/RichTextEditor'
 import Modal from '@/components/ui/Modal'
 import Select from '@/components/ui/Select'
 import { formatDate } from '@/lib/utils'
@@ -160,6 +160,7 @@ export default function BlogManager({ initialPosts }: { initialPosts: BlogPost[]
         open={showEditor}
         onClose={() => setShowEditor(false)}
         title={editingPost ? 'Yazıyı Düzenle' : 'Yeni Yazı'}
+        size="xl"
       >
         <form onSubmit={handleSave} className="space-y-4">
           <Input
@@ -176,13 +177,13 @@ export default function BlogManager({ initialPosts }: { initialPosts: BlogPost[]
             placeholder="https://..."
           />
 
-          <Textarea
-            label="İçerik (Markdown)"
-            value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
-            required
-            rows={10}
-          />
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">İçerik</label>
+            <RichTextEditor
+              content={form.content}
+              onChange={(html) => setForm({ ...form, content: html })}
+            />
+          </div>
 
           <Select
             label="Durum"

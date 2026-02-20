@@ -52,21 +52,19 @@ export default async function MemberDashboard() {
     : 0
   const days = activePackage ? daysRemaining(activePackage.expire_date) : 0
 
-  // Durum etiketi
+  // Durum etiketi — oran bazlı gradyan
   let statusLabel = 'Paket Yok'
   let statusVariant: 'success' | 'warning' | 'danger' | 'default' = 'default'
   if (activePackage) {
+    const ratio = remaining / activePackage.total_lessons
     if (remaining <= 0) {
       statusLabel = 'Bitti'
       statusVariant = 'danger'
-    } else if (remaining === 1) {
-      statusLabel = 'Son Ders'
+    } else if (ratio <= 0.25) {
+      statusLabel = `Son ${remaining} Ders`
       statusVariant = 'danger'
-    } else if (remaining === 2) {
-      statusLabel = 'Son 2 Ders'
-      statusVariant = 'warning'
-    } else if (days <= 7) {
-      statusLabel = 'Süre Doluyor'
+    } else if (ratio <= 0.5) {
+      statusLabel = 'Azalıyor'
       statusVariant = 'warning'
     } else {
       statusLabel = 'Aktif'
