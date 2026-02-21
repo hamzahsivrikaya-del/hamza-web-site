@@ -4,12 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 const navLinks = [
-  { href: '#hakkimda', label: 'Hakkımda' },
-  { href: '#hizmetler', label: 'Hizmetler' },
+  { href: '/#hakkimda', label: 'Hakkımda' },
+  { href: '/#hizmetler', label: 'Hizmetler' },
   { href: '/antrenmanlar', label: 'Antrenmanlar' },
   { href: '/araclar', label: 'Hesaplayıcılar' },
   { href: '/blog', label: 'Blog' },
-  { href: '#iletisim', label: 'İletişim' },
+  { href: '/#iletisim', label: 'İletişim' },
 ]
 
 export default function LandingNavbar() {
