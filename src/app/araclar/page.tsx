@@ -59,9 +59,49 @@ const tools = [
 
 export default function AraclarPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Atmosferik arka plan */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#150808] via-[#0d0a0a] to-[#0a0508]" />
+        <div className="absolute -top-20 -left-20 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 -right-32 w-[450px] h-[450px] bg-orange-500/8 rounded-full blur-[110px]" />
+        <div className="absolute bottom-1/4 left-1/3 w-[400px] h-[400px] bg-primary/6 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 w-[350px] h-[300px] bg-red-500/8 rounded-full blur-[100px]" />
+        {/* Floating spor figürleri */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Dumbbell - sağ üst */}
+          <svg className="absolute top-[8%] right-[5%] w-28 h-28 text-primary opacity-[0.06] rotate-[25deg] animate-float" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
+          </svg>
+          {/* Kettlebell - sol üst */}
+          <svg className="absolute top-[15%] left-[4%] w-20 h-20 text-primary opacity-[0.07] rotate-[-10deg] animate-float-slow" style={{ animationDelay: '2s' }} fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2a4 4 0 00-3 6.65V11H8a3 3 0 00-3 3v4a3 3 0 003 3h8a3 3 0 003-3v-4a3 3 0 00-3-3h-1V8.65A4 4 0 0012 2zm0 2a2 2 0 110 4 2 2 0 010-4z"/>
+          </svg>
+          {/* Koşucu - orta sağ */}
+          <svg className="absolute top-[38%] right-[3%] w-22 h-22 text-primary opacity-[0.05] rotate-[8deg] animate-float-drift" style={{ animationDelay: '1s' }} fill="currentColor" viewBox="0 0 24 24">
+            <path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/>
+          </svg>
+          {/* Yıldırım - sol orta */}
+          <svg className="absolute top-[50%] left-[7%] w-16 h-16 text-orange-500 opacity-[0.07] rotate-[-20deg] animate-float" style={{ animationDelay: '3s' }} fill="currentColor" viewBox="0 0 24 24">
+            <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+          </svg>
+          {/* Büyük dumbbell - sol alt */}
+          <svg className="absolute top-[65%] left-[2%] w-32 h-32 text-primary opacity-[0.04] rotate-[-35deg] animate-float-slow" style={{ animationDelay: '4s' }} fill="currentColor" viewBox="0 0 24 24">
+            <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
+          </svg>
+          {/* Kalp - sağ alt */}
+          <svg className="absolute top-[75%] right-[10%] w-14 h-14 text-primary opacity-[0.06] rotate-[12deg] animate-float-drift" style={{ animationDelay: '5s' }} fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          {/* Timer - alt orta */}
+          <svg className="absolute top-[88%] left-[30%] w-16 h-16 text-primary opacity-[0.05] rotate-[-5deg] animate-float" style={{ animationDelay: '6s' }} fill="currentColor" viewBox="0 0 24 24">
+            <path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+          </svg>
+        </div>
+      </div>
+
       {/* Header */}
-      <div className="border-b border-border bg-background/80 backdrop-blur-sm">
+      <div className="relative border-b border-border bg-background/40 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10 text-center">
           <Link href="/" className="inline-block font-display text-lg tracking-wider text-primary mb-4 hover:opacity-80 transition-opacity">
             HAMZA SİVRİKAYA
@@ -74,7 +114,7 @@ export default function AraclarPage() {
       </div>
 
       {/* Kartlar */}
-      <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
+      <div className="relative max-w-3xl mx-auto px-4 py-6 sm:py-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {tools.map((tool) => (
             <Link

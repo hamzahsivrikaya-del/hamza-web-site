@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono, Bebas_Neue, Playfair_Display, Merriweather, Raleway, Oswald, Lora } from 'next/font/google'
+import { Geist, Geist_Mono, Teko, Playfair_Display, Merriweather, Raleway, Oswald, Lora } from 'next/font/google'
 import ServiceWorkerRegistration from '@/components/shared/ServiceWorkerRegistration'
 import './globals.css'
 
@@ -13,10 +13,10 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
-const bebasNeue = Bebas_Neue({
+const teko = Teko({
   variable: '--font-display',
-  weight: '400',
   subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
 })
 
 const playfair = Playfair_Display({
@@ -72,7 +72,7 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${playfair.variable} ${merriweather.variable} ${raleway.variable} ${oswald.variable} ${lora.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${teko.variable} ${playfair.variable} ${merriweather.variable} ${raleway.variable} ${oswald.variable} ${lora.variable} antialiased`}>
         {children}
         <ServiceWorkerRegistration />
       </body>

@@ -16,30 +16,32 @@ export default function LandingNavbar() {
   const [open, setOpen] = useState(false)
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+    <nav className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200/80">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div />
+        <Link href="/" className="font-display text-lg tracking-[0.15em] text-[#1A1A1A]">
+          HAMZA<span className="text-primary">.</span>
+        </Link>
         <div className="flex items-center gap-4 sm:gap-6">
-          {/* Desktop linkler */}
+          {/* Desktop links */}
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:block"
+              className="text-sm text-[#57534E] hover:text-[#1A1A1A] transition-colors hidden sm:block font-medium"
             >
               {link.label}
             </a>
           ))}
           <Link
             href="/login"
-            className="text-sm px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors press-effect"
+            className="text-sm px-4 py-2 bg-primary text-white font-semibold hover:bg-primary-hover transition-colors press-effect"
           >
             Üye Girişi
           </Link>
-          {/* Mobil hamburger */}
+          {/* Mobile hamburger */}
           <button
             onClick={() => setOpen(!open)}
-            className="sm:hidden p-2.5 -mr-2 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+            className="sm:hidden p-2.5 -mr-2 text-[#57534E] hover:text-[#1A1A1A] transition-colors cursor-pointer"
             aria-label="Menü"
           >
             {open ? (
@@ -55,16 +57,16 @@ export default function LandingNavbar() {
         </div>
       </div>
 
-      {/* Mobil dropdown menü */}
+      {/* Mobile dropdown */}
       {open && (
-        <div className="sm:hidden border-t border-border bg-background/95 backdrop-blur-md">
+        <div className="sm:hidden border-t border-gray-200 bg-white/95 backdrop-blur-md">
           <div className="px-4 py-3 flex flex-col gap-1">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="px-4 py-3.5 text-sm text-text-secondary hover:text-text-primary hover:bg-surface rounded-lg transition-colors active:bg-surface-hover"
+                className="px-4 py-3.5 text-sm text-[#57534E] hover:text-[#1A1A1A] hover:bg-gray-100 transition-colors active:bg-gray-200 font-medium"
               >
                 {link.label}
               </a>
