@@ -589,25 +589,25 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
                           value={ex.sets}
                           onChange={(e) => updateExercise(idx, 'sets', e.target.value)}
                           placeholder="Set"
-                          className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                          className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
                         />
                         <input
                           value={ex.reps}
                           onChange={(e) => updateExercise(idx, 'reps', e.target.value)}
                           placeholder="Tekrar"
-                          className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                          className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
                         />
                         <input
                           value={ex.weight}
                           onChange={(e) => updateExercise(idx, 'weight', e.target.value)}
                           placeholder="Ağırlık"
-                          className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                          className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
                         />
                         <input
                           value={ex.rest}
                           onChange={(e) => updateExercise(idx, 'rest', e.target.value)}
                           placeholder="Dinlenme"
-                          className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                          className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
                         />
                       </div>
                       <input
@@ -646,7 +646,7 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
           />
 
           {/* Butonlar */}
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2">
             <div>
               {editingWorkoutId && (
                 <Button variant="secondary" onClick={handleDelete} disabled={saving}>

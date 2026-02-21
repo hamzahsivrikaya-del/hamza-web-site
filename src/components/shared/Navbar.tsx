@@ -49,32 +49,48 @@ export default function Navbar({ showNotifications = true }: NavbarProps) {
         </Link>
 
         {/* Sağ: Kullanıcı bilgileri */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 sm:gap-4">
           {showNotifications && <NotificationBell />}
           <span className="text-sm font-bold text-text-primary uppercase hidden sm:block">{userName}</span>
           <Link
             href="/dashboard/program"
-            className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:block"
+            className="p-2 sm:p-0 text-sm text-text-secondary hover:text-text-primary transition-colors"
+            title="Programım"
           >
-            Programım
+            <svg className="w-5 h-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z" />
+            </svg>
+            <span className="hidden sm:inline">Programım</span>
           </Link>
           <Link
             href="/dashboard/haftalik-ozet"
-            className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:block"
+            className="p-2 sm:p-0 text-sm text-text-secondary hover:text-text-primary transition-colors"
+            title="Haftalık Özet"
           >
-            Haftalık Özet
+            <svg className="w-5 h-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span className="hidden sm:inline">Haftalık Özet</span>
           </Link>
           <Link
             href="/dashboard/settings"
-            className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+            className="p-2 sm:p-0 text-sm text-text-secondary hover:text-text-primary transition-colors"
+            title="Ayarlar"
           >
-            Ayarlar
+            <svg className="w-5 h-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="hidden sm:inline">Ayarlar</span>
           </Link>
           <button
             onClick={handleLogout}
-            className="text-sm text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+            className="p-2 sm:p-0 text-sm text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+            title="Çıkış"
           >
-            Çıkış
+            <svg className="w-5 h-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className="hidden sm:inline">Çıkış</span>
           </button>
         </div>
       </div>

@@ -141,32 +141,26 @@ export default function MemberDetail({ member, packages, measurements, lessons }
 
           {/* Özet çubuk */}
           {(activePackage || latestMeasurement) && (
-            <div className="flex flex-wrap gap-4 sm:gap-6 py-3 border-t border-[#1A1A1A] mb-0.5">
+            <div className="grid grid-cols-1 sm:grid-cols-none sm:flex sm:flex-wrap gap-3 sm:gap-6 py-3 border-t border-[#1A1A1A] mb-0.5">
               {activePackage && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div className="flex items-center gap-3">
                   <div>
-                    <p style={{ fontSize: 10, color: '#374151', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>
-                      Aktif Paket
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 100, height: 4, background: '#1A1A1A', borderRadius: 2, overflow: 'hidden' }}>
+                    <p className="text-[10px] text-[#374151] uppercase tracking-widest mb-1">Aktif Paket</p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 sm:w-[100px] h-1 bg-[#1A1A1A] rounded-full overflow-hidden">
                         <div
-                          style={{
-                            height: '100%', background: '#DC2626', borderRadius: 2,
-                            width: `${(activePackage.used_lessons / activePackage.total_lessons) * 100}%`,
-                          }}
+                          className="h-full bg-primary rounded-full"
+                          style={{ width: `${(activePackage.used_lessons / activePackage.total_lessons) * 100}%` }}
                         />
                       </div>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F0E8' }}>
+                      <span className="text-[13px] font-semibold text-[#F5F0E8]">
                         {activePackage.used_lessons}/{activePackage.total_lessons}
                       </span>
                     </div>
                   </div>
                   <div>
-                    <p style={{ fontSize: 10, color: '#374151', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>
-                      Bitiş
-                    </p>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#F5F0E8' }}>
+                    <p className="text-[10px] text-[#374151] uppercase tracking-widest mb-1">Bitiş</p>
+                    <p className="text-[13px] font-semibold text-[#F5F0E8]">
                       {formatDate(activePackage.expire_date)}
                     </p>
                   </div>
@@ -174,17 +168,15 @@ export default function MemberDetail({ member, packages, measurements, lessons }
               )}
               {latestMeasurement && (
                 <div>
-                  <p style={{ fontSize: 10, color: '#374151', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>
-                    Son Ölçüm
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontWeight: 600 }}>
+                  <p className="text-[10px] text-[#374151] uppercase tracking-widest mb-1">Son Ölçüm</p>
+                  <div className="flex items-center gap-2.5 text-[13px] font-semibold">
                     {latestMeasurement.weight && (
-                      <span style={{ color: '#F5F0E8' }}>{latestMeasurement.weight} kg</span>
+                      <span className="text-[#F5F0E8]">{latestMeasurement.weight} kg</span>
                     )}
                     {latestMeasurement.body_fat_pct && (
-                      <span style={{ color: '#F97316' }}>{latestMeasurement.body_fat_pct}% yağ</span>
+                      <span className="text-orange-400">{latestMeasurement.body_fat_pct}% yağ</span>
                     )}
-                    <span style={{ fontSize: 11, color: '#374151', fontWeight: 400 }}>
+                    <span className="text-[11px] text-[#374151] font-normal">
                       {formatDateShort(latestMeasurement.date)}
                     </span>
                   </div>

@@ -9,7 +9,7 @@ export default function HomePage() {
       <LandingNavbar />
 
       {/* Hero */}
-      <section className="relative pt-32 pb-24 px-4 overflow-hidden">
+      <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-24 px-4 overflow-hidden">
         {/* Gradient arka plan */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#2a0000] via-[#120808] to-[#0a0505]" />
 
@@ -56,23 +56,23 @@ export default function HomePage() {
         <div className="relative max-w-6xl mx-auto text-center">
           <div className="mb-6"></div>
           <h1 className="animate-fade-up">
-            <span className="font-display text-6xl sm:text-7xl md:text-9xl tracking-wider block text-text-primary">HAMZA</span>
-            <span className="font-display text-5xl sm:text-6xl md:text-8xl tracking-wider block text-gradient">SİVRİKAYA</span>
+            <span className="font-display text-5xl sm:text-7xl md:text-9xl tracking-wider block text-text-primary">HAMZA</span>
+            <span className="font-display text-4xl sm:text-6xl md:text-8xl tracking-wider block text-gradient">SİVRİKAYA</span>
           </h1>
           <p className="text-lg sm:text-xl text-text-secondary mt-5 max-w-2xl mx-auto leading-relaxed animate-fade-up delay-200">
             Hedefinize ulaşmanız için yanınızdayım. Birebir antrenman programları,
             beslenme danışmanlığı ve sürekli takip ile sonuca odaklı çalışıyoruz.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 animate-fade-up delay-400">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-8 sm:mt-10 animate-fade-up delay-400">
             <a
               href="#iletisim"
-              className="px-8 py-3.5 bg-primary text-white rounded-lg text-lg font-medium hover:bg-primary-hover transition-all hover:shadow-lg hover:shadow-primary/25 press-effect"
+              className="w-full sm:w-auto text-center px-8 py-4 sm:py-3.5 bg-primary text-white rounded-lg text-base sm:text-lg font-medium hover:bg-primary-hover active:bg-primary-hover transition-all hover:shadow-lg hover:shadow-primary/25 press-effect"
             >
               İletişime Geç
             </a>
             <a
               href="#hizmetler"
-              className="px-8 py-3.5 bg-white/5 border border-white/10 text-text-primary rounded-lg text-lg font-medium hover:bg-white/10 transition-colors backdrop-blur-sm press-effect"
+              className="w-full sm:w-auto text-center px-8 py-4 sm:py-3.5 bg-white/5 border border-white/10 text-text-primary rounded-lg text-base sm:text-lg font-medium hover:bg-white/10 active:bg-white/10 transition-colors backdrop-blur-sm press-effect"
             >
               Hizmetleri Gör
             </a>
@@ -85,25 +85,25 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10" />
         <div className="relative max-w-6xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           <div className="animate-fade-up">
-            <div className="font-display text-5xl sm:text-6xl text-primary">
+            <div className="font-display text-4xl sm:text-5xl md:text-6xl text-primary">
               <AnimatedCounter end={5} suffix="+" />
             </div>
             <div className="text-sm text-text-secondary mt-1">Yıl Deneyim</div>
           </div>
           <div className="animate-fade-up delay-100">
-            <div className="font-display text-5xl sm:text-6xl text-primary">
+            <div className="font-display text-4xl sm:text-5xl md:text-6xl text-primary">
               <AnimatedCounter end={100} suffix="+" />
             </div>
             <div className="text-sm text-text-secondary mt-1">Mutlu Üye</div>
           </div>
           <div className="animate-fade-up delay-200">
-            <div className="font-display text-5xl sm:text-6xl text-primary">
+            <div className="font-display text-4xl sm:text-5xl md:text-6xl text-primary">
               <AnimatedCounter end={1000} suffix="+" />
             </div>
             <div className="text-sm text-text-secondary mt-1">Tamamlanan Ders</div>
           </div>
           <div className="animate-fade-up delay-300">
-            <div className="font-display text-5xl sm:text-6xl text-primary">
+            <div className="font-display text-4xl sm:text-5xl md:text-6xl text-primary">
               <AnimatedCounter end={95} prefix="%" />
             </div>
             <div className="text-sm text-text-secondary mt-1">Memnuniyet</div>
@@ -129,7 +129,7 @@ export default function HomePage() {
             </div>
             {/* Metin */}
             <div className="animate-fade-up delay-200">
-              <h2 className="font-display text-4xl sm:text-5xl tracking-wider mb-6">
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider mb-6">
                 BEN <span className="text-primary">HAMZA</span>
               </h2>
               <div className="space-y-4 text-text-secondary leading-relaxed">
@@ -180,7 +180,7 @@ export default function HomePage() {
 
         <div className="relative max-w-6xl mx-auto">
           <div className="text-center mb-12 animate-fade-up">
-            <h2 className="font-display text-4xl sm:text-5xl tracking-wider">HİZMETLER</h2>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider">HİZMETLER</h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
@@ -250,7 +250,7 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-primary/6 rounded-full blur-[100px]" />
         <div className="relative max-w-6xl mx-auto">
           <div className="text-center mb-12 animate-fade-up">
-            <h2 className="font-display text-4xl sm:text-5xl tracking-wider">KEŞFET</h2>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider">KEŞFET</h2>
             <p className="text-text-secondary mt-3">Ücretsiz içerikler ve araçlar</p>
           </div>
           <div className="grid sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
@@ -318,7 +318,7 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/10 rounded-full blur-[100px]" />
         <div className="relative max-w-6xl mx-auto">
           <div className="text-center mb-12 animate-fade-up">
-            <h2 className="font-display text-4xl sm:text-5xl tracking-wider">İLETİŞİM</h2>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider">İLETİŞİM</h2>
             <p className="text-text-secondary mt-3">Ücretsiz ön görüşme için hemen ulaşın</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl mx-auto">

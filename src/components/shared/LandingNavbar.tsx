@@ -39,7 +39,7 @@ export default function LandingNavbar() {
           {/* Mobil hamburger */}
           <button
             onClick={() => setOpen(!open)}
-            className="sm:hidden p-1.5 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+            className="sm:hidden p-2.5 -mr-2 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
             aria-label="Menü"
           >
             {open ? (
@@ -64,7 +64,7 @@ export default function LandingNavbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="px-3 py-3 text-sm text-text-secondary hover:text-text-primary hover:bg-surface rounded-lg transition-colors"
+                className="px-4 py-3.5 text-sm text-text-secondary hover:text-text-primary hover:bg-surface rounded-lg transition-colors active:bg-surface-hover"
               >
                 {link.label}
               </a>

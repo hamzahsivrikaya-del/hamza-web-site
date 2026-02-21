@@ -160,7 +160,7 @@ export default function RichTextEditor({ content, onChange }: Props) {
   return (
     <div className="border border-border rounded-xl overflow-hidden bg-background">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 p-2 border-b border-border bg-surface">
+      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-border bg-surface">
         {/* Font Seçici */}
         <div className="relative">
           <button
@@ -176,7 +176,7 @@ export default function RichTextEditor({ content, onChange }: Props) {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
             </svg>
-            <span className="max-w-[60px] truncate">{currentFont?.label || 'Font'}</span>
+            <span className="max-w-[80px] truncate">{currentFont?.label || 'Font'}</span>
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -325,8 +325,8 @@ export default function RichTextEditor({ content, onChange }: Props) {
             </div>
           </ToolbarButton>
           {showColorPicker && (
-            <div className="absolute top-full left-0 mt-1 bg-surface border border-border rounded-xl p-3 z-20 shadow-xl w-[220px]">
-              <div className="grid grid-cols-5 gap-0" style={{ gridTemplateColumns: 'repeat(5, 36px)', gridAutoRows: '36px' }}>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-1 bg-surface border border-border rounded-xl p-3 z-20 shadow-xl w-[200px]">
+              <div className="grid grid-cols-5 gap-0" style={{ gridTemplateColumns: 'repeat(5, 32px)', gridAutoRows: '32px' }}>
                 {colorPresets.map((c) => (
                   <button
                     key={c.value}
@@ -372,8 +372,8 @@ export default function RichTextEditor({ content, onChange }: Props) {
             </div>
           </ToolbarButton>
           {showHighlightPicker && (
-            <div className="absolute top-full left-0 mt-1 bg-surface border border-border rounded-xl p-3 z-20 shadow-xl">
-              <div className="grid grid-cols-6 gap-0" style={{ gridTemplateColumns: 'repeat(6, 36px)', gridAutoRows: '36px' }}>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-1 bg-surface border border-border rounded-xl p-3 z-20 shadow-xl">
+              <div className="grid grid-cols-6 gap-0" style={{ gridTemplateColumns: 'repeat(6, 32px)', gridAutoRows: '32px' }}>
                 {highlightColors.map((c) => (
                   <button
                     key={c.value}
@@ -418,7 +418,7 @@ export default function RichTextEditor({ content, onChange }: Props) {
             </svg>
           </ToolbarButton>
           {showImagePanel && (
-            <div className="absolute top-full right-0 mt-1 bg-surface border border-border rounded-lg p-3 z-20 shadow-xl min-w-[300px] space-y-3">
+            <div className="absolute top-full right-0 mt-1 bg-surface border border-border rounded-lg p-3 z-20 shadow-xl w-[calc(100vw-2rem)] sm:w-auto sm:min-w-[300px] max-w-[320px] space-y-3">
               {/* Dosyadan yükle */}
               <div>
                 <label className="text-[11px] text-text-secondary font-medium mb-1.5 block">Bilgisayardan Yükle</label>

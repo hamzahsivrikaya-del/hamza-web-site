@@ -11,7 +11,7 @@ export default function MobileSidebar() {
       {/* Hamburger butonu - sadece mobilde görünür */}
       <button
         onClick={() => setOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-surface rounded-lg border border-border cursor-pointer"
+        className="md:hidden fixed top-3 left-3 z-50 p-2.5 bg-surface rounded-lg border border-border cursor-pointer active:bg-surface-hover"
       >
         <svg className="w-5 h-5 text-text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />

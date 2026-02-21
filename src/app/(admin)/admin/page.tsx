@@ -77,33 +77,33 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Hızlı Aksiyonlar */}
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 sm:gap-3">
         <Link
           href="/admin/lessons/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors"
+          className="inline-flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-3 sm:py-2.5 bg-primary text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-primary-hover active:bg-primary-hover transition-colors"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
-          Ders Ekle
+          <span>Ders Ekle</span>
         </Link>
         <Link
           href="/admin/members?action=new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface border border-border text-text-primary rounded-lg text-sm font-medium hover:bg-surface-hover transition-colors"
+          className="inline-flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-3 sm:py-2.5 bg-surface border border-border text-text-primary rounded-lg text-xs sm:text-sm font-medium hover:bg-surface-hover active:bg-surface-hover transition-colors"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
           </svg>
-          Yeni Üye
+          <span>Yeni Üye</span>
         </Link>
         <Link
           href="/admin/measurements/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface border border-border text-text-primary rounded-lg text-sm font-medium hover:bg-surface-hover transition-colors"
+          className="inline-flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-3 sm:py-2.5 bg-surface border border-border text-text-primary rounded-lg text-xs sm:text-sm font-medium hover:bg-surface-hover active:bg-surface-hover transition-colors"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
-          Ölçüm Gir
+          <span>Ölçüm Gir</span>
         </Link>
       </div>
 
@@ -115,18 +115,20 @@ export default async function AdminDashboard() {
             <CardTitle>Paket Uyarıları</CardTitle>
           </CardHeader>
           {alertMembers.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {alertMembers.map((pkg) => {
                 const remaining = pkg.total_lessons - pkg.used_lessons
                 const isCompleted = pkg.status === 'completed'
                 return (
-                  <li key={pkg.user_id} className="flex items-center justify-between">
-                    <Link href={`/admin/members/${pkg.user_id}`} className="text-sm hover:text-primary transition-colors">
-                      {((pkg.users as unknown) as { full_name: string })?.full_name}
+                  <li key={pkg.user_id}>
+                    <Link href={`/admin/members/${pkg.user_id}`} className="flex items-center justify-between py-2 px-1 -mx-1 rounded-lg hover:bg-surface-hover active:bg-surface-hover transition-colors">
+                      <span className="text-sm text-text-primary">
+                        {((pkg.users as unknown) as { full_name: string })?.full_name}
+                      </span>
+                      <Badge variant={isCompleted || remaining <= 1 ? 'danger' : 'warning'}>
+                        {isCompleted ? 'Paket Bitti' : remaining === 1 ? 'Son 1 Ders' : 'Son 2 Ders'}
+                      </Badge>
                     </Link>
-                    <Badge variant={isCompleted || remaining <= 1 ? 'danger' : 'warning'}>
-                      {isCompleted ? 'Paket Bitti' : remaining === 1 ? 'Son 1 Ders' : 'Son 2 Ders'}
-                    </Badge>
                   </li>
                 )
               })}
