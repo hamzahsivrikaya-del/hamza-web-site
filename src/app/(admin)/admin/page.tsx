@@ -27,11 +27,11 @@ export default async function AdminDashboard() {
       .select('id')
       .gte('date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]),
 
-    // Aktif paketler (JS tarafında remaining hesaplanacak)
+    // Aktif + completed paketler (JS tarafında remaining hesaplanacak)
     supabase
       .from('packages')
-      .select('user_id, total_lessons, used_lessons, users(full_name)')
-      .eq('status', 'active'),
+      .select('user_id, total_lessons, used_lessons, status, users(full_name)')
+      .in('status', ['active', 'completed']),
 
     // 4+ gün gelmeyen aktif üyeler (aktif üyeler arasından son dersi 4+ gün önce olanlar)
     supabase
@@ -47,10 +47,14 @@ export default async function AdminDashboard() {
       .eq('date', new Date().toISOString().split('T')[0]),
   ])
 
-  // Son 2 dersi kalan üyeleri filtrele
-  const lowLessonMembers = (lowLessonMembers_raw || []).filter(
-    (pkg) => (pkg.total_lessons - pkg.used_lessons) > 0 && (pkg.total_lessons - pkg.used_lessons) <= 2
-  )
+  // Paket uyarıları: bitti (completed), son 1, son 2 — önem sırasına göre
+  const alertMembers = (lowLessonMembers_raw || [])
+    .filter((pkg) => pkg.status === 'completed' || (pkg.total_lessons - pkg.used_lessons) <= 2)
+    .sort((a, b) => {
+      const remA = a.status === 'completed' ? -1 : (a.total_lessons - a.used_lessons)
+      const remB = b.status === 'completed' ? -1 : (b.total_lessons - b.used_lessons)
+      return remA - remB
+    })
 
   return (
     <div className="space-y-6">
@@ -105,23 +109,27 @@ export default async function AdminDashboard() {
 
       {/* Uyarılar */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Son 2 ders kalan */}
+        {/* Paket Uyarıları */}
         <Card>
           <CardHeader>
-            <CardTitle>Son 2 Ders Kalan</CardTitle>
+            <CardTitle>Paket Uyarıları</CardTitle>
           </CardHeader>
-          {lowLessonMembers && lowLessonMembers.length > 0 ? (
+          {alertMembers.length > 0 ? (
             <ul className="space-y-2">
-              {lowLessonMembers.map((pkg: Record<string, unknown>) => (
-                <li key={pkg.user_id as string} className="flex items-center justify-between">
-                  <Link href={`/admin/members/${pkg.user_id}`} className="text-sm hover:text-primary transition-colors">
-                    {(pkg.users as Record<string, string>)?.full_name}
-                  </Link>
-                  <Badge variant="warning">
-                    {(pkg.total_lessons as number) - (pkg.used_lessons as number)} ders kaldı
-                  </Badge>
-                </li>
-              ))}
+              {alertMembers.map((pkg) => {
+                const remaining = pkg.total_lessons - pkg.used_lessons
+                const isCompleted = pkg.status === 'completed'
+                return (
+                  <li key={pkg.user_id} className="flex items-center justify-between">
+                    <Link href={`/admin/members/${pkg.user_id}`} className="text-sm hover:text-primary transition-colors">
+                      {((pkg.users as unknown) as { full_name: string })?.full_name}
+                    </Link>
+                    <Badge variant={isCompleted || remaining <= 1 ? 'danger' : 'warning'}>
+                      {isCompleted ? 'Paket Bitti' : remaining === 1 ? 'Son 1 Ders' : 'Son 2 Ders'}
+                    </Badge>
+                  </li>
+                )
+              })}
             </ul>
           ) : (
             <p className="text-sm text-text-secondary">Uyarı yok</p>

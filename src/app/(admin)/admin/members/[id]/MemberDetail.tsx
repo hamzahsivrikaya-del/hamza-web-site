@@ -482,15 +482,24 @@ export default function MemberDetail({ member, packages, measurements, lessons }
               { value: 'female', label: 'Kadın' },
             ]}
           />
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="is_active"
-              checked={editForm.is_active}
-              onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })}
-              className="rounded"
-            />
-            <label htmlFor="is_active" className="text-sm">Aktif üye</label>
+          <div className="flex items-center justify-between p-3 rounded-lg bg-background border border-border">
+            <div>
+              <p className="text-sm font-medium text-text-primary">Üye Durumu</p>
+              <p className="text-xs text-text-secondary mt-0.5">
+                {editForm.is_active ? 'Üye aktif — giriş yapabilir' : 'Üye pasif — giriş yapamaz'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setEditForm({ ...editForm, is_active: !editForm.is_active })}
+              className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
+                editForm.is_active ? 'bg-green-500' : 'bg-border'
+              }`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow-sm ${
+                editForm.is_active ? 'translate-x-5' : 'translate-x-0'
+              }`} />
+            </button>
           </div>
           <div className="flex gap-3 justify-end">
             <Button variant="secondary" onClick={() => setEditing(false)}>İptal</Button>
