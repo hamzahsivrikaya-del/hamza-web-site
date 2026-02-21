@@ -10,7 +10,7 @@ export default async function AdminDashboard() {
   const [
     { count: activeMembers },
     { data: weeklyLessons },
-    { data: lowLessonMembers },
+    { data: lowLessonMembers_raw },
     { data: inactiveMembers },
     { data: todayLessons },
   ] = await Promise.all([
@@ -27,12 +27,11 @@ export default async function AdminDashboard() {
       .select('id')
       .gte('date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]),
 
-    // Son 2 dersi kalan üyeler
+    // Aktif paketler (JS tarafında remaining hesaplanacak)
     supabase
       .from('packages')
       .select('user_id, total_lessons, used_lessons, users(full_name)')
-      .eq('status', 'active')
-      .filter('total_lessons - used_lessons', 'lte', 2),
+      .eq('status', 'active'),
 
     // 4+ gün gelmeyen aktif üyeler (aktif üyeler arasından son dersi 4+ gün önce olanlar)
     supabase
@@ -47,6 +46,11 @@ export default async function AdminDashboard() {
       .select('id, users(full_name), date')
       .eq('date', new Date().toISOString().split('T')[0]),
   ])
+
+  // Son 2 dersi kalan üyeleri filtrele
+  const lowLessonMembers = (lowLessonMembers_raw || []).filter(
+    (pkg) => (pkg.total_lessons - pkg.used_lessons) > 0 && (pkg.total_lessons - pkg.used_lessons) <= 2
+  )
 
   return (
     <div className="space-y-6">
