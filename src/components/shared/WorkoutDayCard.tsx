@@ -2,7 +2,53 @@
 
 import { useState } from 'react'
 import { getDayName } from '@/lib/utils'
-import type { Workout } from '@/lib/types'
+import type { Workout, WorkoutExercise } from '@/lib/types'
+
+function ExerciseBadges({ exercise }: { exercise: WorkoutExercise }) {
+  const { sets, reps, weight, rest } = exercise
+  if (!sets && !reps && !weight && !rest) return null
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-1.5">
+      {sets && (
+        <span className="text-[11px] bg-primary/10 text-primary px-2 py-0.5 rounded-md font-medium">
+          {sets} set
+        </span>
+      )}
+      {reps && (
+        <span className="text-[11px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-md font-medium">
+          {reps} tekrar
+        </span>
+      )}
+      {weight && (
+        <span className="text-[11px] bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded-md font-medium">
+          {weight}
+        </span>
+      )}
+      {rest && (
+        <span className="text-[11px] bg-green-500/10 text-green-400 px-2 py-0.5 rounded-md font-medium">
+          {rest} din.
+        </span>
+      )}
+    </div>
+  )
+}
+
+/** Mantıksal egzersiz sayısını hesapla (süper set = 1 hareket) */
+function getLogicalExerciseCount(exercises: WorkoutExercise[]): number {
+  const seen = new Set<number>()
+  let count = 0
+  for (const ex of exercises) {
+    if (ex.superset_group != null) {
+      if (!seen.has(ex.superset_group)) {
+        seen.add(ex.superset_group)
+        count++
+      }
+    } else {
+      count++
+    }
+  }
+  return count
+}
 
 interface Props {
   dayIndex: number
@@ -14,7 +60,7 @@ interface Props {
 export default function WorkoutDayCard({ dayIndex, workout, isToday, colSpan }: Props) {
   const [open, setOpen] = useState(isToday)
   const isSunday = dayIndex === 6
-  const exerciseCount = workout?.exercises?.length || 0
+  const exerciseCount = workout?.exercises ? getLogicalExerciseCount(workout.exercises) : 0
 
   return (
     <div
@@ -73,74 +119,86 @@ export default function WorkoutDayCard({ dayIndex, workout, isToday, colSpan }: 
         <div className="px-5 pb-5 pt-0">
           <div className="border-t border-border/50 pt-4">
             {workout.exercises && workout.exercises.length > 0 && (
-              <div className="space-y-2 mb-3">
+              <div className="mb-3">
                 {(() => {
                   const sorted = [...workout.exercises].sort((a, b) => a.order_num - b.order_num)
-                  return sorted.map((ex, j) => {
-                    const prevEx = j > 0 ? sorted[j - 1] : null
-                    const nextEx = j < sorted.length - 1 ? sorted[j + 1] : null
-                    const inSuperset = ex.superset_group != null
-                    const isFirstInGroup = inSuperset && (!prevEx || prevEx.superset_group !== ex.superset_group)
-                    const isLastInGroup = inSuperset && (!nextEx || nextEx.superset_group !== ex.superset_group)
-                    const isMidGroup = inSuperset && !isFirstInGroup && !isLastInGroup
+
+                  // Egzersizleri gruplara ayır (süper set = tek grup, normal = tek grup)
+                  const groups: { type: 'single' | 'superset'; exercises: typeof sorted }[] = []
+                  let i = 0
+                  while (i < sorted.length) {
+                    const ex = sorted[i]
+                    if (ex.superset_group != null) {
+                      const group = [ex]
+                      let k = i + 1
+                      while (k < sorted.length && sorted[k].superset_group === ex.superset_group) {
+                        group.push(sorted[k])
+                        k++
+                      }
+                      groups.push({ type: 'superset', exercises: group })
+                      i = k
+                    } else {
+                      groups.push({ type: 'single', exercises: [ex] })
+                      i++
+                    }
+                  }
+
+                  return groups.map((group, groupIdx) => {
+                    const num = groupIdx + 1
 
                     return (
-                      <div key={ex.id} className="relative">
-                        {/* Superset sol çizgi */}
-                        {inSuperset && (
-                          <div className={`absolute left-0 w-1 bg-primary rounded-full ${
-                            isFirstInGroup && isLastInGroup ? 'top-2 bottom-2'
-                            : isFirstInGroup ? 'top-2 bottom-0'
-                            : isLastInGroup ? 'top-0 bottom-2'
-                            : 'top-0 bottom-0'
-                          }`} />
+                      <div key={group.exercises[0].id}>
+                        {/* Ayırıcı — ilk grup hariç */}
+                        {groupIdx > 0 && (
+                          <div className="border-t border-border/30 my-3" />
                         )}
-                        {/* Superset etiketi */}
-                        {isFirstInGroup && (
-                          <div className="ml-4 mb-1">
-                            <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Süper Set</span>
-                          </div>
-                        )}
-                        <div className={`flex items-start gap-3 py-2 ${!isLastInGroup && !isMidGroup ? 'border-b border-border/50' : ''} ${inSuperset ? 'ml-4' : ''}`}>
-                          {!inSuperset && <span className="text-xs font-mono text-text-secondary w-5 pt-0.5">{j + 1}</span>}
-                          {inSuperset && !isFirstInGroup && (
-                            <span className="text-xs font-mono text-primary w-5 pt-0.5">+</span>
-                          )}
-                          {inSuperset && isFirstInGroup && (
-                            <span className="text-xs font-mono text-primary w-5 pt-0.5">{j + 1}</span>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm text-text-primary">{ex.name}</div>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {ex.sets && (
-                                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                                  {ex.sets} set
-                                </span>
-                              )}
-                              {ex.reps && (
-                                <span className="text-xs bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded">
-                                  {ex.reps} tekrar
-                                </span>
-                              )}
-                              {ex.weight && (
-                                <span className="text-xs bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded">
-                                  {ex.weight}
-                                </span>
-                              )}
-                              {ex.rest && (
-                                <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded">
-                                  {ex.rest} din.
-                                </span>
+
+                        {group.type === 'single' ? (
+                          /* Tek egzersiz */
+                          <div className="flex items-start gap-3">
+                            <span className="text-xs font-mono text-text-secondary/60 w-5 pt-0.5 text-right flex-shrink-0">
+                              {num}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm text-text-primary">{group.exercises[0].name}</div>
+                              <ExerciseBadges exercise={group.exercises[0]} />
+                              {group.exercises[0].notes && (
+                                <p className="text-xs text-text-secondary mt-1.5 italic">{group.exercises[0].notes}</p>
                               )}
                             </div>
-                            {ex.notes && (
-                              <p className="text-xs text-text-secondary mt-1 italic">{ex.notes}</p>
-                            )}
                           </div>
-                        </div>
-                        {/* Superset son egzersiz sonrası ayırıcı */}
-                        {isLastInGroup && j < sorted.length - 1 && (
-                          <div className="border-b border-border/50 mt-2" />
+                        ) : (
+                          /* Süper set grubu */
+                          <div className="flex items-start gap-3">
+                            <span className="text-xs font-mono text-primary w-5 pt-0.5 text-right flex-shrink-0">
+                              {num}
+                            </span>
+                            <div className="flex-1 min-w-0 border-l-2 border-primary pl-3 space-y-0">
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Süper Set</span>
+                              </div>
+                              {group.exercises.map((ex, exIdx) => (
+                                <div key={ex.id}>
+                                  {exIdx > 0 && (
+                                    <div className="flex items-center gap-2 py-1.5">
+                                      <span className="text-[10px] font-bold text-primary/50">+</span>
+                                      <div className="flex-1 border-t border-dashed border-primary/15" />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <div className="font-medium text-sm text-text-primary">{ex.name}</div>
+                                    <ExerciseBadges exercise={ex} />
+                                    {ex.notes && (
+                                      <p className="text-xs text-text-secondary mt-1.5 italic">{ex.notes}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         )}
                       </div>
                     )

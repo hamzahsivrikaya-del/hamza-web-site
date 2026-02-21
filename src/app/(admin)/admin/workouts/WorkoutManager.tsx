@@ -164,7 +164,33 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
     setExercises(prev => [...prev, { ...emptyExercise }])
   }
   function removeExercise(idx: number) {
-    setExercises(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev)
+    setExercises(prev => {
+      if (prev.length <= 1) return prev
+      const removing = prev[idx]
+      // Süper set egzersizini siliyorsak, grubun diğer üyelerini de kontrol et
+      if (removing.superset_group) {
+        const remaining = prev.filter((_, i) => i !== idx)
+        const sameGroup = remaining.filter(e => e.superset_group === removing.superset_group)
+        // Grupta tek eleman kaldıysa grup numarasını kaldır
+        if (sameGroup.length === 1) {
+          return remaining.map(e => e.superset_group === removing.superset_group ? { ...e, superset_group: '' } : e)
+        }
+        return remaining
+      }
+      return prev.filter((_, i) => i !== idx)
+    })
+  }
+  function addSuperset(idx: number) {
+    setExercises(prev => {
+      const current = prev[idx]
+      const groups = prev.map(e => e.superset_group ? parseInt(e.superset_group) : 0)
+      const groupNum = current.superset_group || (Math.max(...groups, 0) + 1).toString()
+      const updated = prev.map((e, i) => i === idx ? { ...e, superset_group: groupNum } : e)
+      // Yeni egzersizi hemen arkasına ekle
+      const newExercise = { ...emptyExercise, superset_group: groupNum }
+      updated.splice(idx + 1, 0, newExercise)
+      return updated
+    })
   }
 
   // Kaydet
@@ -517,46 +543,33 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
             <div className="space-y-3">
               {exercises.map((ex, idx) => {
                 const hasSuperset = ex.superset_group !== ''
-                const prevSameGroup = idx > 0 && ex.superset_group !== '' && exercises[idx - 1].superset_group === ex.superset_group
+                const prevSameGroup = idx > 0 && ex.superset_group !== '' && exercises[idx - 1]?.superset_group === ex.superset_group
                 const nextSameGroup = idx < exercises.length - 1 && ex.superset_group !== '' && exercises[idx + 1]?.superset_group === ex.superset_group
+                const isFirstInGroup = hasSuperset && !prevSameGroup
+                const isLastInGroup = hasSuperset && !nextSameGroup
+
+                // Süper set grubunun ilk elemanıysa veya süper set değilse ana kart olarak göster
+                const isMainExercise = !hasSuperset || isFirstInGroup
 
                 return (
-                  <div key={idx} className="relative">
-                    {/* Superset sol çizgi */}
-                    {hasSuperset && (prevSameGroup || nextSameGroup) && (
-                      <div className={`absolute left-0 w-1 bg-primary rounded-full ${
-                        prevSameGroup && nextSameGroup ? 'top-0 bottom-0'
-                        : prevSameGroup ? 'top-0 bottom-1/2'
-                        : 'top-1/2 bottom-0'
-                      }`} />
+                  <div key={idx}>
+                    {/* Süper set grubunun başlangıcı — sarmalayıcı */}
+                    {isFirstInGroup && (
+                      <div className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Süper Set
+                      </div>
                     )}
-                    <div className={`bg-background rounded-lg p-3 space-y-2 ${hasSuperset && (prevSameGroup || nextSameGroup) ? 'ml-3' : ''}`}>
+                    <div className={`bg-background rounded-lg p-3 space-y-2 ${
+                      hasSuperset ? 'border-l-2 border-l-primary ml-1' : ''
+                    } ${prevSameGroup ? 'rounded-t-none -mt-1 border-t border-t-primary/10' : ''}`}>
                       <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (hasSuperset) {
-                              updateExercise(idx, 'superset_group', '')
-                            } else {
-                              // Sonraki mevcut en yüksek grup + 1 ata
-                              const groups = exercises.map(e => e.superset_group ? parseInt(e.superset_group) : 0)
-                              const nextGroup = Math.max(...groups, 0) + 1
-                              updateExercise(idx, 'superset_group', nextGroup.toString())
-                            }
-                          }}
-                          className={`text-[10px] font-bold w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer ${
-                            hasSuperset
-                              ? 'bg-primary text-white'
-                              : 'bg-surface border border-border text-text-secondary hover:border-primary/50'
-                          }`}
-                          title={hasSuperset ? `Süper Set ${ex.superset_group}` : 'Süper set olarak işaretle'}
-                        >
-                          {hasSuperset ? ex.superset_group : 'SS'}
-                        </button>
                         <input
                           value={ex.name}
                           onChange={(e) => updateExercise(idx, 'name', e.target.value)}
-                          placeholder="Egzersiz adı"
+                          placeholder={hasSuperset && prevSameGroup ? 'Süper set hareketi' : 'Egzersiz adı'}
                           className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
                         />
                         {exercises.length > 1 && (
@@ -571,7 +584,7 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
                           </button>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pl-7">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <input
                           value={ex.sets}
                           onChange={(e) => updateExercise(idx, 'sets', e.target.value)}
@@ -597,14 +610,25 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
                           className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
                         />
                       </div>
-                      <div className="pl-7">
-                        <input
-                          value={ex.notes}
-                          onChange={(e) => updateExercise(idx, 'notes', e.target.value)}
-                          placeholder="Not (opsiyonel)"
-                          className="w-full bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                        />
-                      </div>
+                      <input
+                        value={ex.notes}
+                        onChange={(e) => updateExercise(idx, 'notes', e.target.value)}
+                        placeholder="Not (opsiyonel)"
+                        className="w-full bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                      />
+                      {/* Süper Set Ekle butonu — sadece grubun son elemanında veya süper set olmayan egzersizlerde */}
+                      {(!hasSuperset || isLastInGroup) && (
+                        <button
+                          type="button"
+                          onClick={() => addSuperset(idx)}
+                          className="flex items-center gap-1 text-[11px] text-primary/70 hover:text-primary transition-colors cursor-pointer pt-1"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Süper Set Ekle
+                        </button>
+                      )}
                     </div>
                   </div>
                 )
