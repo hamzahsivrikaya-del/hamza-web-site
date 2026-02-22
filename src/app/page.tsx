@@ -7,6 +7,30 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A]" style={{ fontFamily: 'var(--font-oswald), sans-serif' }}>
       <LandingNavbar />
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'LocalBusiness',
+            name: 'Hamza Sivrikaya - Kişisel Antrenör',
+            description: 'Antalya\'da kişisel antrenman, CrossFit, HYROX ve beslenme danışmanlığı hizmetleri.',
+            url: 'https://hamzasivrikaya.com',
+            telephone: '+905456814776',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: 'Antalya',
+              addressCountry: 'TR',
+            },
+            sameAs: [
+              'https://instagram.com/hamzasivrikayaa',
+              'https://wa.me/905456814776',
+            ],
+            priceRange: '$$',
+          }),
+        }}
+      />
+
       {/* ==================== HERO (Image right + Text left) ==================== */}
       <section id="hakkimda" className="relative min-h-screen flex items-center overflow-hidden bg-[#1A1A1A]">
         {/* Image — right side on desktop, full background on mobile */}
@@ -28,7 +52,7 @@ export default function HomePage() {
         <div className="relative w-full max-w-6xl mx-auto px-4 pt-28 pb-16 sm:pt-32 sm:pb-20">
           <div className="max-w-xl">
             {/* Label */}
-            <p className="text-xs uppercase tracking-[0.35em] text-white/50 font-medium mb-5 animate-fade-up">
+            <p className="text-xs uppercase tracking-[0.35em] text-white/65 font-medium mb-5 animate-fade-up">
               Kişisel Antrenör · Antalya
             </p>
 
@@ -44,7 +68,7 @@ export default function HomePage() {
             </p>
 
             {/* Short about */}
-            <p className="text-sm sm:text-base text-white/40 leading-relaxed mb-8 animate-fade-up delay-300">
+            <p className="text-sm sm:text-base text-white/60 leading-relaxed mb-8 animate-fade-up delay-300">
               Kişiye özel programlar, doğru teknik ve sürekli takiple hedefinize ulaşmanız için
               yanınızdayım. İster yeni başlayın, ister seviyenizi yükseltin — bulunduğunuz
               yerden başlıyoruz.
@@ -104,79 +128,79 @@ export default function HomePage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Birebir Antrenman */}
-            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-100 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 animate-fade-up delay-100 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 </div>
                 <div>
                   <h3 className="text-white font-bold mb-1">Birebir Antrenman</h3>
-                  <p className="text-sm text-white/45 leading-relaxed">Tamamen size özel tasarlanmış antrenman programları. Tek odak noktam sizin hedefiniz.</p>
+                  <p className="text-sm text-white/60 leading-relaxed">Tamamen size özel tasarlanmış antrenman programları. Tek odak noktam sizin hedefiniz.</p>
                 </div>
               </div>
             </div>
 
             {/* CrossFit */}
-            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-200 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 animate-fade-up delay-200 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 </div>
                 <div>
                   <h3 className="text-white font-bold mb-1">CrossFit & HYROX</h3>
-                  <p className="text-sm text-white/45 leading-relaxed">Doğru teknik, güvenli ilerleme. Olimpik kaldırışlardan jimnastiğe, seviyenize uygun CrossFit.</p>
+                  <p className="text-sm text-white/60 leading-relaxed">Doğru teknik, güvenli ilerleme. Olimpik kaldırışlardan jimnastiğe, seviyenize uygun CrossFit.</p>
                 </div>
               </div>
             </div>
 
             {/* Beslenme */}
-            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-300 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 animate-fade-up delay-300 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                 </div>
                 <div>
                   <h3 className="text-white font-bold mb-1">Beslenme Danışmanlığı</h3>
-                  <p className="text-sm text-white/45 leading-relaxed">Hedeflerinize uygun, sürdürülebilir ve yaşam tarzınıza entegre beslenme planları.</p>
+                  <p className="text-sm text-white/60 leading-relaxed">Hedeflerinize uygun, sürdürülebilir ve yaşam tarzınıza entegre beslenme planları.</p>
                 </div>
               </div>
             </div>
 
             {/* Ölçüm & Takip */}
-            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-400 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 animate-fade-up delay-400 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                 </div>
                 <div>
                   <h3 className="text-white font-bold mb-1">Ölçüm & Takip</h3>
-                  <p className="text-sm text-white/45 leading-relaxed">Düzenli vücut analizleri ve ilerleme raporlarıyla nerede olduğunuzu her zaman bilin.</p>
+                  <p className="text-sm text-white/60 leading-relaxed">Düzenli vücut analizleri ve ilerleme raporlarıyla nerede olduğunuzu her zaman bilin.</p>
                 </div>
               </div>
             </div>
 
             {/* Atletik Performans */}
-            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-500 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 animate-fade-up delay-500 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
                 </div>
                 <div>
                   <h3 className="text-white font-bold mb-1">Atletik Performans Koçluğu</h3>
-                  <p className="text-sm text-white/45 leading-relaxed">Hız, çeviklik ve patlayıcı güç odaklı programlarla performansınızı bir üst seviyeye taşıyın.</p>
+                  <p className="text-sm text-white/60 leading-relaxed">Hız, çeviklik ve patlayıcı güç odaklı programlarla performansınızı bir üst seviyeye taşıyın.</p>
                 </div>
               </div>
             </div>
 
             {/* Online Program */}
-            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-600 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 animate-fade-up delay-600 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                 </div>
                 <div>
                   <h3 className="text-white font-bold mb-1">Online Program</h3>
-                  <p className="text-sm text-white/45 leading-relaxed">Nerede olursanız olun, size özel hazırlanan haftalık program ve takiple antrenmanınızı sürdürün.</p>
+                  <p className="text-sm text-white/60 leading-relaxed">Nerede olursanız olun, size özel hazırlanan haftalık program ve takiple antrenmanınızı sürdürün.</p>
                 </div>
               </div>
             </div>
@@ -217,11 +241,11 @@ export default function HomePage() {
             <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-wider text-white leading-[0.95] mb-6 animate-fade-up delay-100">
               FORMDA KALMANIN<br /><span className="text-primary">BEDELİ YOK</span>
             </h2>
-            <p className="text-white/50 text-base sm:text-lg leading-relaxed mb-5 animate-fade-up delay-200">
+            <p className="text-white/65 text-base sm:text-lg leading-relaxed mb-5 animate-fade-up delay-200">
               Her pazartesi yepyeni bir program. Yapılandırılmış, detaylı set ve tekrar bilgileriyle
               hazırlanmış haftalık antrenmanlarla kendi hızında ilerle.
             </p>
-            <p className="text-white/35 text-sm leading-relaxed mb-10 animate-fade-up delay-300" style={{ fontFamily: 'var(--font-lora), serif', fontStyle: 'italic' }}>
+            <p className="text-white/55 text-sm leading-relaxed mb-10 animate-fade-up delay-300" style={{ fontFamily: 'var(--font-lora), serif', fontStyle: 'italic' }}>
               &ldquo;Başlamak için mükemmel zamanı bekleme. Bugün başla, yarın daha güçlü ol.&rdquo;
             </p>
             <Link href="/antrenmanlar" className="inline-flex items-center gap-3 px-10 py-4 bg-primary text-white text-sm font-bold uppercase tracking-widest hover:bg-primary-hover transition-all press-effect animate-fade-up delay-400">

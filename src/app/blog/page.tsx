@@ -4,6 +4,16 @@ import Card from '@/components/ui/Card'
 import Link from 'next/link'
 import LandingNavbar from '@/components/shared/LandingNavbar'
 import { formatDate } from '@/lib/utils'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Blog | Hamza Sivrikaya',
+  description: 'Fitness, antrenman teknikleri ve sağlıklı yaşam hakkında yazılar.',
+  openGraph: {
+    title: 'Blog | Hamza Sivrikaya',
+    description: 'Fitness, antrenman teknikleri ve sağlıklı yaşam hakkında yazılar.',
+  },
+}
 
 export default async function BlogPage() {
   const supabase = await createClient()

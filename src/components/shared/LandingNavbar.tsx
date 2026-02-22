@@ -43,6 +43,7 @@ export default function LandingNavbar() {
             onClick={() => setOpen(!open)}
             className="sm:hidden p-2.5 -mr-2 text-[#57534E] hover:text-[#1A1A1A] transition-colors cursor-pointer"
             aria-label="Menü"
+            aria-expanded={open}
           >
             {open ? (
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

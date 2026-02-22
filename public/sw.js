@@ -1,9 +1,12 @@
-const CACHE_NAME = 'hamza-sivrikaya-v1'
+const CACHE_NAME = 'hamza-sivrikaya-v2'
 
 const STATIC_ASSETS = [
   '/',
   '/login',
   '/manifest.json',
+  '/antrenmanlar',
+  '/araclar',
+  '/blog',
 ]
 
 // Install
