@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { updateProfile } from './actions'
@@ -204,9 +205,9 @@ export default function MemberSettingsPage() {
           <div className="mt-4 space-y-5">
             {/* Mevcut fotoğraf */}
             <div className="flex justify-center">
-              <div className="w-28 h-28 rounded-full bg-surface border-2 border-border overflow-hidden flex items-center justify-center">
+              <div className="relative w-28 h-28 rounded-full bg-surface border-2 border-border overflow-hidden flex items-center justify-center">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="Profil" className="w-full h-full object-cover" />
+                  <Image src={avatarUrl} alt="Profil" fill className="object-cover" sizes="112px" />
                 ) : (
                   <svg className="w-12 h-12 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />

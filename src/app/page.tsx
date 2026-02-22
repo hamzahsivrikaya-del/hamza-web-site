@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import LandingNavbar from '@/components/shared/LandingNavbar'
 
 export default function HomePage() {
@@ -10,10 +11,13 @@ export default function HomePage() {
       <section id="hakkimda" className="relative min-h-screen flex items-center overflow-hidden bg-[#1A1A1A]">
         {/* Image — right side on desktop, full background on mobile */}
         <div className="absolute inset-0 md:left-[40%]">
-          <img
+          <Image
             src="/images/hamza-about.jpg"
             alt="Hamza Sivrikaya - Kişisel Antrenör"
-            className="w-full h-full object-cover object-top"
+            fill
+            className="object-cover object-top"
+            priority
+            sizes="(max-width: 768px) 100vw, 60vw"
           />
           {/* Gradient overlays for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A] via-[#1A1A1A]/60 to-transparent md:bg-gradient-to-r md:from-[#1A1A1A] md:via-[#1A1A1A]/80 md:to-transparent" />
@@ -76,17 +80,17 @@ export default function HomePage() {
       <section id="hizmetler" className="relative py-20 sm:py-28 px-4 overflow-hidden">
         {/* Background — single image on mobile, 3 photos on lg+ */}
         <div className="absolute inset-0 lg:hidden">
-          <img src="/images/hamza-hyrox.jpg" alt="" className="w-full h-full object-cover object-top" />
+          <Image src="/images/hamza-hyrox.jpg" alt="" fill className="object-cover object-top" sizes="100vw" />
         </div>
         <div className="absolute inset-0 hidden lg:grid grid-cols-3">
           <div className="relative overflow-hidden">
-            <img src="/images/hamza-running.jpg" alt="" className="w-full h-full object-cover object-center" />
+            <Image src="/images/hamza-running.jpg" alt="" fill className="object-cover object-center" sizes="33vw" />
           </div>
           <div className="relative overflow-hidden">
-            <img src="/images/hamza-hyrox.jpg" alt="" className="w-full h-full object-cover object-top" />
+            <Image src="/images/hamza-hyrox.jpg" alt="" fill className="object-cover object-top" sizes="33vw" />
           </div>
           <div className="relative overflow-hidden">
-            <img src="/images/hamza-gym.jpg" alt="" className="w-full h-full object-cover object-center" />
+            <Image src="/images/hamza-gym.jpg" alt="" fill className="object-cover object-center" sizes="33vw" />
           </div>
         </div>
         {/* Dark overlay */}
@@ -193,10 +197,12 @@ export default function HomePage() {
       <section className="relative min-h-[70vh] sm:min-h-[80vh] flex items-center overflow-hidden bg-[#1A1A1A]">
         {/* Image — right side on desktop, full background on mobile */}
         <div className="absolute inset-0 md:left-[45%]">
-          <img
+          <Image
             src="/images/hamza-rope.jpg"
             alt="Hamza Sivrikaya ip tırmanışı"
-            className="w-full h-full object-cover object-bottom"
+            fill
+            className="object-cover object-bottom"
+            sizes="(max-width: 768px) 100vw, 55vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A] via-[#1A1A1A]/60 to-transparent md:bg-gradient-to-r md:from-[#1A1A1A] md:via-[#1A1A1A]/80 md:to-transparent" />
           <div className="absolute inset-0 bg-[#1A1A1A]/50 md:bg-transparent" />

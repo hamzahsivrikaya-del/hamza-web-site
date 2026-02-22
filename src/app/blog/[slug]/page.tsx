@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import LandingNavbar from '@/components/shared/LandingNavbar'
@@ -47,11 +48,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <main className="max-w-3xl mx-auto px-4 py-8">
 
           {post.cover_image && (
-            <img
-              src={post.cover_image}
-              alt={post.title}
-              className="w-full h-64 object-cover rounded-xl mb-6"
-            />
+            <div className="relative w-full h-64 mb-6">
+              <Image
+                src={post.cover_image}
+                alt={post.title}
+                fill
+                className="object-cover rounded-xl"
+                sizes="(max-width: 768px) 100vw, 768px"
+                priority
+              />
+            </div>
           )}
 
           <h1 className="text-3xl font-bold mb-2">{post.title}</h1>

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import Image from 'next/image'
 import Card from '@/components/ui/Card'
 import Link from 'next/link'
 import LandingNavbar from '@/components/shared/LandingNavbar'
@@ -33,11 +34,15 @@ export default async function BlogPage() {
                 <Link key={post.id} href={`/blog/${post.slug}`}>
                   <Card className="hover:border-primary/30 transition-colors cursor-pointer">
                     {post.cover_image && (
-                      <img
-                        src={post.cover_image}
-                        alt={post.title}
-                        className="w-full h-48 object-cover rounded-lg mb-4"
-                      />
+                      <div className="relative w-full h-48 mb-4">
+                        <Image
+                          src={post.cover_image}
+                          alt={post.title}
+                          fill
+                          className="object-cover rounded-lg"
+                          sizes="(max-width: 768px) 100vw, 768px"
+                        />
+                      </div>
                     )}
                     <h2 className="text-xl font-semibold">{post.title}</h2>
                     <p className="text-sm text-text-secondary mt-2">
