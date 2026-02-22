@@ -164,8 +164,8 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
       setOpenSections(usedSections)
     } else {
       setEditingWorkoutId(null)
-      setTitle(dayIndex === 6 ? 'Aktif Dinlenme' : '')
-      setContent(dayIndex === 6 ? 'Yürüyüş, yoga veya hafif esneme ile aktif toparlanma.' : '')
+      setTitle('')
+      setContent('')
       setWarmupText('')
       setCardioText('')
       setExercises([emptyExercise()])
@@ -501,13 +501,9 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
                     </>
                   ) : (
                     <div className="flex-1 flex items-center justify-center">
-                      {isSunday ? (
-                        <span className="text-xs text-text-secondary">Dinlenme günü</span>
-                      ) : (
-                        <svg className="w-8 h-8 text-border" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v12m6-6H6" />
-                        </svg>
-                      )}
+                      <svg className="w-8 h-8 text-border" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v12m6-6H6" />
+                      </svg>
                     </div>
                   )}
                 </button>

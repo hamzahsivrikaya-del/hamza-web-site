@@ -135,7 +135,6 @@ interface Props {
 
 export default function WorkoutDayCard({ dayIndex, workout, isToday, colSpan }: Props) {
   const [open, setOpen] = useState(isToday)
-  const isSunday = dayIndex === 6
   const exerciseCount = workout?.exercises ? getLogicalExerciseCount(workout.exercises) : 0
 
   // Egzersiz bazlı bölümleri grupla (sadece strength ve accessory)
@@ -166,13 +165,13 @@ export default function WorkoutDayCard({ dayIndex, workout, isToday, colSpan }: 
       <button
         onClick={() => workout && setOpen(!open)}
         className={`w-full flex items-center gap-3 px-4 py-5 sm:gap-4 sm:p-6 text-left transition-colors ${
-          workout || isSunday
+          workout
             ? 'bg-primary hover:bg-primary-hover cursor-pointer'
             : 'bg-gray-300 cursor-default'
         }`}
       >
         <div className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-sm sm:text-base font-bold flex-shrink-0 ${
-          workout || isSunday
+          workout
             ? 'bg-white/20 text-white'
             : 'bg-white/40 text-gray-500'
         }`}>
@@ -180,7 +179,7 @@ export default function WorkoutDayCard({ dayIndex, workout, isToday, colSpan }: 
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h2 className={`text-lg font-bold ${workout || isSunday ? 'text-white' : 'text-gray-500'}`}>
+            <h2 className={`text-lg font-bold ${workout ? 'text-white' : 'text-gray-500'}`}>
               {getDayName(dayIndex)}
             </h2>
             {isToday && <span className="text-xs bg-white/25 text-white px-2 py-0.5 rounded font-bold">BUGÜN</span>}
@@ -191,9 +190,7 @@ export default function WorkoutDayCard({ dayIndex, workout, isToday, colSpan }: 
               {exerciseCount > 0 && <span className="text-white/50"> · {exerciseCount} egzersiz</span>}
             </p>
           ) : (
-            <p className={`text-base mt-0.5 ${isSunday ? 'text-white/60' : 'text-gray-400'}`}>
-              {isSunday ? 'Aktif Dinlenme' : 'Antrenman yok'}
-            </p>
+            <p className="text-base mt-0.5 text-gray-400">Antrenman yok</p>
           )}
         </div>
         {workout && (
@@ -278,14 +275,6 @@ export default function WorkoutDayCard({ dayIndex, workout, isToday, colSpan }: 
         </div>
       )}
 
-      {/* Boş Pazar kartı */}
-      {!workout && isSunday && (
-        <div className="bg-white px-6 pb-5 pt-4">
-          <p className="text-center text-base text-text-secondary">
-            Yürüyüş, yoga veya hafif esneme ile aktif toparlanma
-          </p>
-        </div>
-      )}
     </div>
   )
 }
