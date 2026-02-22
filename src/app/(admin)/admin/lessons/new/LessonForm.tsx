@@ -42,6 +42,19 @@ export default function LessonForm({ activePackages }: { activePackages: ActiveP
       return
     }
 
+    // Aynı gün aynı üyeye ders var mı kontrol et
+    const { count } = await supabase
+      .from('lessons')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', selectedPkg.user_id)
+      .eq('date', date)
+
+    if (count && count > 0) {
+      setError('Bu üyeye bu tarihte zaten ders eklenmiş')
+      setSaving(false)
+      return
+    }
+
     const { error: insertError } = await supabase.from('lessons').insert({
       package_id: packageId,
       user_id: selectedPkg.user_id,
@@ -50,7 +63,11 @@ export default function LessonForm({ activePackages }: { activePackages: ActiveP
     })
 
     if (insertError) {
-      setError(insertError.message)
+      if (insertError.code === '23505') {
+        setError('Bu üyeye bu tarihte zaten ders eklenmiş')
+      } else {
+        setError(insertError.message)
+      }
     } else {
       // Kalan ders azsa push bildirimi gönder
       const remaining = selectedPkg.total_lessons - selectedPkg.used_lessons - 1

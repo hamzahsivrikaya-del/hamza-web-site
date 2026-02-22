@@ -6,9 +6,9 @@ export default async function NewPackagePage() {
 
   const { data: members } = await supabase
     .from('users')
-    .select('id, full_name')
+    .select('id, full_name, is_active')
     .eq('role', 'member')
-    .eq('is_active', true)
+    .order('is_active', { ascending: false })
     .order('full_name')
 
   return <PackageForm members={members || []} />

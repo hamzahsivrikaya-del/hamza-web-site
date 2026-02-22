@@ -26,7 +26,7 @@ function formatDate(iso: string): string {
   })
 }
 
-export default function PackageForm({ members }: { members: { id: string; full_name: string }[] }) {
+export default function PackageForm({ members }: { members: { id: string; full_name: string; is_active: boolean }[] }) {
   const router = useRouter()
   const [userId, setUserId] = useState('')
   const [packageType, setPackageType] = useState<'10' | '20' | '30' | 'custom'>('10')
@@ -85,7 +85,10 @@ export default function PackageForm({ members }: { members: { id: string; full_n
 
   const memberOptions = [
     { value: '', label: 'Üye seçin...' },
-    ...members.map((m) => ({ value: m.id, label: m.full_name })),
+    ...members.map((m) => ({
+      value: m.id,
+      label: m.is_active ? m.full_name : `${m.full_name} (Pasif)`,
+    })),
   ]
 
   const packageOptions = [
