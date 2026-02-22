@@ -74,8 +74,11 @@ export default function HomePage() {
 
       {/* ==================== SERVICES (Photo collage background) ==================== */}
       <section id="hizmetler" className="relative py-20 sm:py-28 px-4 overflow-hidden">
-        {/* 3 photos side by side as background collage */}
-        <div className="absolute inset-0 grid grid-cols-3">
+        {/* Background — single image on mobile, 3 photos on lg+ */}
+        <div className="absolute inset-0 lg:hidden">
+          <img src="/images/hamza-hyrox.jpg" alt="" className="w-full h-full object-cover object-top" />
+        </div>
+        <div className="absolute inset-0 hidden lg:grid grid-cols-3">
           <div className="relative overflow-hidden">
             <img src="/images/hamza-running.jpg" alt="" className="w-full h-full object-cover object-center" />
           </div>
@@ -87,8 +90,8 @@ export default function HomePage() {
           </div>
         </div>
         {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/30" />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/20" />
 
         <div className="relative max-w-6xl mx-auto">
           <div className="text-center mb-16 animate-fade-up">
