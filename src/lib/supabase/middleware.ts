@@ -40,6 +40,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/login') ||
     pathname.startsWith('/blog') ||
     pathname.startsWith('/araclar') ||
+    pathname.startsWith('/antrenmanlar') ||
     pathname === '/' ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
