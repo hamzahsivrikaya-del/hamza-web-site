@@ -48,16 +48,16 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Arka plan efektleri */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#1a0505] via-background to-[#0a0510]" />
-      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]" />
-      <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-primary/8 rounded-full blur-[100px]" />
+      {/* Arka plan */}
+      <div className="absolute inset-0 bg-[#FAFAFA]" />
+      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
+      <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-primary/4 rounded-full blur-[100px]" />
 
       {/* Geometrik pattern */}
-      <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+      <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="login-grid" width="60" height="60" patternUnits="userSpaceOnUse">
-            <path d="M 60 0 L 0 60" stroke="#DC2626" strokeWidth="0.5" fill="none" />
+            <path d="M 60 0 L 0 60" stroke="#000000" strokeWidth="0.5" fill="none" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#login-grid)" />

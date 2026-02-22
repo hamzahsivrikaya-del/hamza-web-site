@@ -70,15 +70,15 @@ export default function ProgressChart({ measurements, gender }: { measurements: 
           <div className="h-[220px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" />
-                <XAxis dataKey="date" stroke="#9CA3AF" fontSize={11} tick={{ fontSize: 10 }} />
-                <YAxis stroke="#9CA3AF" fontSize={11} tick={{ fontSize: 10 }} width={35} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="date" stroke="var(--color-text-secondary)" fontSize={11} tick={{ fontSize: 10 }} />
+                <YAxis stroke="var(--color-text-secondary)" fontSize={11} tick={{ fontSize: 10 }} width={35} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1A1A1A',
-                    border: '1px solid #2A2A2A',
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: '8px',
-                    color: '#F5F0E8',
+                    color: 'var(--color-text-primary)',
                   }}
                 />
                 <Legend />

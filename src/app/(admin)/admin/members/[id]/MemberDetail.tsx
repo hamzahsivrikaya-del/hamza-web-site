@@ -57,8 +57,8 @@ export default function MemberDetail({ member, packages, measurements, lessons }
   }
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
-    { key: 'overview',     label: 'Genel Bakış' },
-    { key: 'measurements', label: 'Ölçümler',   count: measurements.length },
+    { key: 'overview',     label: 'Genel Bakis' },
+    { key: 'measurements', label: 'Olcumler',   count: measurements.length },
     { key: 'packages',     label: 'Paketler',    count: packages.length },
     { key: 'lessons',      label: 'Dersler',     count: lessons.length },
   ]
@@ -66,20 +66,20 @@ export default function MemberDetail({ member, packages, measurements, lessons }
   return (
     <div className="min-h-screen -mt-6 -mx-4 sm:-mx-6 lg:-mx-8">
 
-      {/* ── Hero + Tab bar ── */}
-      <div style={{ background: '#0D0D0D', borderBottom: '1px solid #1E1E1E' }}>
+      {/* -- Hero + Tab bar -- */}
+      <div className="bg-surface border-b border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
 
-          {/* Üst satır: Geri + Aksiyonlar */}
+          {/* Ust satir: Geri + Aksiyonlar */}
           <div className="flex items-center justify-between pt-4 sm:pt-6 pb-4 sm:pb-5">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-1.5 text-[#4B5563] hover:text-[#F5F0E8] transition-colors text-sm cursor-pointer"
+              className="flex items-center gap-1.5 text-text-secondary hover:text-text-primary transition-colors text-sm cursor-pointer"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              Üyeler
+              Uyeler
             </button>
             <div className="flex gap-2">
               {measurements.length > 0 && (
@@ -99,68 +99,65 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   Rapor PDF
                 </Button>
               )}
-              <Button variant="secondary" onClick={() => setEditing(true)}>Düzenle</Button>
+              <Button variant="secondary" onClick={() => setEditing(true)}>Duzenle</Button>
             </div>
           </div>
 
-          {/* Üye kimliği */}
+          {/* Uye kimligi */}
           <div className="flex items-center gap-3 sm:gap-4 pb-4 sm:pb-5">
             {/* Monogram avatar */}
             <div className="relative shrink-0">
-              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center"
-                style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.25)' }}
-              >
-                <span className="text-base sm:text-lg font-bold text-[#DC2626] -tracking-wide">{initials}</span>
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center bg-primary/10 border border-primary/25">
+                <span className="text-base sm:text-lg font-bold text-primary -tracking-wide">{initials}</span>
               </div>
               <div
-                className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border-2 border-[#0D0D0D]"
-                style={{ background: member.is_active ? '#22C55E' : '#374151' }}
+                className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border-2 border-surface ${member.is_active ? 'bg-success' : 'bg-text-secondary/40'}`}
               />
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 sm:gap-3 mb-1">
-                <h1 className="text-lg sm:text-xl font-bold text-[#F5F0E8] tracking-tight truncate">{member.full_name}</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-text-primary tracking-tight truncate">{member.full_name}</h1>
                 <Badge variant={member.is_active ? 'success' : 'default'}>
                   {member.is_active ? 'Aktif' : 'Pasif'}
                 </Badge>
               </div>
-              <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-xs sm:text-sm text-[#4B5563]">
+              <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-xs sm:text-sm text-text-secondary">
                 <span className="truncate max-w-[180px] sm:max-w-none">{member.email}</span>
                 {member.phone && (
                   <>
-                    <span className="text-[#2A2A2A]">·</span>
+                    <span className="text-border">·</span>
                     <span>{member.phone}</span>
                   </>
                 )}
-                <span className="text-[#2A2A2A]">·</span>
-                <span>Üyelik: {formatDate(member.start_date)}</span>
+                <span className="text-border">·</span>
+                <span>Uyelik: {formatDate(member.start_date)}</span>
               </div>
             </div>
           </div>
 
-          {/* Özet çubuk */}
+          {/* Ozet cubuk */}
           {(activePackage || latestMeasurement) && (
-            <div className="grid grid-cols-1 sm:grid-cols-none sm:flex sm:flex-wrap gap-3 sm:gap-6 py-3 border-t border-[#1A1A1A] mb-0.5">
+            <div className="grid grid-cols-1 sm:grid-cols-none sm:flex sm:flex-wrap gap-3 sm:gap-6 py-3 border-t border-border mb-0.5">
               {activePackage && (
                 <div className="flex items-center gap-3">
                   <div>
-                    <p className="text-[10px] text-[#374151] uppercase tracking-widest mb-1">Aktif Paket</p>
+                    <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1">Aktif Paket</p>
                     <div className="flex items-center gap-2">
-                      <div className="w-20 sm:w-[100px] h-1 bg-[#1A1A1A] rounded-full overflow-hidden">
+                      <div className="w-20 sm:w-[100px] h-1 bg-border rounded-full overflow-hidden">
                         <div
                           className="h-full bg-primary rounded-full"
                           style={{ width: `${(activePackage.used_lessons / activePackage.total_lessons) * 100}%` }}
                         />
                       </div>
-                      <span className="text-[13px] font-semibold text-[#F5F0E8]">
+                      <span className="text-[13px] font-semibold text-text-primary">
                         {activePackage.used_lessons}/{activePackage.total_lessons}
                       </span>
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] text-[#374151] uppercase tracking-widest mb-1">Bitiş</p>
-                    <p className="text-[13px] font-semibold text-[#F5F0E8]">
+                    <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1">Bitis</p>
+                    <p className="text-[13px] font-semibold text-text-primary">
                       {formatDate(activePackage.expire_date)}
                     </p>
                   </div>
@@ -168,15 +165,15 @@ export default function MemberDetail({ member, packages, measurements, lessons }
               )}
               {latestMeasurement && (
                 <div>
-                  <p className="text-[10px] text-[#374151] uppercase tracking-widest mb-1">Son Ölçüm</p>
+                  <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1">Son Olcum</p>
                   <div className="flex items-center gap-2.5 text-[13px] font-semibold">
                     {latestMeasurement.weight && (
-                      <span className="text-[#F5F0E8]">{latestMeasurement.weight} kg</span>
+                      <span className="text-text-primary">{latestMeasurement.weight} kg</span>
                     )}
                     {latestMeasurement.body_fat_pct && (
-                      <span className="text-orange-400">{latestMeasurement.body_fat_pct}% yağ</span>
+                      <span className="text-orange-500">{latestMeasurement.body_fat_pct}% yag</span>
                     )}
-                    <span className="text-[11px] text-[#374151] font-normal">
+                    <span className="text-[11px] text-text-secondary font-normal">
                       {formatDateShort(latestMeasurement.date)}
                     </span>
                   </div>
@@ -193,8 +190,8 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                 onClick={() => setActiveTab(tab.key)}
                 className={`px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === tab.key
-                    ? 'border-[#DC2626] text-[#F5F0E8]'
-                    : 'border-transparent text-[#4B5563] hover:text-[#9CA3AF]'
+                    ? 'border-primary text-text-primary'
+                    : 'border-transparent text-text-secondary hover:text-text-primary'
                 }`}
               >
                 {tab.label}
@@ -202,8 +199,8 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   <span
                     className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
                       activeTab === tab.key
-                        ? 'bg-[#DC2626]/20 text-[#DC2626]'
-                        : 'bg-[#1A1A1A] text-[#374151]'
+                        ? 'bg-primary/15 text-primary'
+                        : 'bg-surface-hover text-text-secondary'
                     }`}
                   >
                     {tab.count}
@@ -215,118 +212,118 @@ export default function MemberDetail({ member, packages, measurements, lessons }
         </div>
       </div>
 
-      {/* ── Tab içerikleri ── */}
+      {/* -- Tab icerikleri -- */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
 
-        {/* GENEL BAKIŞ */}
+        {/* GENEL BAKIS */}
         {activeTab === 'overview' && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-              {/* Kişisel Bilgiler */}
-              <div className="rounded-xl border border-[#1E1E1E] p-5" style={{ background: '#0D0D0D' }}>
-                <p className="text-[10px] text-[#374151] uppercase tracking-widest mb-4">Kişisel Bilgiler</p>
+              {/* Kisisel Bilgiler */}
+              <div className="rounded-xl border border-border p-5 bg-surface">
+                <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-4">Kisisel Bilgiler</p>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs text-[#374151] mb-0.5">E-posta</p>
-                    <p className="text-sm text-[#F5F0E8] break-all">{member.email}</p>
+                    <p className="text-xs text-text-secondary mb-0.5">E-posta</p>
+                    <p className="text-sm text-text-primary break-all">{member.email}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-[#374151] mb-0.5">Telefon</p>
-                    <p className="text-sm text-[#F5F0E8]">{member.phone || '—'}</p>
+                    <p className="text-xs text-text-secondary mb-0.5">Telefon</p>
+                    <p className="text-sm text-text-primary">{member.phone || '\u2014'}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-[#374151] mb-0.5">Cinsiyet</p>
-                    <p className="text-sm text-[#F5F0E8]">
-                      {member.gender === 'male' ? 'Erkek' : member.gender === 'female' ? 'Kadın' : '—'}
+                    <p className="text-xs text-text-secondary mb-0.5">Cinsiyet</p>
+                    <p className="text-sm text-text-primary">
+                      {member.gender === 'male' ? 'Erkek' : member.gender === 'female' ? 'Kadin' : '\u2014'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-[#374151] mb-0.5">Üyelik Başlangıcı</p>
-                    <p className="text-sm text-[#F5F0E8]">{formatDate(member.start_date)}</p>
+                    <p className="text-xs text-text-secondary mb-0.5">Uyelik Baslangici</p>
+                    <p className="text-sm text-text-primary">{formatDate(member.start_date)}</p>
                   </div>
                 </div>
               </div>
 
               {/* Aktif Paket */}
-              <div className="rounded-xl border border-[#1E1E1E] p-5" style={{ background: '#0D0D0D' }}>
-                <p className="text-[10px] text-[#374151] uppercase tracking-widest mb-4">Aktif Paket</p>
+              <div className="rounded-xl border border-border p-5 bg-surface">
+                <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-4">Aktif Paket</p>
                 {activePackage ? (
                   <div className="space-y-4">
                     <div className="flex items-end justify-between">
                       <div>
-                        <p className="text-3xl font-bold text-[#F5F0E8]">
+                        <p className="text-3xl font-bold text-text-primary">
                           {activePackage.total_lessons - activePackage.used_lessons}
                         </p>
-                        <p className="text-xs text-[#374151]">kalan ders</p>
+                        <p className="text-xs text-text-secondary">kalan ders</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-[#9CA3AF]">{activePackage.used_lessons}/{activePackage.total_lessons}</p>
-                        <p className="text-xs text-[#374151]">kullanıldı</p>
+                        <p className="text-sm text-text-secondary">{activePackage.used_lessons}/{activePackage.total_lessons}</p>
+                        <p className="text-xs text-text-secondary">kullanildi</p>
                       </div>
                     </div>
-                    <div className="h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-border rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-[#DC2626] rounded-full"
+                        className="h-full bg-primary rounded-full"
                         style={{ width: `${(activePackage.used_lessons / activePackage.total_lessons) * 100}%` }}
                       />
                     </div>
-                    <p className="text-xs text-[#374151]">Bitiş: {formatDate(activePackage.expire_date)}</p>
+                    <p className="text-xs text-text-secondary">Bitis: {formatDate(activePackage.expire_date)}</p>
                   </div>
                 ) : (
-                  <p className="text-sm text-[#374151]">Aktif paket yok</p>
+                  <p className="text-sm text-text-secondary">Aktif paket yok</p>
                 )}
               </div>
 
-              {/* Son Ölçüm */}
-              <div className="rounded-xl border border-[#1E1E1E] p-5" style={{ background: '#0D0D0D' }}>
-                <p className="text-[10px] text-[#374151] uppercase tracking-widest mb-4">Son Ölçüm</p>
+              {/* Son Olcum */}
+              <div className="rounded-xl border border-border p-5 bg-surface">
+                <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-4">Son Olcum</p>
                 {latestMeasurement ? (
                   <div>
-                    <p className="text-xs text-[#374151] mb-3">{formatDate(latestMeasurement.date)}</p>
+                    <p className="text-xs text-text-secondary mb-3">{formatDate(latestMeasurement.date)}</p>
                     <div className="grid grid-cols-2 gap-2">
                       {latestMeasurement.weight && (
-                        <div className="bg-[#111] rounded-lg p-2.5 border border-[#1E1E1E]">
-                          <p className="text-lg font-bold text-[#F5F0E8]">{latestMeasurement.weight}</p>
-                          <p className="text-[10px] text-[#374151]">kg</p>
+                        <div className="bg-surface-hover rounded-lg p-2.5 border border-border">
+                          <p className="text-lg font-bold text-text-primary">{latestMeasurement.weight}</p>
+                          <p className="text-[10px] text-text-secondary">kg</p>
                         </div>
                       )}
                       {latestMeasurement.body_fat_pct && (
-                        <div className="bg-[#111] rounded-lg p-2.5 border border-[#1E1E1E]">
-                          <p className="text-lg font-bold text-orange-400">{latestMeasurement.body_fat_pct}%</p>
-                          <p className="text-[10px] text-[#374151]">yağ</p>
+                        <div className="bg-surface-hover rounded-lg p-2.5 border border-border">
+                          <p className="text-lg font-bold text-orange-500">{latestMeasurement.body_fat_pct}%</p>
+                          <p className="text-[10px] text-text-secondary">yag</p>
                         </div>
                       )}
                       {latestMeasurement.waist && (
-                        <div className="bg-[#111] rounded-lg p-2.5 border border-[#1E1E1E]">
-                          <p className="text-lg font-bold text-[#F5F0E8]">{latestMeasurement.waist}</p>
-                          <p className="text-[10px] text-[#374151]">bel cm</p>
+                        <div className="bg-surface-hover rounded-lg p-2.5 border border-border">
+                          <p className="text-lg font-bold text-text-primary">{latestMeasurement.waist}</p>
+                          <p className="text-[10px] text-text-secondary">bel cm</p>
                         </div>
                       )}
                       {latestMeasurement.arm && (
-                        <div className="bg-[#111] rounded-lg p-2.5 border border-[#1E1E1E]">
-                          <p className="text-lg font-bold text-[#F5F0E8]">{latestMeasurement.arm}</p>
-                          <p className="text-[10px] text-[#374151]">kol cm</p>
+                        <div className="bg-surface-hover rounded-lg p-2.5 border border-border">
+                          <p className="text-lg font-bold text-text-primary">{latestMeasurement.arm}</p>
+                          <p className="text-[10px] text-text-secondary">kol cm</p>
                         </div>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-[#374151]">Ölçüm yok</p>
+                  <p className="text-sm text-text-secondary">Olcum yok</p>
                 )}
               </div>
             </div>
 
-            {/* Son Dersler — özet */}
-            <div className="rounded-xl border border-[#1E1E1E] p-5" style={{ background: '#0D0D0D' }}>
+            {/* Son Dersler -- ozet */}
+            <div className="rounded-xl border border-border p-5 bg-surface">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-[10px] text-[#374151] uppercase tracking-widest">Son Dersler</p>
+                <p className="text-[10px] text-text-secondary uppercase tracking-widest">Son Dersler</p>
                 {lessons.length > 5 && (
                   <button
                     onClick={() => setActiveTab('lessons')}
-                    className="text-xs text-[#DC2626] hover:text-[#EF4444] transition-colors cursor-pointer"
+                    className="text-xs text-primary hover:text-primary-hover transition-colors cursor-pointer"
                   >
-                    Tümünü gör →
+                    Tumunu gor →
                   </button>
                 )}
               </div>
@@ -335,30 +332,30 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   {lessons.slice(0, 5).map((lesson, i) => (
                     <div
                       key={lesson.id}
-                      className="flex items-center justify-between py-2.5 border-b border-[#111] last:border-0"
+                      className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0"
                     >
-                      <span className="text-sm text-[#9CA3AF]">{formatDate(lesson.date)}</span>
+                      <span className="text-sm text-text-secondary">{formatDate(lesson.date)}</span>
                       {lesson.notes && (
-                        <span className="text-sm text-[#374151] truncate max-w-[120px] sm:max-w-[200px]">{lesson.notes}</span>
+                        <span className="text-sm text-text-secondary truncate max-w-[120px] sm:max-w-[200px]">{lesson.notes}</span>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-[#374151]">Ders kaydı yok</p>
+                <p className="text-sm text-text-secondary">Ders kaydi yok</p>
               )}
             </div>
           </div>
         )}
 
-        {/* ÖLÇÜMLER */}
+        {/* OLCUMLER */}
         {activeTab === 'measurements' && (
           <div>
             {measurements.length > 0 ? (
               <ProgressChart measurements={[...measurements].reverse()} gender={member.gender} />
             ) : (
-              <div className="rounded-xl border border-[#1E1E1E] p-16 text-center" style={{ background: '#0D0D0D' }}>
-                <p className="text-[#374151]">Henüz ölçüm kaydı yok</p>
+              <div className="rounded-xl border border-border p-16 text-center bg-surface">
+                <p className="text-text-secondary">Henuz olcum kaydi yok</p>
               </div>
             )}
           </div>
@@ -371,16 +368,14 @@ export default function MemberDetail({ member, packages, measurements, lessons }
               packages.map((pkg) => (
                 <div
                   key={pkg.id}
-                  className="rounded-xl border p-5"
-                  style={{
-                    background: '#0D0D0D',
-                    borderColor: pkg.status === 'active' ? 'rgba(220,38,38,0.25)' : '#1E1E1E',
-                  }}
+                  className={`rounded-xl border p-5 bg-surface ${
+                    pkg.status === 'active' ? 'border-primary/25' : 'border-border'
+                  }`}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <p className="font-semibold text-[#F5F0E8]">{pkg.total_lessons} Ders Paketi</p>
-                      <p className="text-xs text-[#374151] mt-0.5">{formatDate(pkg.start_date)}</p>
+                      <p className="font-semibold text-text-primary">{pkg.total_lessons} Ders Paketi</p>
+                      <p className="text-xs text-text-secondary mt-0.5">{formatDate(pkg.start_date)}</p>
                     </div>
                     <Badge
                       variant={pkg.status === 'active' ? 'success' : pkg.status === 'expired' ? 'danger' : 'default'}
@@ -389,26 +384,23 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                     </Badge>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex justify-between text-xs text-[#374151]">
-                      <span>{pkg.used_lessons} kullanıldı</span>
+                    <div className="flex justify-between text-xs text-text-secondary">
+                      <span>{pkg.used_lessons} kullanildi</span>
                       <span>{pkg.total_lessons - pkg.used_lessons} kalan</span>
                     </div>
-                    <div className="h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-border rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${(pkg.used_lessons / pkg.total_lessons) * 100}%`,
-                          background: pkg.status === 'active' ? '#DC2626' : '#374151',
-                        }}
+                        className={`h-full rounded-full ${pkg.status === 'active' ? 'bg-primary' : 'bg-text-secondary/40'}`}
+                        style={{ width: `${(pkg.used_lessons / pkg.total_lessons) * 100}%` }}
                       />
                     </div>
-                    <p className="text-xs text-[#374151]">Bitiş: {formatDate(pkg.expire_date)}</p>
+                    <p className="text-xs text-text-secondary">Bitis: {formatDate(pkg.expire_date)}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="rounded-xl border border-[#1E1E1E] p-16 text-center" style={{ background: '#0D0D0D' }}>
-                <p className="text-[#374151]">Paket geçmişi yok</p>
+              <div className="rounded-xl border border-border p-16 text-center bg-surface">
+                <p className="text-text-secondary">Paket gecmisi yok</p>
               </div>
             )}
           </div>
@@ -416,15 +408,15 @@ export default function MemberDetail({ member, packages, measurements, lessons }
 
         {/* DERSLER */}
         {activeTab === 'lessons' && (
-          <div className="rounded-xl border border-[#1E1E1E] overflow-hidden" style={{ background: '#0D0D0D' }}>
+          <div className="rounded-xl border border-border overflow-hidden bg-surface">
             {lessons.length > 0 ? (
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid #1A1A1A' }}>
-                    <th className="text-left px-3 sm:px-5 py-3 text-[10px] text-[#374151] uppercase tracking-widest font-medium">
+                  <tr className="border-b border-border">
+                    <th className="text-left px-3 sm:px-5 py-3 text-[10px] text-text-secondary uppercase tracking-widest font-medium">
                       Tarih
                     </th>
-                    <th className="text-left px-3 sm:px-5 py-3 text-[10px] text-[#374151] uppercase tracking-widest font-medium">
+                    <th className="text-left px-3 sm:px-5 py-3 text-[10px] text-text-secondary uppercase tracking-widest font-medium">
                       Not
                     </th>
                   </tr>
@@ -433,25 +425,25 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   {lessons.map((lesson, i) => (
                     <tr
                       key={lesson.id}
-                      style={{ borderBottom: i < lessons.length - 1 ? '1px solid #111' : 'none' }}
+                      className={i < lessons.length - 1 ? 'border-b border-border/50' : ''}
                     >
-                      <td className="px-3 sm:px-5 py-3 text-[#9CA3AF] whitespace-nowrap">{formatDate(lesson.date)}</td>
-                      <td className="px-3 sm:px-5 py-3 text-[#374151] truncate max-w-[150px] sm:max-w-none">{lesson.notes || '—'}</td>
+                      <td className="px-3 sm:px-5 py-3 text-text-secondary whitespace-nowrap">{formatDate(lesson.date)}</td>
+                      <td className="px-3 sm:px-5 py-3 text-text-secondary truncate max-w-[150px] sm:max-w-none">{lesson.notes || '\u2014'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
               <div className="p-16 text-center">
-                <p className="text-[#374151]">Ders kaydı yok</p>
+                <p className="text-text-secondary">Ders kaydi yok</p>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* ── Düzenleme Modal ── */}
-      <Modal open={editing} onClose={() => setEditing(false)} title="Üye Düzenle">
+      {/* -- Duzenleme Modal -- */}
+      <Modal open={editing} onClose={() => setEditing(false)} title="Uye Duzenle">
         <div className="space-y-4">
           <Input
             label="Ad Soyad"
@@ -469,16 +461,16 @@ export default function MemberDetail({ member, packages, measurements, lessons }
             value={editForm.gender}
             onChange={(e) => setEditForm({ ...editForm, gender: e.target.value as '' | Gender })}
             options={[
-              { value: '', label: 'Seçiniz' },
+              { value: '', label: 'Seciniz' },
               { value: 'male', label: 'Erkek' },
-              { value: 'female', label: 'Kadın' },
+              { value: 'female', label: 'Kadin' },
             ]}
           />
           <div className="flex items-center justify-between p-3 rounded-lg bg-background border border-border">
             <div>
-              <p className="text-sm font-medium text-text-primary">Üye Durumu</p>
+              <p className="text-sm font-medium text-text-primary">Uye Durumu</p>
               <p className="text-xs text-text-secondary mt-0.5">
-                {editForm.is_active ? 'Üye aktif — giriş yapabilir' : 'Üye pasif — giriş yapamaz'}
+                {editForm.is_active ? 'Uye aktif \u2014 giris yapabilir' : 'Uye pasif \u2014 giris yapamaz'}
               </p>
             </div>
             <button
@@ -494,7 +486,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
             </button>
           </div>
           <div className="flex gap-3 justify-end">
-            <Button variant="secondary" onClick={() => setEditing(false)}>İptal</Button>
+            <Button variant="secondary" onClick={() => setEditing(false)}>Iptal</Button>
             <Button loading={saving} onClick={handleSave}>Kaydet</Button>
           </div>
         </div>

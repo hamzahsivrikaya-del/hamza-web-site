@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import LandingNavbar from '@/components/shared/LandingNavbar'
 import WaterCalculator from '@/components/shared/WaterCalculator'
 
 export const metadata = {
@@ -20,23 +21,14 @@ export const metadata = {
 
 export default function WaterPage() {
   return (
-    <div className="min-h-screen relative">
-      <div className="fixed inset-0 bg-gradient-to-br from-[#0a0505] via-background to-[#050508]" />
-      <div className="fixed -top-40 -right-40 w-[600px] h-[600px] bg-blue-500/8 rounded-full blur-[120px]" />
-      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[100px]" />
+    <div className="min-h-screen relative bg-[#FAFAFA]">
+      <LandingNavbar />
 
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="font-display text-xl tracking-wider text-primary">HAMZA SİVRİKAYA</Link>
-          <Link href="/" className="text-sm px-4 py-2 bg-white/5 border border-border text-text-secondary rounded-lg hover:bg-white/10 transition-colors press-effect">Ana Sayfa</Link>
-        </div>
-      </nav>
-
-      <div className="relative max-w-6xl mx-auto px-4 py-12">
+      <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-12">
         <div className="flex items-center gap-2 text-sm text-text-secondary mb-8 animate-fade-up">
           <Link href="/" className="hover:text-primary transition-colors">Ana Sayfa</Link>
           <span>/</span>
-          <Link href="/#hesaplayicilar" className="hover:text-primary transition-colors">Hesaplayıcılar</Link>
+          <Link href="/araclar" className="hover:text-primary transition-colors">Hesaplayıcılar</Link>
           <span>/</span>
           <span className="text-text-primary">Su İhtiyacı Hesaplayıcı</span>
         </div>
@@ -77,7 +69,7 @@ export default function WaterPage() {
 
       </div>
 
-      <footer className="relative py-8 px-4 border-t border-primary/15 mt-12">
+      <footer className="relative py-8 px-4 border-t border-border mt-12">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-text-secondary">© 2026 Hamza Sivrikaya. Tüm hakları saklıdır.</div>
           <div className="flex items-center gap-6">

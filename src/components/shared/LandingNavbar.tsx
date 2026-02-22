@@ -27,7 +27,7 @@ export default function LandingNavbar() {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-[#57534E] hover:text-[#1A1A1A] transition-colors hidden sm:block font-medium"
+              className="text-sm text-[#1A1A1A] hover:text-primary transition-colors hidden sm:block font-semibold"
             >
               {link.label}
             </a>

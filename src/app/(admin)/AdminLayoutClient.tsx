@@ -10,7 +10,7 @@ interface AdminLayoutClientProps {
 
 export default function AdminLayoutClient({ children, userName }: AdminLayoutClientProps) {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#FAFAFA]">
       {/* Desktop sidebar */}
       <div className="hidden md:block">
         <Sidebar />

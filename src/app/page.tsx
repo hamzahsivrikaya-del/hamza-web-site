@@ -87,8 +87,8 @@ export default function HomePage() {
           </div>
         </div>
         {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/75" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/30" />
 
         <div className="relative max-w-6xl mx-auto">
           <div className="text-center mb-16 animate-fade-up">
@@ -97,7 +97,7 @@ export default function HomePage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Birebir Antrenman */}
-            <div className="group bg-black/50 backdrop-blur-sm border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-100 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-100 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -110,7 +110,7 @@ export default function HomePage() {
             </div>
 
             {/* CrossFit */}
-            <div className="group bg-black/50 backdrop-blur-sm border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-200 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-200 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
@@ -123,7 +123,7 @@ export default function HomePage() {
             </div>
 
             {/* Beslenme */}
-            <div className="group bg-black/50 backdrop-blur-sm border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-300 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-300 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
@@ -136,7 +136,7 @@ export default function HomePage() {
             </div>
 
             {/* Ölçüm & Takip */}
-            <div className="group bg-black/50 backdrop-blur-sm border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-400 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-400 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
@@ -149,7 +149,7 @@ export default function HomePage() {
             </div>
 
             {/* Atletik Performans */}
-            <div className="group bg-black/50 backdrop-blur-sm border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-500 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-500 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
@@ -162,7 +162,7 @@ export default function HomePage() {
             </div>
 
             {/* Online Program */}
-            <div className="group bg-black/50 backdrop-blur-sm border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-600 cursor-default">
+            <div className="group bg-black/65 backdrop-blur-md border border-white/10 p-6 transition-all duration-300 hover:scale-[1.02] hover:bg-black/60 hover:border-white/20 animate-fade-up delay-600 cursor-default">
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 bg-white/10 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
@@ -177,11 +177,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ==================== DIVIDER ==================== */}
-      <div className="bg-[#F5F5F5] py-16 sm:py-20 px-4">
+      {/* ==================== DIVIDER 1 ==================== */}
+      <div className="bg-white py-4 sm:py-5 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="font-display text-2xl sm:text-3xl md:text-4xl tracking-wider text-[#1A1A1A]">
-            SADECE ANTRENMAN DEĞİL,<br /><span className="text-primary">YAŞAM TARZI</span>
+          <p className="font-display text-sm sm:text-base md:text-lg tracking-[0.25em] text-[#1A1A1A]">
+            SADECE ANTRENMAN DEĞİL, <span className="text-primary">YAŞAM TARZI</span>
           </p>
         </div>
       </div>
@@ -223,88 +223,139 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ==================== DIVIDER 2 (Red accent) ==================== */}
+      <div className="bg-primary py-4 overflow-hidden">
+        <div className="flex items-center justify-center gap-4 sm:gap-8 font-display text-sm sm:text-base md:text-lg tracking-[0.25em] text-white whitespace-nowrap">
+          <span>SINIRLARINI ZORLA</span>
+          <span className="text-white/40">·</span>
+          <span>SONUÇLARINI GÖR</span>
+        </div>
+      </div>
+
       {/* ==================== CALCULATORS ==================== */}
-      <section className="relative py-20 sm:py-28 px-4 bg-[#2A2A2A] overflow-hidden">
+      <section className="relative py-20 sm:py-28 px-4 bg-white overflow-hidden">
         <div className="relative max-w-6xl mx-auto">
           <div className="text-center mb-16 animate-fade-up">
             <p className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-4">Ücretsiz Araçlar</p>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider text-white">HESAPLAYICILAR</h2>
-            <p className="text-white/35 mt-4 max-w-lg mx-auto">Fitness yolculuğunda sana yardımcı olacak ücretsiz araçlar</p>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider text-[#1A1A1A]">HESAPLAYICILAR</h2>
+            <p className="text-[#57534E] mt-4 max-w-lg mx-auto">Fitness yolculuğunda sana yardımcı olacak ücretsiz araçlar</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <Link href="/araclar/kalori-hesaplayici" className="group bg-[#1F1F1F] border border-[#383838] p-5 transition-all duration-300 hover:scale-[1.02] hover:border-[#4A4A4A] hover:bg-[#242424] animate-fade-up delay-100">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 w-10 h-10 bg-white/8 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                </div>
-                <div>
-                  <h3 className="text-white font-bold text-sm group-hover:text-white/90 transition-colors">Kalori & Makro</h3>
-                  <p className="text-xs text-white/35 mt-1">Günlük kalori ve makro ihtiyacını hesapla</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/araclar/1rm-hesaplayici" className="group bg-[#1F1F1F] border border-[#383838] p-5 transition-all duration-300 hover:scale-[1.02] hover:border-[#4A4A4A] hover:bg-[#242424] animate-fade-up delay-200">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 w-10 h-10 bg-white/8 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white/60" fill="currentColor" viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
-                </div>
-                <div>
-                  <h3 className="text-white font-bold text-sm group-hover:text-white/90 transition-colors">1RM Hesaplayıcı</h3>
-                  <p className="text-xs text-white/35 mt-1">Maksimum kaldırma ağırlığını öğren</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
+            {/* Kalori & Makro */}
+            <Link href="/araclar/kalori-hesaplayici" className="group relative bg-primary p-10 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-primary-hover animate-fade-up delay-100">
+              {/* Graffiti — tabak, çatal, bıçak */}
+              <svg className="absolute -bottom-4 -right-4 w-40 h-40 text-white/[0.15] group-hover:text-white/[0.25] transition-colors" fill="currentColor" viewBox="0 0 100 100">
+                <circle cx="50" cy="55" r="30" strokeWidth="3" stroke="currentColor" fill="none" />
+                <circle cx="50" cy="55" r="20" strokeWidth="1.5" stroke="currentColor" fill="none" />
+                <rect x="18" y="15" width="3" height="45" rx="1.5" transform="rotate(-15 18 15)" />
+                <rect x="12" y="16" width="3" height="40" rx="1.5" transform="rotate(-20 12 16)" />
+                <path d="M7 18c0-8 3-14 3-14s3 6 3 14-1.5 12-3 12-3-4-3-12z" transform="rotate(-25 10 25)" />
+                <rect x="80" y="12" width="3" height="50" rx="1.5" transform="rotate(15 80 12)" />
+                <path d="M85 10l2 18h-7l2-18z" transform="rotate(10 86 19)" />
+              </svg>
+              <div className="relative">
+                <h3 className="text-white font-bold text-xl mb-3">Kalori & Makro</h3>
+                <p className="text-white/85 leading-relaxed">Yaş, kilo, boy ve aktivite seviyene göre günlük kalori, protein, yağ ve karbonhidrat ihtiyacını hesapla.</p>
+                <div className="mt-6 text-sm text-white/70 group-hover:text-white font-semibold uppercase tracking-wider flex items-center gap-1 transition-colors">
+                  Hesapla
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </div>
               </div>
             </Link>
 
-            <Link href="/araclar/bki-hesaplayici" className="group bg-[#1F1F1F] border border-[#383838] p-5 transition-all duration-300 hover:scale-[1.02] hover:border-[#4A4A4A] hover:bg-[#242424] animate-fade-up delay-300">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 w-10 h-10 bg-white/8 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
-                </div>
-                <div>
-                  <h3 className="text-white font-bold text-sm group-hover:text-white/90 transition-colors">BMI Hesaplayıcı</h3>
-                  <p className="text-xs text-white/35 mt-1">Vücut Kitle İndeksini hesapla</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/araclar/su-ihtiyaci-hesaplayici" className="group bg-[#1F1F1F] border border-[#383838] p-5 transition-all duration-300 hover:scale-[1.02] hover:border-[#4A4A4A] hover:bg-[#242424] animate-fade-up delay-400">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 w-10 h-10 bg-white/8 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white/60" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8z"/></svg>
-                </div>
-                <div>
-                  <h3 className="text-white font-bold text-sm group-hover:text-white/90 transition-colors">Su İhtiyacı</h3>
-                  <p className="text-xs text-white/35 mt-1">Günlük su ihtiyacını hesapla</p>
+            {/* 1RM Hesaplayıcı */}
+            <Link href="/araclar/1rm-hesaplayici" className="group relative bg-primary p-10 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-primary-hover animate-fade-up delay-200">
+              {/* Graffiti — halter barı */}
+              <svg className="absolute -bottom-4 -right-4 w-40 h-40 text-white/[0.15] group-hover:text-white/[0.25] transition-colors" fill="currentColor" viewBox="0 0 100 100">
+                <rect x="10" y="46" width="80" height="8" rx="2" />
+                <rect x="5" y="30" width="14" height="40" rx="2" />
+                <rect x="81" y="30" width="14" height="40" rx="2" />
+                <rect x="0" y="36" width="9" height="28" rx="2" />
+                <rect x="91" y="36" width="9" height="28" rx="2" />
+              </svg>
+              <div className="relative">
+                <h3 className="text-white font-bold text-xl mb-3">1RM Hesaplayıcı</h3>
+                <p className="text-white/85 leading-relaxed">Kaldırdığın ağırlık ve tekrar sayısından tahmini maksimum kaldırma ağırlığını ve yüzdelik tabloyu öğren.</p>
+                <div className="mt-6 text-sm text-white/70 group-hover:text-white font-semibold uppercase tracking-wider flex items-center gap-1 transition-colors">
+                  Hesapla
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </div>
               </div>
             </Link>
 
-            <Link href="/araclar/ideal-kilo-hesaplayici" className="group bg-[#1F1F1F] border border-[#383838] p-5 transition-all duration-300 hover:scale-[1.02] hover:border-[#4A4A4A] hover:bg-[#242424] animate-fade-up delay-500">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 w-10 h-10 bg-white/8 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white/60" fill="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                </div>
-                <div>
-                  <h3 className="text-white font-bold text-sm group-hover:text-white/90 transition-colors">İdeal Kilo</h3>
-                  <p className="text-xs text-white/35 mt-1">4 bilimsel formülle ideal kilonu öğren</p>
+            {/* BMI Hesaplayıcı */}
+            <Link href="/araclar/bki-hesaplayici" className="group relative bg-primary p-10 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-primary-hover animate-fade-up delay-300">
+              {/* Graffiti — terazi */}
+              <svg className="absolute -bottom-4 -right-4 w-40 h-40 text-white/[0.15] group-hover:text-white/[0.25] transition-colors" fill="currentColor" viewBox="0 0 100 100">
+                <rect x="47" y="15" width="6" height="55" />
+                <rect x="28" y="70" width="44" height="7" rx="3" />
+                <path d="M18 35 L50 18 L82 35" strokeWidth="5" stroke="currentColor" fill="none" strokeLinecap="round" />
+                <path d="M10 35 Q18 52 26 35" strokeWidth="4" stroke="currentColor" fill="none" />
+                <path d="M74 35 Q82 52 90 35" strokeWidth="4" stroke="currentColor" fill="none" />
+              </svg>
+              <div className="relative">
+                <h3 className="text-white font-bold text-xl mb-3">BMI Hesaplayıcı</h3>
+                <p className="text-white/85 leading-relaxed">Boy ve kilona göre Vücut Kitle İndeksini hesapla, sağlıklı aralıkta olup olmadığını öğren.</p>
+                <div className="mt-6 text-sm text-white/70 group-hover:text-white font-semibold uppercase tracking-wider flex items-center gap-1 transition-colors">
+                  Hesapla
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </div>
               </div>
             </Link>
 
-            <Link href="/araclar/deri-kaliper-hesaplayici" className="group bg-[#1F1F1F] border border-[#383838] p-5 transition-all duration-300 hover:scale-[1.02] hover:border-[#4A4A4A] hover:bg-[#242424] animate-fade-up delay-600">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 w-10 h-10 bg-white/8 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+            {/* Su İhtiyacı */}
+            <Link href="/araclar/su-ihtiyaci-hesaplayici" className="group relative bg-primary p-10 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-primary-hover animate-fade-up delay-400">
+              {/* Graffiti — su damlası */}
+              <svg className="absolute -bottom-6 -right-4 w-44 h-44 text-white/[0.15] group-hover:text-white/[0.25] transition-colors" fill="currentColor" viewBox="0 0 100 100">
+                <path d="M50 8 C50 8 20 45 20 62 C20 79 33 92 50 92 C67 92 80 79 80 62 C80 45 50 8 50 8Z" />
+                <ellipse cx="38" cy="56" rx="7" ry="12" fill="white" opacity="0.25" transform="rotate(-15 38 56)" />
+              </svg>
+              <div className="relative">
+                <h3 className="text-white font-bold text-xl mb-3">Su İhtiyacı</h3>
+                <p className="text-white/85 leading-relaxed">Kilona ve antrenman yoğunluğuna göre günlük su ihtiyacını ve saatlik içme planını hesapla.</p>
+                <div className="mt-6 text-sm text-white/70 group-hover:text-white font-semibold uppercase tracking-wider flex items-center gap-1 transition-colors">
+                  Hesapla
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </div>
-                <div>
-                  <h3 className="text-white font-bold text-sm group-hover:text-white/90 transition-colors">Deri Kaliper</h3>
-                  <p className="text-xs text-white/35 mt-1">Skinfold ölçümleriyle yağ oranını hesapla</p>
+              </div>
+            </Link>
+
+            {/* İdeal Kilo */}
+            <Link href="/araclar/ideal-kilo-hesaplayici" className="group relative bg-primary p-10 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-primary-hover animate-fade-up delay-500">
+              {/* Graffiti — insan silueti */}
+              <svg className="absolute -bottom-4 -right-2 w-36 h-44 text-white/[0.15] group-hover:text-white/[0.25] transition-colors" fill="currentColor" viewBox="0 0 60 100">
+                <circle cx="30" cy="14" r="10" />
+                <path d="M30 25 C18 25 12 35 12 45 L18 45 L20 70 L25 70 L27 90 L33 90 L35 70 L40 70 L42 45 L48 45 C48 35 42 25 30 25Z" />
+              </svg>
+              <div className="relative">
+                <h3 className="text-white font-bold text-xl mb-3">İdeal Kilo</h3>
+                <p className="text-white/85 leading-relaxed">Devine, Robinson, Miller ve Hamwi formülleriyle sana en uygun ideal kilo aralığını öğren.</p>
+                <div className="mt-6 text-sm text-white/70 group-hover:text-white font-semibold uppercase tracking-wider flex items-center gap-1 transition-colors">
+                  Hesapla
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </div>
+              </div>
+            </Link>
+
+            {/* Deri Kaliper */}
+            <Link href="/araclar/deri-kaliper-hesaplayici" className="group relative bg-primary p-10 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-primary-hover animate-fade-up delay-600">
+              {/* Graffiti — kaliper aleti */}
+              <svg className="absolute -bottom-4 -right-4 w-40 h-40 text-white/[0.15] group-hover:text-white/[0.25] transition-colors" fill="currentColor" viewBox="0 0 100 100">
+                <path d="M25 20 L25 80 L35 80 L35 55 Q50 45 65 55 L65 80 L75 80 L75 20 L65 20 L65 45 Q50 55 35 45 L35 20 Z" />
+                <rect x="20" y="15" width="20" height="6" rx="2" />
+                <rect x="60" y="15" width="20" height="6" rx="2" />
+              </svg>
+              <div className="relative">
+                <h3 className="text-white font-bold text-xl mb-3">Deri Kaliper</h3>
+                <p className="text-white/85 leading-relaxed">Skinfold kaliper ölçümleriyle vücut yağ oranını hesapla, yağsız kütle ve yağ kütleni öğren.</p>
+                <div className="mt-6 text-sm text-white/70 group-hover:text-white font-semibold uppercase tracking-wider flex items-center gap-1 transition-colors">
+                  Hesapla
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </div>
               </div>
             </Link>
           </div>
-          <div className="mt-8 text-center animate-fade-up delay-700">
+          <div className="mt-10 text-center animate-fade-up delay-700">
             <Link href="/araclar" className="inline-flex items-center gap-2 text-primary hover:underline text-sm font-semibold uppercase tracking-wider">
               Tüm Araçları Gör
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -312,6 +363,15 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ==================== DIVIDER 3 (Red accent) ==================== */}
+      <div className="bg-primary py-4 overflow-hidden">
+        <div className="flex items-center justify-center gap-4 sm:gap-8 font-display text-sm sm:text-base md:text-lg tracking-[0.25em] text-white whitespace-nowrap">
+          <span>EN İYİ YATIRIM</span>
+          <span className="text-white/40">·</span>
+          <span>KENDİNE YAPTIĞINDIR</span>
+        </div>
+      </div>
 
       {/* ==================== BLOG ==================== */}
       <section className="relative py-20 sm:py-28 px-4 bg-[#F5F5F5]">
@@ -335,6 +395,15 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ==================== DIVIDER 4 (Red accent) ==================== */}
+      <div className="bg-primary py-4 overflow-hidden">
+        <div className="flex items-center justify-center gap-4 sm:gap-8 font-display text-sm sm:text-base md:text-lg tracking-[0.25em] text-white whitespace-nowrap">
+          <span>GÜÇLÜ OLMAK</span>
+          <span className="text-white/40">·</span>
+          <span>BİR TERCİHTİR</span>
+        </div>
+      </div>
 
       {/* ==================== CONTACT ==================== */}
       <section id="iletisim" className="relative py-20 sm:py-28 px-4 bg-white">

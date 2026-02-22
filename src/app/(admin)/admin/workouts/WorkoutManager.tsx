@@ -10,7 +10,8 @@ import Textarea from '@/components/ui/Textarea'
 import Modal from '@/components/ui/Modal'
 import Select from '@/components/ui/Select'
 import { getDayName, formatWeekRange, getAdjacentWeek, getMonday, getTodayDayIndex } from '@/lib/utils'
-import type { Workout, WorkoutExercise, User } from '@/lib/types'
+import type { Workout, WorkoutExercise, WorkoutSection, User } from '@/lib/types'
+import { WORKOUT_SECTIONS } from '@/lib/types'
 
 interface ExerciseForm {
   name: string
@@ -20,9 +21,12 @@ interface ExerciseForm {
   rest: string
   notes: string
   superset_group: string
+  section: WorkoutSection
 }
 
-const emptyExercise: ExerciseForm = { name: '', sets: '', reps: '', weight: '', rest: '', notes: '', superset_group: '' }
+const emptyExercise = (section: WorkoutSection = 'strength'): ExerciseForm => ({
+  name: '', sets: '', reps: '', weight: '', rest: '', notes: '', superset_group: '', section,
+})
 
 interface Props {
   initialWorkouts: Workout[]
@@ -52,8 +56,11 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
   // Form
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [exercises, setExercises] = useState<ExerciseForm[]>([{ ...emptyExercise }])
+  const [warmupText, setWarmupText] = useState('')
+  const [cardioText, setCardioText] = useState('')
+  const [exercises, setExercises] = useState<ExerciseForm[]>([emptyExercise()])
   const [editingWorkoutId, setEditingWorkoutId] = useState<string | null>(null)
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(['strength']))
 
   const currentMonday = getMonday()
   const isCurrentWeek = weekStart === currentMonday
@@ -132,26 +139,37 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
       setEditingWorkoutId(existing.id)
       setTitle(existing.title)
       setContent(existing.content || '')
-      setExercises(
-        existing.exercises && existing.exercises.length > 0
-          ? existing.exercises
-              .sort((a, b) => a.order_num - b.order_num)
-              .map(e => ({
-                name: e.name,
-                sets: e.sets?.toString() || '',
-                reps: e.reps || '',
-                weight: e.weight || '',
-                rest: e.rest || '',
-                notes: e.notes || '',
-                superset_group: e.superset_group?.toString() || '',
-              }))
-          : [{ ...emptyExercise }]
-      )
+      setWarmupText(existing.warmup_text || '')
+      setCardioText(existing.cardio_text || '')
+      const mapped = existing.exercises && existing.exercises.length > 0
+        ? existing.exercises
+            .sort((a, b) => a.order_num - b.order_num)
+            .map(e => ({
+              name: e.name,
+              sets: e.sets?.toString() || '',
+              reps: e.reps || '',
+              weight: e.weight || '',
+              rest: e.rest || '',
+              notes: e.notes || '',
+              superset_group: e.superset_group?.toString() || '',
+              section: (e.section || 'strength') as WorkoutSection,
+            }))
+        : [emptyExercise()]
+      setExercises(mapped)
+      // Egzersiz olan bölümleri aç + içeriği dolu olan serbest metin bölümleri
+      const usedSections = new Set(mapped.filter(e => e.name.trim()).map(e => e.section))
+      if (existing.warmup_text) usedSections.add('warmup')
+      if (existing.cardio_text) usedSections.add('cardio')
+      if (usedSections.size === 0) usedSections.add('strength')
+      setOpenSections(usedSections)
     } else {
       setEditingWorkoutId(null)
       setTitle(dayIndex === 6 ? 'Aktif Dinlenme' : '')
       setContent(dayIndex === 6 ? 'Yürüyüş, yoga veya hafif esneme ile aktif toparlanma.' : '')
-      setExercises([{ ...emptyExercise }])
+      setWarmupText('')
+      setCardioText('')
+      setExercises([emptyExercise()])
+      setOpenSections(new Set(['strength']))
     }
     setModalOpen(true)
   }
@@ -160,8 +178,8 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
   function updateExercise(idx: number, field: keyof ExerciseForm, value: string) {
     setExercises(prev => prev.map((e, i) => i === idx ? { ...e, [field]: value } : e))
   }
-  function addExercise() {
-    setExercises(prev => [...prev, { ...emptyExercise }])
+  function addExercise(section: WorkoutSection = 'strength') {
+    setExercises(prev => [...prev, emptyExercise(section)])
   }
   function removeExercise(idx: number) {
     setExercises(prev => {
@@ -187,7 +205,7 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
       const groupNum = current.superset_group || (Math.max(...groups, 0) + 1).toString()
       const updated = prev.map((e, i) => i === idx ? { ...e, superset_group: groupNum } : e)
       // Yeni egzersizi hemen arkasına ekle
-      const newExercise = { ...emptyExercise, superset_group: groupNum }
+      const newExercise = { ...emptyExercise(current.section), superset_group: groupNum }
       updated.splice(idx + 1, 0, newExercise)
       return updated
     })
@@ -206,6 +224,8 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
       day_index: editingDay,
       title: title.trim(),
       content: content.trim() || null,
+      warmup_text: warmupText.trim() || null,
+      cardio_text: cardioText.trim() || null,
     }
 
     let workoutId = editingWorkoutId
@@ -245,6 +265,7 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
           rest: e.rest.trim() || null,
           notes: e.notes.trim() || null,
           superset_group: e.superset_group ? parseInt(e.superset_group) : null,
+          section: e.section,
         }))
       )
       if (exErr) { setError(exErr.message); setSaving(false); return }
@@ -323,6 +344,8 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
           day_index: w.day_index,
           title: w.title,
           content: w.content,
+          warmup_text: w.warmup_text,
+          cardio_text: w.cardio_text,
         }, { onConflict: 'week_start,day_index', ignoreDuplicates: false })
         .select('id')
         .single()
@@ -340,6 +363,7 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
             rest: e.rest,
             notes: e.notes,
             superset_group: e.superset_group,
+            section: e.section,
           }))
         )
       }
@@ -524,126 +548,188 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
             placeholder="Örn: Upper Body, Bacak Günü, AMRAP 20"
           />
 
-          {/* Egzersizler */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-text-primary">Egzersizler</label>
-              <button
-                type="button"
-                onClick={addExercise}
-                className="text-xs text-primary hover:text-primary-hover transition-colors cursor-pointer flex items-center gap-1"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
-                </svg>
-                Egzersiz Ekle
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {exercises.map((ex, idx) => {
-                const hasSuperset = ex.superset_group !== ''
-                const prevSameGroup = idx > 0 && ex.superset_group !== '' && exercises[idx - 1]?.superset_group === ex.superset_group
-                const nextSameGroup = idx < exercises.length - 1 && ex.superset_group !== '' && exercises[idx + 1]?.superset_group === ex.superset_group
-                const isFirstInGroup = hasSuperset && !prevSameGroup
-                const isLastInGroup = hasSuperset && !nextSameGroup
-
-                // Süper set grubunun ilk elemanıysa veya süper set değilse ana kart olarak göster
-                const isMainExercise = !hasSuperset || isFirstInGroup
-
-                return (
-                  <div key={idx}>
-                    {/* Süper set grubunun başlangıcı — sarmalayıcı */}
-                    {isFirstInGroup && (
-                      <div className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Süper Set
-                      </div>
-                    )}
-                    <div className={`bg-background rounded-lg p-3 space-y-2 ${
-                      hasSuperset ? 'border-l-2 border-l-primary ml-1' : ''
-                    } ${prevSameGroup ? 'rounded-t-none -mt-1 border-t border-t-primary/10' : ''}`}>
-                      <div className="flex items-center gap-2">
-                        <input
-                          value={ex.name}
-                          onChange={(e) => updateExercise(idx, 'name', e.target.value)}
-                          placeholder={hasSuperset && prevSameGroup ? 'Süper set hareketi' : 'Egzersiz adı'}
-                          className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                        />
-                        {exercises.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeExercise(idx)}
-                            className="p-1.5 text-text-secondary hover:text-red-400 transition-colors cursor-pointer"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        <input
-                          value={ex.sets}
-                          onChange={(e) => updateExercise(idx, 'sets', e.target.value)}
-                          placeholder="Set"
-                          className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                        />
-                        <input
-                          value={ex.reps}
-                          onChange={(e) => updateExercise(idx, 'reps', e.target.value)}
-                          placeholder="Tekrar"
-                          className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                        />
-                        <input
-                          value={ex.weight}
-                          onChange={(e) => updateExercise(idx, 'weight', e.target.value)}
-                          placeholder="Ağırlık"
-                          className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                        />
-                        <input
-                          value={ex.rest}
-                          onChange={(e) => updateExercise(idx, 'rest', e.target.value)}
-                          placeholder="Dinlenme"
-                          className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                        />
-                      </div>
-                      <input
-                        value={ex.notes}
-                        onChange={(e) => updateExercise(idx, 'notes', e.target.value)}
-                        placeholder="Not (opsiyonel)"
-                        className="w-full bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
-                      />
-                      {/* Süper Set Ekle butonu — sadece grubun son elemanında veya süper set olmayan egzersizlerde */}
-                      {(!hasSuperset || isLastInGroup) && (
-                        <button
-                          type="button"
-                          onClick={() => addSuperset(idx)}
-                          className="flex items-center gap-1 text-[11px] text-primary/70 hover:text-primary transition-colors cursor-pointer pt-1"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
-                          Süper Set Ekle
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Serbest metin */}
+          {/* Gün Notu */}
           <Textarea
-            label="Serbest Metin (AMRAP, EMOM, açıklama vs.)"
+            label="Gün Notu"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Örn: 5 Rounds For Time: 10 Push-ups, 15 Air Squats, 200m Run"
-            rows={3}
+            placeholder="Örn: Bugün yoğunluk düşük, teknik odaklı çalış"
+            rows={2}
           />
+
+          {/* Bölümler */}
+          <div className="space-y-3">
+            {WORKOUT_SECTIONS.map(sec => {
+              const isOpen = openSections.has(sec.key)
+              const isFreetext = sec.type === 'freetext'
+
+              // Egzersiz bazlı bölümler için
+              const sectionExercises = !isFreetext
+                ? exercises.map((ex, idx) => ({ ex, idx })).filter(({ ex }) => ex.section === sec.key)
+                : []
+              const exerciseCount = sectionExercises.filter(({ ex }) => ex.name.trim()).length
+
+              // Serbest metin bölümler için doluluk
+              const freetextValue = sec.key === 'warmup' ? warmupText : cardioText
+              const hasContent = isFreetext ? freetextValue.trim().length > 0 : exerciseCount > 0
+
+              return (
+                <div key={sec.key} className={`rounded-lg border overflow-hidden ${isOpen ? 'border-border' : 'border-border/50'}`}>
+                  {/* Section header */}
+                  <button
+                    type="button"
+                    onClick={() => setOpenSections(prev => {
+                      const next = new Set(prev)
+                      if (next.has(sec.key)) next.delete(sec.key)
+                      else next.add(sec.key)
+                      return next
+                    })}
+                    className="w-full flex items-center justify-between px-4 py-3 transition-colors cursor-pointer bg-background hover:bg-surface-hover"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-text-primary">{sec.label}</span>
+                      {hasContent && (
+                        <span className="text-xs text-text-secondary bg-surface px-1.5 py-0.5 rounded">
+                          {isFreetext ? '...' : exerciseCount}
+                        </span>
+                      )}
+                    </div>
+                    <svg
+                      className={`w-4 h-4 text-text-secondary transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Section content */}
+                  {isOpen && (
+                    <div className="px-4 pb-4 pt-3 bg-surface/30">
+                      {isFreetext ? (
+                        /* Serbest metin bölüm (Isınma / Kardiyo-Metcon) */
+                        <textarea
+                          value={sec.key === 'warmup' ? warmupText : cardioText}
+                          onChange={(e) => sec.key === 'warmup' ? setWarmupText(e.target.value) : setCardioText(e.target.value)}
+                          placeholder={sec.key === 'warmup'
+                            ? 'Örn: 5 dk koşu bandı, dinamik esneme, omuz mobilite...'
+                            : 'Örn: 5 Rounds For Time: 10 Push-ups, 15 Air Squats, 200m Run'
+                          }
+                          rows={3}
+                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none resize-y"
+                        />
+                      ) : (
+                        /* Egzersiz bazlı bölüm (Güç-Kuvvet / Aksesuar) */
+                        <div className="space-y-3">
+                          {sectionExercises.length === 0 ? (
+                            <p className="text-xs text-text-secondary text-center py-2">Bu bölümde egzersiz yok</p>
+                          ) : (
+                            sectionExercises.map(({ ex, idx }) => {
+                              const hasSuperset = ex.superset_group !== ''
+                              const sectionIdx = sectionExercises.findIndex(s => s.idx === idx)
+                              const prevInSection = sectionIdx > 0 ? sectionExercises[sectionIdx - 1] : null
+                              const nextInSection = sectionIdx < sectionExercises.length - 1 ? sectionExercises[sectionIdx + 1] : null
+                              const prevSameGroup = hasSuperset && prevInSection?.ex.superset_group === ex.superset_group
+                              const isFirstInGroup = hasSuperset && !prevSameGroup
+                              const nextSameGroup = hasSuperset && nextInSection?.ex.superset_group === ex.superset_group
+                              const isLastInGroup = hasSuperset && !nextSameGroup
+
+                              return (
+                                <div key={idx}>
+                                  {isFirstInGroup && (
+                                    <div className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                      </svg>
+                                      Süper Set
+                                    </div>
+                                  )}
+                                  <div className={`bg-background rounded-lg p-3 space-y-2 ${
+                                    hasSuperset ? 'border-l-2 border-l-primary ml-1' : ''
+                                  } ${prevSameGroup ? 'rounded-t-none -mt-1 border-t border-t-primary/10' : ''}`}>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        value={ex.name}
+                                        onChange={(e) => updateExercise(idx, 'name', e.target.value)}
+                                        placeholder={hasSuperset && prevSameGroup ? 'Süper set hareketi' : 'Egzersiz adı'}
+                                        className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => removeExercise(idx)}
+                                        className="p-1.5 text-text-secondary hover:text-red-400 transition-colors cursor-pointer"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                      <input
+                                        value={ex.sets}
+                                        onChange={(e) => updateExercise(idx, 'sets', e.target.value)}
+                                        placeholder="Set"
+                                        className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                                      />
+                                      <input
+                                        value={ex.reps}
+                                        onChange={(e) => updateExercise(idx, 'reps', e.target.value)}
+                                        placeholder="Tekrar"
+                                        className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                                      />
+                                      <input
+                                        value={ex.weight}
+                                        onChange={(e) => updateExercise(idx, 'weight', e.target.value)}
+                                        placeholder="Ağırlık"
+                                        className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                                      />
+                                      <input
+                                        value={ex.rest}
+                                        onChange={(e) => updateExercise(idx, 'rest', e.target.value)}
+                                        placeholder="Dinlenme"
+                                        className="bg-surface border border-border rounded-lg px-3 py-2.5 sm:py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                                      />
+                                    </div>
+                                    <input
+                                      value={ex.notes}
+                                      onChange={(e) => updateExercise(idx, 'notes', e.target.value)}
+                                      placeholder="Not (opsiyonel)"
+                                      className="w-full bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
+                                    />
+                                    {(!hasSuperset || isLastInGroup) && (
+                                      <button
+                                        type="button"
+                                        onClick={() => addSuperset(idx)}
+                                        className="flex items-center gap-1 text-[11px] text-primary/70 hover:text-primary transition-colors cursor-pointer pt-1"
+                                      >
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                        Süper Set Ekle
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            })
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => addExercise(sec.key as WorkoutSection)}
+                            className="flex items-center gap-1 text-xs text-primary/70 hover:text-primary transition-colors cursor-pointer"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
+                            </svg>
+                            Egzersiz Ekle
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
 
           {/* Butonlar */}
           <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2">

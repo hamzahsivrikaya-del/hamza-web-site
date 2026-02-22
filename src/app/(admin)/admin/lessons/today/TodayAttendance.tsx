@@ -157,7 +157,7 @@ export default function TodayAttendance({
                 key={attendee.packageId}
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all
                   ${attendee.doneToday
-                    ? 'bg-[#0A1A0F] border-[#1A4A2A]'
+                    ? 'bg-success/5 border-success/20'
                     : 'bg-surface border-border'
                   }`}
               >

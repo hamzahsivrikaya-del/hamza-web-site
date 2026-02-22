@@ -76,6 +76,15 @@ export interface BlogPost {
 
 export type WorkoutType = 'public' | 'member'
 
+export type WorkoutSection = 'warmup' | 'strength' | 'accessory' | 'cardio'
+
+export const WORKOUT_SECTIONS = [
+  { key: 'warmup' as const, label: 'Isınma', type: 'freetext' as const },
+  { key: 'strength' as const, label: 'Güç-Kuvvet', type: 'exercises' as const },
+  { key: 'accessory' as const, label: 'Aksesuar', type: 'exercises' as const },
+  { key: 'cardio' as const, label: 'Kardiyo-Metcon', type: 'freetext' as const },
+] as const
+
 export interface WorkoutExercise {
   id: string
   workout_id: string
@@ -87,6 +96,7 @@ export interface WorkoutExercise {
   rest: string | null
   notes: string | null
   superset_group: number | null
+  section: WorkoutSection
 }
 
 export interface Workout {
@@ -97,6 +107,8 @@ export interface Workout {
   day_index: number
   title: string
   content: string | null
+  warmup_text: string | null
+  cardio_text: string | null
   created_at: string
   exercises?: WorkoutExercise[]
   user?: User
