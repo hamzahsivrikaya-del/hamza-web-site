@@ -47,9 +47,20 @@ export default async function AdminDashboard() {
       .eq('date', new Date().toISOString().split('T')[0]),
   ])
 
+  // Paket yenileyen üyeleri bul (hem completed hem active paketi var)
+  const renewedUserIds = new Set(
+    (lowLessonMembers_raw || [])
+      .filter(pkg => pkg.status === 'active')
+      .map(pkg => pkg.user_id)
+  )
+
   // Paket uyarıları: bitti (completed), son 1, son 2 — önem sırasına göre
+  // Yeni paket alan üyelerin completed uyarısını gösterme
   const alertMembers = (lowLessonMembers_raw || [])
-    .filter((pkg) => pkg.status === 'completed' || (pkg.total_lessons - pkg.used_lessons) <= 2)
+    .filter((pkg) => {
+      if (pkg.status === 'completed' && renewedUserIds.has(pkg.user_id)) return false
+      return pkg.status === 'completed' || (pkg.total_lessons - pkg.used_lessons) <= 2
+    })
     .sort((a, b) => {
       const remA = a.status === 'completed' ? -1 : (a.total_lessons - a.used_lessons)
       const remB = b.status === 'completed' ? -1 : (b.total_lessons - b.used_lessons)

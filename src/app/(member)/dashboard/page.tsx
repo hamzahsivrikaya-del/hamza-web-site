@@ -16,6 +16,7 @@ export default async function MemberDashboard() {
     { data: pastPackages },
     { data: recentMeasurement },
     { data: blogPosts },
+    { data: firstLesson },
   ] = await Promise.all([
     supabase.from('users').select('*').eq('id', user.id).single(),
     supabase
@@ -45,6 +46,13 @@ export default async function MemberDashboard() {
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(3),
+    supabase
+      .from('lessons')
+      .select('date')
+      .eq('user_id', user.id)
+      .order('date', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
   ])
 
   const remaining = activePackage
@@ -80,7 +88,7 @@ export default async function MemberDashboard() {
           <div>
             <h2 className="text-xl font-bold">Hoşgeldin, {profile?.full_name?.split(' ')[0]?.charAt(0).toUpperCase() + (profile?.full_name?.split(' ')[0]?.slice(1) || '')}</h2>
             <p className="text-sm text-text-secondary mt-1">
-              Üyelik başlangıcı: {profile?.start_date ? formatDate(profile.start_date) : '-'}
+              Üyelik başlangıcı: {firstLesson?.date ? formatDate(firstLesson.date) : profile?.start_date ? formatDate(profile.start_date) : '-'}
             </p>
           </div>
           <Badge variant={statusVariant}>{statusLabel}</Badge>

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import Card from '@/components/ui/Card'
 import WorkoutDayCard from '@/components/shared/WorkoutDayCard'
 import { getMonday, formatWeekRange, getTodayDayIndex } from '@/lib/utils'
@@ -26,11 +27,11 @@ export default async function ProgramPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <a href="/dashboard" className="text-text-secondary hover:text-text-primary transition-colors">
+        <Link href="/dashboard" className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-        </a>
+        </Link>
         <div>
           <h1 className="text-2xl font-bold">Programım</h1>
           <p className="text-sm text-text-secondary">{formatWeekRange(monday)}</p>
