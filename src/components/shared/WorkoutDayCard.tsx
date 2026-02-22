@@ -165,13 +165,13 @@ export default function WorkoutDayCard({ dayIndex, workout, isToday, colSpan }: 
       {/* Header */}
       <button
         onClick={() => workout && setOpen(!open)}
-        className={`w-full flex items-center gap-4 p-6 text-left transition-colors ${
+        className={`w-full flex items-center gap-3 px-4 py-5 sm:gap-4 sm:p-6 text-left transition-colors ${
           workout || isSunday
             ? 'bg-primary hover:bg-primary-hover cursor-pointer'
             : 'bg-gray-300 cursor-default'
         }`}
       >
-        <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-base font-bold flex-shrink-0 ${
+        <div className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-sm sm:text-base font-bold flex-shrink-0 ${
           workout || isSunday
             ? 'bg-white/20 text-white'
             : 'bg-white/40 text-gray-500'
