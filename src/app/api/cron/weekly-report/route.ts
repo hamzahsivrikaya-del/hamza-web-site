@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getWeekRange, generateMessage } from '@/lib/weekly-report'
+import { sendPushNotification } from '@/lib/push'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +29,15 @@ export async function GET(request: Request) {
   const results = await Promise.allSettled(
     members.map((member) => generateReport(admin, member.id, weekStart, weekEnd))
   )
+
+  // Push bildirim gönder
+  const userIds = members.map((m) => m.id)
+  await sendPushNotification({
+    userIds,
+    title: 'Haftalık Raporun Hazır!',
+    message: 'Bu haftaki performansını görmek için tıkla 💪',
+    url: '/dashboard/haftalik-ozet',
+  })
 
   const succeeded = results.filter((r) => r.status === 'fulfilled').length
   return NextResponse.json({ ok: true, generated: succeeded, total: members.length })

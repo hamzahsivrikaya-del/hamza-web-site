@@ -14,14 +14,17 @@ const PRESET_PACKAGES = [
   { value: '30', label: '30 Ders', days: 120 },
 ]
 
-function addDays(dateStr: string, days: number): string {
+function addDays(dateStr: string, days: number): string | null {
   const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return null
   d.setDate(d.getDate() + days)
   return d.toISOString().split('T')[0]
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('tr-TR', {
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString('tr-TR', {
     day: 'numeric', month: 'long', year: 'numeric',
   })
 }

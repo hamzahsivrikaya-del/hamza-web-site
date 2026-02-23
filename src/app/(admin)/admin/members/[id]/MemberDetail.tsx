@@ -35,6 +35,20 @@ export default function MemberDetail({ member, packages, measurements, lessons }
   const [saving, setSaving] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
   const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
+  const [deletingPackageId, setDeletingPackageId] = useState<string | null>(null)
+
+  async function handleDeletePackage(packageId: string) {
+    if (!confirm('Bu paketi ve bagili ders kayitlarini silmek istediginize emin misiniz? Bu islem geri alinamaz.')) return
+    setDeletingPackageId(packageId)
+    const supabase = createClient()
+    const { error } = await supabase.from('packages').delete().eq('id', packageId)
+    if (error) {
+      alert('Silinemedi: ' + error.message)
+    } else {
+      router.refresh()
+    }
+    setDeletingPackageId(null)
+  }
 
   async function handleDeleteLesson(lessonId: string) {
     if (!confirm('Bu ders kaydını silmek istediğinize emin misiniz?')) return
@@ -391,11 +405,28 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                       <p className="font-semibold text-text-primary">{pkg.total_lessons} Ders Paketi</p>
                       <p className="text-xs text-text-secondary mt-0.5">{formatDate(pkg.start_date)}</p>
                     </div>
-                    <Badge
-                      variant={pkg.status === 'active' ? 'success' : pkg.status === 'expired' ? 'danger' : 'default'}
-                    >
-                      {getPackageStatusLabel(pkg.status)}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={pkg.status === 'active' ? 'success' : pkg.status === 'expired' ? 'danger' : 'default'}
+                      >
+                        {getPackageStatusLabel(pkg.status)}
+                      </Badge>
+                      <button
+                        onClick={() => handleDeletePackage(pkg.id)}
+                        disabled={deletingPackageId === pkg.id}
+                        title="Paketi sil"
+                        className="p-1.5 rounded-lg text-text-secondary hover:text-danger hover:bg-danger/10 transition-all cursor-pointer disabled:opacity-40"
+                      >
+                        {deletingPackageId === pkg.id ? (
+                          <span className="text-xs">...</span>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs text-text-secondary">
