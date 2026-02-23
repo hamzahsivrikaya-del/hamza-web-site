@@ -4,7 +4,6 @@ import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Link from 'next/link'
 import { formatDate, daysRemaining, getPackageStatusLabel } from '@/lib/utils'
-import PushPermissionBanner from '@/components/shared/PushPermissionBanner'
 
 export default async function MemberDashboard() {
   const supabase = await createClient()
@@ -83,9 +82,6 @@ export default async function MemberDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Bildirim izni banner'ı */}
-      <PushPermissionBanner />
-
       {/* Hoşgeldin kartı */}
       <Card className="border-primary/20 gradient-border animate-fade-up">
         <div className="flex items-start justify-between">

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/shared/Navbar'
+import PushPermissionBanner from '@/components/shared/PushPermissionBanner'
 
 export default async function MemberLayout({
   children,
@@ -28,6 +29,7 @@ export default async function MemberLayout({
     <div className="min-h-screen relative overflow-hidden bg-[#FAFAFA]">
       <Navbar />
       <main className="p-4 md:p-6 max-w-5xl mx-auto relative">
+        <PushPermissionBanner />
         {children}
       </main>
     </div>
