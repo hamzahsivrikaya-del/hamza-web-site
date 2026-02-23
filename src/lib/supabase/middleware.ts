@@ -46,9 +46,8 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/api') ||
     pathname.includes('.')
   ) {
-    // Giriş yapmış kullanıcıyı login'den yönlendir
-    if (pathname === '/login' && user) {
-      // Rolü kontrol et
+    // Giriş yapmış kullanıcıyı login veya landing page'den yönlendir
+    if ((pathname === '/login' || pathname === '/') && user) {
       const { data: profile } = await supabase
         .from('users')
         .select('role')

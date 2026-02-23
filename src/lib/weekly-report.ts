@@ -1,18 +1,20 @@
 /**
- * Bu haftanın (Pazartesi-Pazar) başlangıç ve bitiş tarihini döndürür.
- * Pazar günü çalıştığında, tamamlanan haftayı döndürür.
+ * Son tamamlanan haftanın (Pazartesi-Pazar) başlangıç ve bitiş tarihini döndürür.
+ * Pazar: o haftayı döndürür. Pazartesi-Cumartesi: önceki haftayı döndürür.
  */
 export function getWeekRange(date: Date): { weekStart: string; weekEnd: string } {
   const d = new Date(date)
   const day = d.getDay() // 0=Pazar, 1=Pazartesi, ...
-  // Pazartesi'ye git
-  const diffToMonday = day === 0 ? -6 : 1 - day
-  const monday = new Date(d)
-  monday.setDate(d.getDate() + diffToMonday)
-  monday.setHours(0, 0, 0, 0)
 
-  const sunday = new Date(monday)
-  sunday.setDate(monday.getDate() + 6)
+  // En son Pazar'ı bul (bugün Pazar ise bugün)
+  const diffToSunday = day === 0 ? 0 : -day
+  const sunday = new Date(d)
+  sunday.setDate(d.getDate() + diffToSunday)
+  sunday.setHours(0, 0, 0, 0)
+
+  // O haftanın Pazartesi'si (6 gün geri)
+  const monday = new Date(sunday)
+  monday.setDate(sunday.getDate() - 6)
 
   return {
     weekStart: monday.toISOString().split('T')[0],

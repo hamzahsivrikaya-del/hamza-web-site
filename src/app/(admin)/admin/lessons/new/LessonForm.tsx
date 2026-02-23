@@ -42,6 +42,14 @@ export default function LessonForm({ activePackages }: { activePackages: ActiveP
       return
     }
 
+    // Gelecek tarih kontrolü
+    const today = new Date().toISOString().split('T')[0]
+    if (date > today) {
+      setError('Gelecek tarih için ders eklenemez')
+      setSaving(false)
+      return
+    }
+
     // Aynı gün aynı üyeye ders var mı kontrol et
     const { count } = await supabase
       .from('lessons')
@@ -119,6 +127,7 @@ export default function LessonForm({ activePackages }: { activePackages: ActiveP
             label="Tarih"
             type="date"
             value={date}
+            max={new Date().toISOString().split('T')[0]}
             onChange={(e) => setDate(e.target.value)}
             required
           />

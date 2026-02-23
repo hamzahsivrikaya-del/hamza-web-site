@@ -120,7 +120,7 @@ export async function GET(
       <div
         style={{
           width: '1080px',
-          height: '1080px',
+          height: '1920px',
           backgroundColor: '#F6F1E7',
           display: 'flex',
           flexDirection: 'column',
@@ -130,7 +130,7 @@ export async function GET(
       >
         {/* Arka plan barbell */}
         <svg
-          style={{ position: 'absolute', right: -55, bottom: -35, opacity: 0.052 }}
+          style={{ position: 'absolute', right: -55, bottom: 200, opacity: 0.04 }}
           width="960" height="360" viewBox="0 0 960 360"
         >
           <ellipse cx="85" cy="180" rx="80" ry="130" fill="#1A1A1A" />
@@ -145,7 +145,7 @@ export async function GET(
 
         {/* Arka plan dumbbell */}
         <svg
-          style={{ position: 'absolute', left: -28, top: 460, opacity: 0.04 }}
+          style={{ position: 'absolute', left: -28, top: 820, opacity: 0.035 }}
           width="560" height="200" viewBox="0 0 560 200"
         >
           <ellipse cx="56" cy="100" rx="50" ry="82" fill="#1A1A1A" />
@@ -161,50 +161,110 @@ export async function GET(
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '14px', backgroundColor: '#DC2626', display: 'flex' }} />
 
         {/* Köşe gradient */}
-        <div style={{ position: 'absolute', top: 14, left: 0, width: '320px', height: '280px', background: 'linear-gradient(135deg, rgba(220,38,38,0.07) 0%, transparent 70%)', display: 'flex' }} />
-
-        {/* Tarih rozeti */}
-        <div style={{
-          position: 'absolute', top: '50px', right: '60px',
-          display: 'flex', backgroundColor: '#1A1A1A', borderRadius: '6px',
-          padding: '11px 26px',
-        }}>
-          <div style={{ display: 'flex', color: '#F6F1E7', fontSize: '24px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase' }}>
-            {weekLabel}
-          </div>
-        </div>
+        <div style={{ position: 'absolute', top: 14, left: 0, width: '400px', height: '360px', background: 'linear-gradient(135deg, rgba(220,38,38,0.07) 0%, transparent 70%)', display: 'flex' }} />
 
         {/* Başlık */}
-        <div style={{ position: 'absolute', top: '54px', left: '60px', right: '330px', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', fontFamily: '"Oswald"', fontSize: '128px', color: '#DC2626', letterSpacing: '4px', lineHeight: 0.88 }}>
+        <div style={{ position: 'absolute', top: '70px', left: '60px', right: '60px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', fontFamily: '"Oswald"', fontSize: '148px', color: '#DC2626', letterSpacing: '5px', lineHeight: 0.88 }}>
             {firstName}
           </div>
-          <div style={{ display: 'flex', fontSize: '38px', fontWeight: 800, color: '#1A1A1A', letterSpacing: '3px', textTransform: 'uppercase', marginTop: '12px' }}>
+          <div style={{ display: 'flex', fontSize: '42px', fontWeight: 800, color: '#1A1A1A', letterSpacing: '4px', textTransform: 'uppercase', marginTop: '16px' }}>
             Haftalık Spor Özeti
           </div>
         </div>
 
+        {/* Tarih rozeti */}
+        <div style={{
+          position: 'absolute', top: '70px', right: '60px',
+          display: 'flex', backgroundColor: '#1A1A1A', borderRadius: '8px',
+          padding: '14px 28px',
+        }}>
+          <div style={{ display: 'flex', color: '#F6F1E7', fontSize: '26px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase' }}>
+            {weekLabel}
+          </div>
+        </div>
+
+        {/* İstatistikler */}
+        <div style={{ position: 'absolute', top: '320px', left: '60px', right: '60px', display: 'flex', gap: '24px' }}>
+
+          {/* Bu hafta */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', backgroundColor: '#1A1A1A', borderRadius: '20px', padding: '36px 20px 32px', borderTopWidth: '7px', borderTopStyle: 'solid', borderTopColor: '#DC2626' }}>
+            <div style={{ display: 'flex', fontSize: '20px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
+              Bu Hafta
+            </div>
+            <div style={{ display: 'flex', fontFamily: '"Oswald"', fontSize: '108px', color: '#DC2626', lineHeight: 1, margin: '4px 0' }}>
+              {String(report.lessons_count)}
+            </div>
+            <div style={{ display: 'flex', fontSize: '20px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
+              Ders
+            </div>
+          </div>
+
+          {/* Toplam */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', backgroundColor: '#1A1A1A', borderRadius: '20px', padding: '36px 20px 32px', borderTopWidth: '7px', borderTopStyle: 'solid', borderTopColor: '#DC2626' }}>
+            <div style={{ display: 'flex', fontSize: '20px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
+              Toplam
+            </div>
+            <div style={{ display: 'flex', fontFamily: '"Oswald"', fontSize: '108px', color: '#DC2626', lineHeight: 1, margin: '4px 0' }}>
+              {String(totalLessons ?? 0)}
+            </div>
+            <div style={{ display: 'flex', fontSize: '20px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
+              Ders
+            </div>
+          </div>
+
+          {/* Seri — sadece 2+ haftada */}
+          {showStreak ? (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', backgroundColor: '#1A1A1A', borderRadius: '20px', padding: '36px 20px 32px', borderTopWidth: '7px', borderTopStyle: 'solid', borderTopColor: '#F59E0B' }}>
+              <div style={{ display: 'flex', fontSize: '20px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
+                Ardışık
+              </div>
+              <div style={{ display: 'flex', fontFamily: '"Oswald"', fontSize: '108px', color: '#F59E0B', lineHeight: 1, margin: '4px 0' }}>
+                {String(report.consecutive_weeks)}
+              </div>
+              <div style={{ display: 'flex', fontSize: '20px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
+                Hafta
+              </div>
+            </div>
+          ) : null}
+
+        </div>
+
+        {/* Haftalık mesaj */}
+        {report.message ? (
+          <div style={{
+            position: 'absolute', top: '600px', left: '60px', right: '60px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backgroundColor: '#DC2626', borderRadius: '16px',
+            padding: '32px 48px',
+          }}>
+            <div style={{ display: 'flex', fontSize: '36px', fontWeight: 700, color: '#ffffff', lineHeight: 1.3, textAlign: 'center' }}>
+              {report.message}
+            </div>
+          </div>
+        ) : null}
+
         {/* FACT kartı */}
         <div style={{
-          position: 'absolute', top: '256px', left: '60px', right: '60px',
+          position: 'absolute', top: '780px', left: '60px', right: '60px',
           display: 'flex', alignItems: 'center', gap: '36px',
-          backgroundColor: '#ffffff', borderRadius: '16px',
+          backgroundColor: '#ffffff', borderRadius: '20px',
           borderLeftWidth: '10px', borderLeftStyle: 'solid', borderLeftColor: '#DC2626',
-          padding: '38px 52px 38px 48px',
+          padding: '44px 52px 44px 48px',
         }}>
           {/* İkon */}
-          <div style={{ display: 'flex', width: '100px', height: '100px', backgroundColor: '#DC2626', borderRadius: '14px', alignItems: 'center', justifyContent: 'center', fontSize: '48px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', width: '110px', height: '110px', backgroundColor: '#DC2626', borderRadius: '16px', alignItems: 'center', justifyContent: 'center', fontSize: '52px', flexShrink: 0 }}>
             {fact.icon}
           </div>
           {/* İçerik */}
           <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <div style={{ display: 'flex', fontSize: '19px', fontWeight: 700, color: '#DC2626', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', fontSize: '20px', fontWeight: 700, color: '#DC2626', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '10px' }}>
               Bunu Biliyor musunuz?
             </div>
-            <div style={{ display: 'flex', fontSize: '35px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1.22 }}>
+            <div style={{ display: 'flex', fontSize: '36px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1.25 }}>
               {fact.text}
             </div>
-            <div style={{ display: 'flex', fontSize: '17px', color: '#aaa', marginTop: '9px' }}>
+            <div style={{ display: 'flex', fontSize: '18px', color: '#aaa', marginTop: '12px' }}>
               {fact.source}
             </div>
           </div>
@@ -212,87 +272,41 @@ export async function GET(
 
         {/* Motivasyon kartı */}
         <div style={{
-          position: 'absolute', top: '494px', left: '60px', right: '60px',
+          position: 'absolute', top: '1160px', left: '60px', right: '60px',
           display: 'flex', alignItems: 'center', gap: '36px',
-          backgroundColor: '#ffffff', borderRadius: '16px',
+          backgroundColor: '#ffffff', borderRadius: '20px',
           borderLeftWidth: '10px', borderLeftStyle: 'solid', borderLeftColor: '#1A1A1A',
-          padding: '34px 52px 34px 48px',
+          padding: '40px 52px 40px 48px',
         }}>
           {/* İkon */}
-          <div style={{ display: 'flex', width: '100px', height: '100px', backgroundColor: '#1A1A1A', borderRadius: '14px', alignItems: 'center', justifyContent: 'center', fontSize: '48px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', width: '110px', height: '110px', backgroundColor: '#1A1A1A', borderRadius: '16px', alignItems: 'center', justifyContent: 'center', fontSize: '52px', flexShrink: 0 }}>
             {motivation.icon}
           </div>
           {/* İçerik */}
           <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <div style={{ display: 'flex', fontSize: '19px', fontWeight: 700, color: '#1A1A1A', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', fontSize: '20px', fontWeight: 700, color: '#1A1A1A', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '10px' }}>
               Zinciri Kirma
             </div>
-            <div style={{ display: 'flex', fontSize: '32px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1.25 }}>
+            <div style={{ display: 'flex', fontSize: '34px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1.28 }}>
               {motivation.text}
             </div>
           </div>
         </div>
 
-        {/* İstatistikler */}
-        <div style={{ position: 'absolute', bottom: '168px', left: '60px', right: '60px', display: 'flex', gap: '24px' }}>
-
-          {/* Bu hafta */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', backgroundColor: '#1A1A1A', borderRadius: '16px', padding: '26px 20px 22px', borderTopWidth: '6px', borderTopStyle: 'solid', borderTopColor: '#DC2626' }}>
-            <div style={{ display: 'flex', fontSize: '18px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
-              Bu Hafta Toplamda
-            </div>
-            <div style={{ display: 'flex', fontFamily: '"Oswald"', fontSize: '86px', color: '#DC2626', lineHeight: 1, margin: '2px 0' }}>
-              {String(report.lessons_count)}
-            </div>
-            <div style={{ display: 'flex', fontSize: '18px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
-              Ders Tamamladın
-            </div>
-          </div>
-
-          {/* Toplam */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', backgroundColor: '#1A1A1A', borderRadius: '16px', padding: '26px 20px 22px', borderTopWidth: '6px', borderTopStyle: 'solid', borderTopColor: '#DC2626' }}>
-            <div style={{ display: 'flex', fontSize: '18px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
-              Toplamda
-            </div>
-            <div style={{ display: 'flex', fontFamily: '"Oswald"', fontSize: '86px', color: '#DC2626', lineHeight: 1, margin: '2px 0' }}>
-              {String(totalLessons ?? 0)}
-            </div>
-            <div style={{ display: 'flex', fontSize: '18px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
-              Ders Tamamlandı
-            </div>
-          </div>
-
-          {/* Seri — sadece 2+ haftada */}
-          {showStreak ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', backgroundColor: '#1A1A1A', borderRadius: '16px', padding: '26px 20px 22px', borderTopWidth: '6px', borderTopStyle: 'solid', borderTopColor: '#F59E0B' }}>
-              <div style={{ display: 'flex', fontSize: '18px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
-                Ardışık
-              </div>
-              <div style={{ display: 'flex', fontFamily: '"Oswald"', fontSize: '86px', color: '#F59E0B', lineHeight: 1, margin: '2px 0' }}>
-                {String(report.consecutive_weeks)}
-              </div>
-              <div style={{ display: 'flex', fontSize: '18px', fontWeight: 700, color: '#555', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
-                Hafta Serisi
-              </div>
-            </div>
-          ) : null}
-
-        </div>
-
         {/* Footer */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '148px',
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '170px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           backgroundColor: '#1A1A1A', padding: '0 60px',
         }}>
-          <div style={{ display: 'flex', fontFamily: '"Oswald"', fontSize: '52px', color: '#DC2626', letterSpacing: '2px' }}>
+          <div style={{ display: 'flex', fontFamily: '"Oswald"', fontSize: '56px', color: '#DC2626', letterSpacing: '2px' }}>
             @hamzasivrikayaa
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-            <div style={{ display: 'flex', fontSize: '21px', fontWeight: 700, color: '#555', letterSpacing: '2px', textTransform: 'uppercase' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+            <div style={{ display: 'flex', fontSize: '24px', fontWeight: 700, color: '#555', letterSpacing: '2px', textTransform: 'uppercase' }}>
               Kisisel Antrenor
             </div>
-            <div style={{ display: 'flex', fontSize: '15px', color: '#444', letterSpacing: '1px' }}>
+            <div style={{ display: 'flex', fontSize: '17px', color: '#444', letterSpacing: '1px' }}>
               Antalya
             </div>
           </div>
@@ -301,7 +315,7 @@ export async function GET(
     ),
     {
       width: 1080,
-      height: 1080,
+      height: 1920,
       fonts: [
         { name: 'Oswald', data: oswaldFont, style: 'normal', weight: 700 },
         { name: 'Barlow Condensed', data: barlowCondFont, style: 'normal', weight: 700 },
