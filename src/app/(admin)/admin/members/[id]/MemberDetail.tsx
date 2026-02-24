@@ -13,8 +13,11 @@ import ProgressChart from '@/app/(member)/dashboard/progress/ProgressChart'
 import Select from '@/components/ui/Select'
 import type { User, Package, Measurement, Lesson, Gender, MealLog, MemberMeal } from '@/lib/types'
 import MealPlanManager from './MealPlanManager'
+import Link from 'next/link'
 
 type Tab = 'overview' | 'measurements' | 'packages' | 'lessons' | 'nutrition'
+
+type DependentUser = Pick<User, 'id' | 'full_name' | 'is_active' | 'gender'>
 
 interface Props {
   member: User
@@ -23,9 +26,10 @@ interface Props {
   lessons: (Lesson & { packages?: { total_lessons: number } })[]
   mealLogs: (MealLog & { member_meal?: { id: string; name: string } | null })[]
   memberMeals: MemberMeal[]
+  dependents: DependentUser[]
 }
 
-export default function MemberDetail({ member, packages, measurements, lessons, mealLogs, memberMeals }: Props) {
+export default function MemberDetail({ member, packages, measurements, lessons, mealLogs, memberMeals, dependents }: Props) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [editing, setEditing] = useState(false)
@@ -43,6 +47,39 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
   const [mealLogForm, setMealLogForm] = useState({ status: '' as string, note: '' })
   const [savingMealLog, setSavingMealLog] = useState(false)
   const [deletingMealLogId, setDeletingMealLogId] = useState<string | null>(null)
+  const [showAddDependent, setShowAddDependent] = useState(false)
+  const [dependentForm, setDependentForm] = useState({ full_name: '', gender: '' as '' | Gender, phone: '' })
+  const [addingDependent, setAddingDependent] = useState(false)
+  const [dependentError, setDependentError] = useState('')
+
+  async function handleAddDependent(e: React.FormEvent) {
+    e.preventDefault()
+    setAddingDependent(true)
+    setDependentError('')
+    try {
+      const res = await fetch('/api/admin/members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: dependentForm.full_name,
+          gender: dependentForm.gender,
+          phone: dependentForm.phone,
+          parent_id: member.id,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Eklenemedi')
+      }
+      setShowAddDependent(false)
+      setDependentForm({ full_name: '', gender: '', phone: '' })
+      router.refresh()
+    } catch (err: unknown) {
+      setDependentError(err instanceof Error ? err.message : 'Bir hata oluştu')
+    } finally {
+      setAddingDependent(false)
+    }
+  }
 
   async function handleDeletePackage(packageId: string) {
     if (!confirm('Bu paketi ve bağlı ders kayıtlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return
@@ -201,7 +238,10 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
                 </Badge>
               </div>
               <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-xs sm:text-sm text-text-secondary">
-                <span className="truncate max-w-[180px] sm:max-w-none">{member.email}</span>
+                {member.parent_id && <Badge variant="default">Bağlı Üye</Badge>}
+                {!member.email.endsWith('@hamzapt.local') && (
+                  <span className="truncate max-w-[180px] sm:max-w-none">{member.email}</span>
+                )}
                 {member.phone && (
                   <>
                     <span className="text-border">·</span>
@@ -302,10 +342,12 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
               <div className="rounded-xl border border-border p-5 bg-surface">
                 <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-4">Kişisel Bilgiler</p>
                 <div className="space-y-3">
-                  <div>
-                    <p className="text-xs text-text-secondary mb-0.5">E-posta</p>
-                    <p className="text-sm text-text-primary break-all">{member.email}</p>
-                  </div>
+                  {!member.email.endsWith('@hamzapt.local') && (
+                    <div>
+                      <p className="text-xs text-text-secondary mb-0.5">E-posta</p>
+                      <p className="text-sm text-text-primary break-all">{member.email}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-xs text-text-secondary mb-0.5">Telefon</p>
                     <p className="text-sm text-text-primary">{member.phone || '\u2014'}</p>
@@ -421,6 +463,42 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
                 </div>
               ) : (
                 <p className="text-sm text-text-secondary">Ders kaydı yok</p>
+              )}
+            </div>
+
+            {/* Bağlı Üyeler */}
+            <div className="rounded-xl border border-border p-5 bg-surface">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] text-text-secondary uppercase tracking-widest">Bağlı Üyeler</p>
+                <button
+                  onClick={() => setShowAddDependent(true)}
+                  className="text-xs text-primary hover:text-primary-hover transition-colors cursor-pointer"
+                >
+                  + Bağlı Üye Ekle
+                </button>
+              </div>
+              {dependents.length > 0 ? (
+                <div className="space-y-2">
+                  {dependents.map((dep) => (
+                    <Link
+                      key={dep.id}
+                      href={`/admin/members/${dep.id}`}
+                      className="flex items-center justify-between p-3 rounded-lg bg-background hover:bg-surface-hover transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-text-primary">{dep.full_name}</span>
+                        <Badge variant={dep.is_active ? 'success' : 'default'}>
+                          {dep.is_active ? 'Aktif' : 'Pasif'}
+                        </Badge>
+                      </div>
+                      <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-text-secondary">Bağlı üye yok</p>
               )}
             </div>
           </div>
@@ -681,6 +759,43 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
             <Button loading={saving} onClick={handleSave}>Kaydet</Button>
           </div>
         </div>
+      </Modal>
+
+      {/* -- Bağlı Üye Ekleme Modal -- */}
+      <Modal open={showAddDependent} onClose={() => setShowAddDependent(false)} title="Bağlı Üye Ekle">
+        <p className="text-sm text-text-secondary mb-4">
+          E-posta hesabı olmayan çocuk veya aile üyesi ekleyin. Bu üye sisteme giriş yapamaz, sadece admin takip eder ve veli dashboard&apos;unda görünür.
+        </p>
+        <form onSubmit={handleAddDependent} className="space-y-4">
+          <Input
+            label="Ad Soyad"
+            value={dependentForm.full_name}
+            onChange={(e) => setDependentForm({ ...dependentForm, full_name: e.target.value })}
+            required
+          />
+          <Select
+            label="Cinsiyet"
+            value={dependentForm.gender}
+            onChange={(e) => setDependentForm({ ...dependentForm, gender: e.target.value as '' | Gender })}
+            options={[
+              { value: '', label: 'Seçiniz' },
+              { value: 'male', label: 'Erkek' },
+              { value: 'female', label: 'Kadın' },
+            ]}
+            required
+          />
+          <Input
+            label="Telefon"
+            type="tel"
+            value={dependentForm.phone}
+            onChange={(e) => setDependentForm({ ...dependentForm, phone: e.target.value })}
+          />
+          {dependentError && <p className="text-sm text-danger">{dependentError}</p>}
+          <div className="flex gap-3 justify-end">
+            <Button variant="secondary" type="button" onClick={() => setShowAddDependent(false)}>İptal</Button>
+            <Button type="submit" loading={addingDependent}>Ekle</Button>
+          </div>
+        </form>
       </Modal>
 
       {/* -- Beslenme Kaydı Düzenleme Modal -- */}
