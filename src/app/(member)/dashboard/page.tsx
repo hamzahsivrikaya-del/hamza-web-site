@@ -153,77 +153,6 @@ export default async function MemberDashboard() {
         )}
       </Card>
 
-      {/* Bağlı Üyeler (Çocuklar) */}
-      {dependentData.length > 0 && dependentData.map((dep) => {
-        const depRemaining = dep.activePackage
-          ? dep.activePackage.total_lessons - dep.activePackage.used_lessons
-          : 0
-        const depRatio = dep.activePackage ? depRemaining / dep.activePackage.total_lessons : 0
-        let depStatusLabel = 'Paket Yok'
-        let depStatusVariant: 'success' | 'warning' | 'danger' | 'default' = 'default'
-        if (dep.activePackage) {
-          if (depRemaining <= 0) { depStatusLabel = 'Bitti'; depStatusVariant = 'danger' }
-          else if (depRatio <= 0.25) { depStatusLabel = `Son ${depRemaining} Ders`; depStatusVariant = 'danger' }
-          else if (depRatio <= 0.5) { depStatusLabel = 'Azalıyor'; depStatusVariant = 'warning' }
-          else { depStatusLabel = 'Aktif'; depStatusVariant = 'success' }
-        }
-        return (
-          <Card key={dep.id} className="border-blue-200 bg-blue-50/30 animate-fade-up">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <h3 className="font-semibold text-text-primary">{dep.full_name}</h3>
-              </div>
-              <Badge variant={depStatusVariant}>{depStatusLabel}</Badge>
-            </div>
-
-            {dep.activePackage && (
-              <div className="space-y-2 mb-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-text-secondary">Kalan Ders</span>
-                  <span className="font-bold">{depRemaining}</span>
-                </div>
-                <div className="h-2 bg-border rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 rounded-full transition-all"
-                    style={{ width: `${(dep.activePackage.used_lessons / dep.activePackage.total_lessons) * 100}%` }}
-                  />
-                </div>
-                <p className="text-xs text-text-secondary">
-                  {dep.activePackage.used_lessons}/{dep.activePackage.total_lessons} ders tamamlandı
-                </p>
-              </div>
-            )}
-
-            {dep.recentMeasurement && (
-              <div className="flex gap-4 text-sm border-t border-border/50 pt-3">
-                {dep.recentMeasurement.weight && (
-                  <div>
-                    <span className="font-bold">{dep.recentMeasurement.weight}</span>
-                    <span className="text-text-secondary text-xs ml-1">kg</span>
-                  </div>
-                )}
-                {dep.recentMeasurement.body_fat_pct && (
-                  <div>
-                    <span className="font-bold text-orange-500">{dep.recentMeasurement.body_fat_pct}%</span>
-                    <span className="text-text-secondary text-xs ml-1">yağ</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <Link
-              href={`/dashboard/cocuk/${dep.id}/ilerleme`}
-              className="text-sm text-blue-600 mt-3 inline-block hover:underline"
-            >
-              İlerlemeyi gör →
-            </Link>
-          </Card>
-        )
-      })}
-
       {/* Geçmiş Paketler */}
       {pastPackages && pastPackages.length > 0 && (
         <Card>
@@ -396,6 +325,110 @@ export default async function MemberDashboard() {
             Tüm yazıları gör →
           </Link>
         </Card>
+      )}
+      {/* Bağlı Üyeler (Çocuklar) */}
+      {dependentData.length > 0 && (
+        <div className="space-y-4">
+          <p className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-medium">Bağlı Kişiler</p>
+          {dependentData.map((dep) => {
+            const depRemaining = dep.activePackage
+              ? dep.activePackage.total_lessons - dep.activePackage.used_lessons
+              : 0
+            const depRatio = dep.activePackage ? depRemaining / dep.activePackage.total_lessons : 0
+            const depPct = dep.activePackage
+              ? Math.round((dep.activePackage.used_lessons / dep.activePackage.total_lessons) * 100)
+              : 0
+            let depStatusLabel = 'Paket Yok'
+            let depStatusVariant: 'success' | 'warning' | 'danger' | 'default' = 'default'
+            if (dep.activePackage) {
+              if (depRemaining <= 0) { depStatusLabel = 'Bitti'; depStatusVariant = 'danger' }
+              else if (depRatio <= 0.25) { depStatusLabel = `Son ${depRemaining} Ders`; depStatusVariant = 'danger' }
+              else if (depRatio <= 0.5) { depStatusLabel = 'Azalıyor'; depStatusVariant = 'warning' }
+              else { depStatusLabel = 'Aktif'; depStatusVariant = 'success' }
+            }
+            const initials = dep.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+
+            return (
+              <Card key={dep.id} className="overflow-hidden animate-fade-up">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-bold text-primary tracking-tight">{initials}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-text-primary text-[15px] truncate">{dep.full_name}</h3>
+                    <p className="text-xs text-text-secondary">Bağlı Üye</p>
+                  </div>
+                  <Badge variant={depStatusVariant}>{depStatusLabel}</Badge>
+                </div>
+
+                {dep.activePackage && (
+                  <div className="bg-background rounded-xl p-3.5 mb-3">
+                    {depRemaining <= 2 && depRemaining > 0 && (
+                      <div className="flex items-center gap-2 p-2.5 mb-3 rounded-lg bg-red-50 border border-red-200">
+                        <svg className="w-4 h-4 text-danger shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <p className="text-xs text-danger font-medium">
+                          {depRemaining === 1 ? `${dep.full_name} için son ders! Yeni paket gerekiyor.` : `${dep.full_name} için son ${depRemaining} ders kaldı.`}
+                        </p>
+                      </div>
+                    )}
+                    {depRemaining <= 0 && dep.activePackage && (
+                      <div className="flex items-center gap-2 p-2.5 mb-3 rounded-lg bg-red-50 border border-red-200">
+                        <svg className="w-4 h-4 text-danger shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg>
+                        <p className="text-xs text-danger font-medium">{dep.full_name} paketi bitti. Yeni paket alınmalı.</p>
+                      </div>
+                    )}
+                    <div className="flex items-end justify-between mb-2.5">
+                      <div>
+                        <p className="text-[10px] text-text-secondary uppercase tracking-widest">Kalan Ders</p>
+                        <p className="text-2xl font-bold text-text-primary -mt-0.5">{depRemaining}</p>
+                      </div>
+                      <p className="text-xs text-text-secondary">
+                        {dep.activePackage.used_lessons}/{dep.activePackage.total_lessons} tamamlandı
+                      </p>
+                    </div>
+                    <div className="h-1.5 bg-border rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all"
+                        style={{ width: `${depPct}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {dep.recentMeasurement && (
+                  <div className="flex gap-3 mb-3">
+                    {dep.recentMeasurement.weight && (
+                      <div className="flex-1 bg-background rounded-lg p-2.5 text-center">
+                        <p className="text-base font-bold text-text-primary">{dep.recentMeasurement.weight}</p>
+                        <p className="text-[10px] text-text-secondary">kg</p>
+                      </div>
+                    )}
+                    {dep.recentMeasurement.body_fat_pct && (
+                      <div className="flex-1 bg-background rounded-lg p-2.5 text-center">
+                        <p className="text-base font-bold text-orange-500">{dep.recentMeasurement.body_fat_pct}%</p>
+                        <p className="text-[10px] text-text-secondary">yağ</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <Link
+                  href={`/dashboard/cocuk/${dep.id}`}
+                  className="flex items-center justify-between p-2.5 -mx-1 rounded-lg hover:bg-surface-hover transition-colors group"
+                >
+                  <span className="text-sm text-primary font-medium">Detayları gör</span>
+                  <svg className="w-4 h-4 text-primary transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </Card>
+            )
+          })}
+        </div>
       )}
     </div>
   )
