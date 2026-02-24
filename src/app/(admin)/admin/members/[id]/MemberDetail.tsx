@@ -11,18 +11,21 @@ import Modal from '@/components/ui/Modal'
 import { formatDate, formatDateShort, getPackageStatusLabel } from '@/lib/utils'
 import ProgressChart from '@/app/(member)/dashboard/progress/ProgressChart'
 import Select from '@/components/ui/Select'
-import type { User, Package, Measurement, Lesson, Gender } from '@/lib/types'
+import type { User, Package, Measurement, Lesson, Gender, MealLog, MemberMeal } from '@/lib/types'
+import MealPlanManager from './MealPlanManager'
 
-type Tab = 'overview' | 'measurements' | 'packages' | 'lessons'
+type Tab = 'overview' | 'measurements' | 'packages' | 'lessons' | 'nutrition'
 
 interface Props {
   member: User
   packages: (Package & { lessons?: Lesson[] })[]
   measurements: Measurement[]
   lessons: (Lesson & { packages?: { total_lessons: number } })[]
+  mealLogs: (MealLog & { member_meal?: { id: string; name: string } | null })[]
+  memberMeals: MemberMeal[]
 }
 
-export default function MemberDetail({ member, packages, measurements, lessons }: Props) {
+export default function MemberDetail({ member, packages, measurements, lessons, mealLogs, memberMeals }: Props) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [editing, setEditing] = useState(false)
@@ -36,9 +39,13 @@ export default function MemberDetail({ member, packages, measurements, lessons }
   const [pdfLoading, setPdfLoading] = useState(false)
   const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
   const [deletingPackageId, setDeletingPackageId] = useState<string | null>(null)
+  const [editingMealLog, setEditingMealLog] = useState<(MealLog & { member_meal?: { id: string; name: string } | null }) | null>(null)
+  const [mealLogForm, setMealLogForm] = useState({ status: '' as string, note: '' })
+  const [savingMealLog, setSavingMealLog] = useState(false)
+  const [deletingMealLogId, setDeletingMealLogId] = useState<string | null>(null)
 
   async function handleDeletePackage(packageId: string) {
-    if (!confirm('Bu paketi ve bagili ders kayitlarini silmek istediginize emin misiniz? Bu islem geri alinamaz.')) return
+    if (!confirm('Bu paketi ve bağlı ders kayıtlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return
     setDeletingPackageId(packageId)
     const supabase = createClient()
     const { error } = await supabase.from('packages').delete().eq('id', packageId)
@@ -63,8 +70,50 @@ export default function MemberDetail({ member, packages, measurements, lessons }
     setDeletingLessonId(null)
   }
 
+  async function handleMealLogUpdate() {
+    if (!editingMealLog) return
+    setSavingMealLog(true)
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('meal_logs')
+      .update({
+        status: mealLogForm.status,
+        note: mealLogForm.note || null,
+      })
+      .eq('id', editingMealLog.id)
+    if (error) {
+      alert('Güncellenemedi: ' + error.message)
+    } else {
+      setEditingMealLog(null)
+      router.refresh()
+    }
+    setSavingMealLog(false)
+  }
+
+  async function handleMealLogDelete(logId: string) {
+    if (!confirm('Bu beslenme kaydını silmek istediğinize emin misiniz?')) return
+    setDeletingMealLogId(logId)
+    const supabase = createClient()
+    const { error } = await supabase.from('meal_logs').delete().eq('id', logId)
+    if (error) {
+      alert('Silinemedi: ' + error.message)
+    } else {
+      router.refresh()
+    }
+    setDeletingMealLogId(null)
+  }
+
   const activePackage    = packages.find((p) => p.status === 'active')
   const latestMeasurement = measurements[0]
+
+  // Beslenme hesaplamaları
+  const compliantCount = mealLogs.filter((l) => l.status === 'compliant').length
+  const compliancePct = mealLogs.length > 0 ? Math.round((compliantCount / mealLogs.length) * 100) : 0
+  const groupedByDate = mealLogs.reduce<Record<string, MealLog[]>>((acc, log) => {
+    if (!acc[log.date]) acc[log.date] = []
+    acc[log.date].push(log)
+    return acc
+  }, {})
   const initials = member.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
 
   async function handleSave() {
@@ -85,10 +134,11 @@ export default function MemberDetail({ member, packages, measurements, lessons }
   }
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
-    { key: 'overview',     label: 'Genel Bakis' },
-    { key: 'measurements', label: 'Olcumler',   count: measurements.length },
+    { key: 'overview',     label: 'Genel Bakış' },
+    { key: 'measurements', label: 'Ölçümler',   count: measurements.length },
     { key: 'packages',     label: 'Paketler',    count: packages.length },
     { key: 'lessons',      label: 'Dersler',     count: lessons.length },
+    { key: 'nutrition',    label: 'Beslenme',    count: mealLogs.length },
   ]
 
   return (
@@ -98,7 +148,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
       <div className="bg-surface border-b border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
 
-          {/* Ust satir: Geri + Aksiyonlar */}
+          {/* Üst satır: Geri + Aksiyonlar */}
           <div className="flex items-center justify-between pt-4 sm:pt-6 pb-4 sm:pb-5">
             <button
               onClick={() => router.back()}
@@ -107,7 +157,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              Uyeler
+              Üyeler
             </button>
             <div className="flex gap-2">
               {measurements.length > 0 && (
@@ -127,11 +177,11 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   Rapor PDF
                 </Button>
               )}
-              <Button variant="secondary" onClick={() => setEditing(true)}>Duzenle</Button>
+              <Button variant="secondary" onClick={() => setEditing(true)}>Düzenle</Button>
             </div>
           </div>
 
-          {/* Uye kimligi */}
+          {/* Üye kimliği */}
           <div className="flex items-center gap-3 sm:gap-4 pb-4 sm:pb-5">
             {/* Monogram avatar */}
             <div className="relative shrink-0">
@@ -159,12 +209,12 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   </>
                 )}
                 <span className="text-border">·</span>
-                <span>Uyelik: {formatDate(member.start_date)}</span>
+                <span>Üyelik: {formatDate(member.start_date)}</span>
               </div>
             </div>
           </div>
 
-          {/* Ozet cubuk */}
+          {/* Özet çubuk */}
           {(activePackage || latestMeasurement) && (
             <div className="grid grid-cols-1 sm:grid-cols-none sm:flex sm:flex-wrap gap-3 sm:gap-6 py-3 border-t border-border mb-0.5">
               {activePackage && (
@@ -184,7 +234,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1">Bitis</p>
+                    <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1">Bitiş</p>
                     <p className="text-[13px] font-semibold text-text-primary">
                       {formatDate(activePackage.expire_date)}
                     </p>
@@ -193,13 +243,13 @@ export default function MemberDetail({ member, packages, measurements, lessons }
               )}
               {latestMeasurement && (
                 <div>
-                  <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1">Son Olcum</p>
+                  <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1">Son Ölçüm</p>
                   <div className="flex items-center gap-2.5 text-[13px] font-semibold">
                     {latestMeasurement.weight && (
                       <span className="text-text-primary">{latestMeasurement.weight} kg</span>
                     )}
                     {latestMeasurement.body_fat_pct && (
-                      <span className="text-orange-500">{latestMeasurement.body_fat_pct}% yag</span>
+                      <span className="text-orange-500">{latestMeasurement.body_fat_pct}% yağ</span>
                     )}
                     <span className="text-[11px] text-text-secondary font-normal">
                       {formatDateShort(latestMeasurement.date)}
@@ -240,7 +290,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
         </div>
       </div>
 
-      {/* -- Tab icerikleri -- */}
+      {/* -- Tab içerikleri -- */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
 
         {/* GENEL BAKIS */}
@@ -248,9 +298,9 @@ export default function MemberDetail({ member, packages, measurements, lessons }
           <div className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-              {/* Kisisel Bilgiler */}
+              {/* Kişisel Bilgiler */}
               <div className="rounded-xl border border-border p-5 bg-surface">
-                <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-4">Kisisel Bilgiler</p>
+                <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-4">Kişisel Bilgiler</p>
                 <div className="space-y-3">
                   <div>
                     <p className="text-xs text-text-secondary mb-0.5">E-posta</p>
@@ -263,11 +313,11 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   <div>
                     <p className="text-xs text-text-secondary mb-0.5">Cinsiyet</p>
                     <p className="text-sm text-text-primary">
-                      {member.gender === 'male' ? 'Erkek' : member.gender === 'female' ? 'Kadin' : '\u2014'}
+                      {member.gender === 'male' ? 'Erkek' : member.gender === 'female' ? 'Kadın' : '\u2014'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-text-secondary mb-0.5">Uyelik Baslangici</p>
+                    <p className="text-xs text-text-secondary mb-0.5">Üyelik Başlangıcı</p>
                     <p className="text-sm text-text-primary">{formatDate(member.start_date)}</p>
                   </div>
                 </div>
@@ -287,7 +337,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-text-secondary">{activePackage.used_lessons}/{activePackage.total_lessons}</p>
-                        <p className="text-xs text-text-secondary">kullanildi</p>
+                        <p className="text-xs text-text-secondary">kullanıldı</p>
                       </div>
                     </div>
                     <div className="h-1.5 bg-border rounded-full overflow-hidden">
@@ -296,16 +346,16 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                         style={{ width: `${(activePackage.used_lessons / activePackage.total_lessons) * 100}%` }}
                       />
                     </div>
-                    <p className="text-xs text-text-secondary">Bitis: {formatDate(activePackage.expire_date)}</p>
+                    <p className="text-xs text-text-secondary">Bitiş: {formatDate(activePackage.expire_date)}</p>
                   </div>
                 ) : (
                   <p className="text-sm text-text-secondary">Aktif paket yok</p>
                 )}
               </div>
 
-              {/* Son Olcum */}
+              {/* Son Ölçüm */}
               <div className="rounded-xl border border-border p-5 bg-surface">
-                <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-4">Son Olcum</p>
+                <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-4">Son Ölçüm</p>
                 {latestMeasurement ? (
                   <div>
                     <p className="text-xs text-text-secondary mb-3">{formatDate(latestMeasurement.date)}</p>
@@ -319,7 +369,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                       {latestMeasurement.body_fat_pct && (
                         <div className="bg-surface-hover rounded-lg p-2.5 border border-border">
                           <p className="text-lg font-bold text-orange-500">{latestMeasurement.body_fat_pct}%</p>
-                          <p className="text-[10px] text-text-secondary">yag</p>
+                          <p className="text-[10px] text-text-secondary">yağ</p>
                         </div>
                       )}
                       {latestMeasurement.waist && (
@@ -337,12 +387,12 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-text-secondary">Olcum yok</p>
+                  <p className="text-sm text-text-secondary">Ölçüm yok</p>
                 )}
               </div>
             </div>
 
-            {/* Son Dersler -- ozet */}
+            {/* Son Dersler -- özet */}
             <div className="rounded-xl border border-border p-5 bg-surface">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-[10px] text-text-secondary uppercase tracking-widest">Son Dersler</p>
@@ -351,7 +401,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                     onClick={() => setActiveTab('lessons')}
                     className="text-xs text-primary hover:text-primary-hover transition-colors cursor-pointer"
                   >
-                    Tumunu gor →
+                    Tümünü gör →
                   </button>
                 )}
               </div>
@@ -370,20 +420,20 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-text-secondary">Ders kaydi yok</p>
+                <p className="text-sm text-text-secondary">Ders kaydı yok</p>
               )}
             </div>
           </div>
         )}
 
-        {/* OLCUMLER */}
+        {/* ÖLÇÜMLER */}
         {activeTab === 'measurements' && (
           <div>
             {measurements.length > 0 ? (
               <ProgressChart measurements={[...measurements].reverse()} gender={member.gender} />
             ) : (
               <div className="rounded-xl border border-border p-16 text-center bg-surface">
-                <p className="text-text-secondary">Henuz olcum kaydi yok</p>
+                <p className="text-text-secondary">Henüz ölçüm kaydı yok</p>
               </div>
             )}
           </div>
@@ -430,7 +480,7 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs text-text-secondary">
-                      <span>{pkg.used_lessons} kullanildi</span>
+                      <span>{pkg.used_lessons} kullanıldı</span>
                       <span>{pkg.total_lessons - pkg.used_lessons} kalan</span>
                     </div>
                     <div className="h-1.5 bg-border rounded-full overflow-hidden">
@@ -439,13 +489,13 @@ export default function MemberDetail({ member, packages, measurements, lessons }
                         style={{ width: `${(pkg.used_lessons / pkg.total_lessons) * 100}%` }}
                       />
                     </div>
-                    <p className="text-xs text-text-secondary">Bitis: {formatDate(pkg.expire_date)}</p>
+                    <p className="text-xs text-text-secondary">Bitiş: {formatDate(pkg.expire_date)}</p>
                   </div>
                 </div>
               ))
             ) : (
               <div className="rounded-xl border border-border p-16 text-center bg-surface">
-                <p className="text-text-secondary">Paket gecmisi yok</p>
+                <p className="text-text-secondary">Paket geçmişi yok</p>
               </div>
             )}
           </div>
@@ -498,15 +548,93 @@ export default function MemberDetail({ member, packages, measurements, lessons }
               </table>
             ) : (
               <div className="p-16 text-center">
-                <p className="text-text-secondary">Ders kaydi yok</p>
+                <p className="text-text-secondary">Ders kaydı yok</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* BESLENME */}
+        {activeTab === 'nutrition' && (
+          <div className="space-y-4">
+            <MealPlanManager userId={member.id} initialMeals={memberMeals} />
+
+            {mealLogs.length > 0 ? (
+              <>
+                <div className="rounded-xl border border-border p-4 bg-surface">
+                  <h3 className="text-sm font-semibold text-text-secondary mb-2">Beslenme Uyumu</h3>
+                  <div className="flex items-end gap-2">
+                    <span className="text-3xl font-bold" style={{ color: compliancePct >= 80 ? '#22c55e' : compliancePct >= 50 ? '#f59e0b' : '#ef4444' }}>
+                      %{compliancePct}
+                    </span>
+                    <span className="text-sm text-text-secondary pb-1">
+                      ({compliantCount}/{mealLogs.length} öğün)
+                    </span>
+                  </div>
+                </div>
+
+                {Object.entries(groupedByDate).map(([date, logs]) => (
+                  <div key={date} className="rounded-xl border border-border p-4 bg-surface">
+                    <h4 className="text-sm font-medium text-text-secondary mb-3">
+                      {new Date(date + 'T00:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {(logs as (MealLog & { member_meal?: { id: string; name: string } | null })[]).map((log) => (
+                        <div key={log.id} className={`p-3 rounded-lg border relative group ${
+                          log.status === 'compliant'
+                            ? 'bg-green-50 border-green-200'
+                            : 'bg-red-50 border-red-200'
+                        }`}>
+                          {/* Düzenle / Sil butonları */}
+                          <div className="absolute top-1.5 right-1.5 flex gap-0.5">
+                            <button
+                              onClick={() => {
+                                setEditingMealLog(log)
+                                setMealLogForm({ status: log.status, note: log.note || '' })
+                              }}
+                              className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-primary hover:bg-white transition-all cursor-pointer"
+                              title="Düzenle"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleMealLogDelete(log.id)}
+                              disabled={deletingMealLogId === log.id}
+                              className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-danger hover:bg-white transition-all cursor-pointer disabled:opacity-40"
+                              title="Sil"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="text-sm font-medium">{log.member_meal?.name || 'Bilinmeyen Öğün'}</div>
+                          <div className="text-xs mt-1">{log.status === 'compliant' ? 'Uyumlu' : 'Uyulmadı'}</div>
+                          {log.photo_url && (
+                            <a href={log.photo_url} target="_blank" rel="noopener noreferrer" className="block mt-2">
+                              <img src={log.photo_url} alt={log.member_meal?.name || ''} className="rounded-lg w-full h-32 object-cover hover:opacity-90 transition-opacity cursor-pointer" />
+                            </a>
+                          )}
+                          {log.note && <p className="text-xs text-text-secondary mt-1 italic">{log.note}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <div className="text-center py-12 text-text-secondary">
+                <p className="text-lg">Henüz beslenme kaydı yok</p>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* -- Duzenleme Modal -- */}
-      <Modal open={editing} onClose={() => setEditing(false)} title="Uye Duzenle">
+      {/* -- Düzenleme Modal -- */}
+      <Modal open={editing} onClose={() => setEditing(false)} title="Üye Düzenle">
         <div className="space-y-4">
           <Input
             label="Ad Soyad"
@@ -524,16 +652,16 @@ export default function MemberDetail({ member, packages, measurements, lessons }
             value={editForm.gender}
             onChange={(e) => setEditForm({ ...editForm, gender: e.target.value as '' | Gender })}
             options={[
-              { value: '', label: 'Seciniz' },
+              { value: '', label: 'Seçiniz' },
               { value: 'male', label: 'Erkek' },
-              { value: 'female', label: 'Kadin' },
+              { value: 'female', label: 'Kadın' },
             ]}
           />
           <div className="flex items-center justify-between p-3 rounded-lg bg-background border border-border">
             <div>
-              <p className="text-sm font-medium text-text-primary">Uye Durumu</p>
+              <p className="text-sm font-medium text-text-primary">Üye Durumu</p>
               <p className="text-xs text-text-secondary mt-0.5">
-                {editForm.is_active ? 'Uye aktif \u2014 giris yapabilir' : 'Uye pasif \u2014 giris yapamaz'}
+                {editForm.is_active ? 'Üye aktif \u2014 giriş yapabilir' : 'Üye pasif \u2014 giriş yapamaz'}
               </p>
             </div>
             <button
@@ -549,10 +677,47 @@ export default function MemberDetail({ member, packages, measurements, lessons }
             </button>
           </div>
           <div className="flex gap-3 justify-end">
-            <Button variant="secondary" onClick={() => setEditing(false)}>Iptal</Button>
+            <Button variant="secondary" onClick={() => setEditing(false)}>İptal</Button>
             <Button loading={saving} onClick={handleSave}>Kaydet</Button>
           </div>
         </div>
+      </Modal>
+
+      {/* -- Beslenme Kaydı Düzenleme Modal -- */}
+      <Modal open={!!editingMealLog} onClose={() => setEditingMealLog(null)} title="Beslenme Kaydı Düzenle">
+        {editingMealLog && (
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-text-secondary mb-1">Öğün</p>
+              <p className="text-sm font-medium">{editingMealLog.member_meal?.name || 'Bilinmeyen'}</p>
+            </div>
+            <Select
+              label="Durum"
+              value={mealLogForm.status}
+              onChange={(e) => setMealLogForm({ ...mealLogForm, status: e.target.value })}
+              options={[
+                { value: 'compliant', label: 'Uyumlu' },
+                { value: 'non_compliant', label: 'Uyulmadı' },
+              ]}
+            />
+            <Input
+              label="Not"
+              value={mealLogForm.note}
+              onChange={(e) => setMealLogForm({ ...mealLogForm, note: e.target.value })}
+              placeholder="İsteğe bağlı not"
+            />
+            {editingMealLog.photo_url && (
+              <div>
+                <p className="text-xs text-text-secondary mb-1">Fotoğraf</p>
+                <img src={editingMealLog.photo_url} alt="" className="rounded-lg w-full h-40 object-cover" />
+              </div>
+            )}
+            <div className="flex gap-3 justify-end">
+              <Button variant="secondary" onClick={() => setEditingMealLog(null)}>İptal</Button>
+              <Button loading={savingMealLog} onClick={handleMealLogUpdate}>Kaydet</Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )

@@ -25,21 +25,35 @@ export function getWeekRange(date: Date): { weekStart: string; weekEnd: string }
 /**
  * Performansa göre motivasyonel mesaj üretir.
  */
-export function generateMessage(lessonsCount: number, consecutiveWeeks: number): string {
+export function generateMessage(lessonsCount: number, consecutiveWeeks: number, nutritionCompliance?: number | null): string {
+  let msg: string
+
   // Streak öncelikli mesajlar
   if (consecutiveWeeks >= 8 && lessonsCount >= 2)
-    return `${consecutiveWeeks} haftadır sporunuzu aksatmadınız! İnanılmaz bir disiplin sergiliyorsunuz. 🏆`
-  if (consecutiveWeeks >= 4 && lessonsCount >= 2)
-    return `${consecutiveWeeks} haftadır düzenli antrenman yapıyorsunuz! Bu alışkanlık hayatınızı değiştiriyor. ⭐`
-
+    msg = `${consecutiveWeeks} haftadır sporunuzu aksatmadınız! İnanılmaz bir disiplin sergiliyorsunuz. 🏆`
+  else if (consecutiveWeeks >= 4 && lessonsCount >= 2)
+    msg = `${consecutiveWeeks} haftadır düzenli antrenman yapıyorsunuz! Bu alışkanlık hayatınızı değiştiriyor. ⭐`
   // Haftalık performans
-  if (lessonsCount === 0)
-    return 'Bu hafta mola verdik. Dinlenmek de antrenman! Gelecek hafta sizi bekliyoruz. 💪'
-  if (lessonsCount === 1)
-    return 'Bu hafta 1 ders yaptınız. Harika bir başlangıç! Her adım hedefe yaklaştırır. 🌟'
-  if (lessonsCount === 2)
-    return 'Bu hafta 2 ders yaptınız. Çok iyi gidiyorsunuz! Düzenlilik en büyük anahtarınız. 🔥'
-  if (lessonsCount === 3)
-    return `Bu hafta 3 ders yaptınız! Harika bir performans. Böyle devam edin! 💪🔥`
-  return `Bu hafta ${lessonsCount} ders yaptınız! Mükemmel bir hafta geçirdiniz. Siz bir şampiyonsunuz! 🏆`
+  else if (lessonsCount === 0)
+    msg = 'Bu hafta mola verdik. Dinlenmek de antrenman! Gelecek hafta sizi bekliyoruz. 💪'
+  else if (lessonsCount === 1)
+    msg = 'Bu hafta 1 ders yaptınız. Harika bir başlangıç! Her adım hedefe yaklaştırır. 🌟'
+  else if (lessonsCount === 2)
+    msg = 'Bu hafta 2 ders yaptınız. Çok iyi gidiyorsunuz! Düzenlilik en büyük anahtarınız. 🔥'
+  else if (lessonsCount === 3)
+    msg = `Bu hafta 3 ders yaptınız! Harika bir performans. Böyle devam edin! 💪🔥`
+  else
+    msg = `Bu hafta ${lessonsCount} ders yaptınız! Mükemmel bir hafta geçirdiniz. Siz bir şampiyonsunuz! 🏆`
+
+  if (nutritionCompliance !== null && nutritionCompliance !== undefined) {
+    if (nutritionCompliance >= 80) {
+      msg += ` Beslenme uyumunuz %${nutritionCompliance} — harika!`
+    } else if (nutritionCompliance >= 50) {
+      msg += ` Beslenme uyumunuz %${nutritionCompliance} — daha iyi olabilir.`
+    } else if (nutritionCompliance > 0) {
+      msg += ` Beslenme uyumunuz %${nutritionCompliance} — bu hafta beslenmemize dikkat edelim.`
+    }
+  }
+
+  return msg
 }

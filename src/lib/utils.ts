@@ -53,6 +53,7 @@ export function getNotificationTypeLabel(type: string): string {
     weekly_report: 'Haftalık Rapor',
     inactive: 'Devamsızlık',
     manual: 'Bildirim',
+    nutrition_reminder: 'Beslenme Hatırlatma',
   }
   return labels[type] || type
 }

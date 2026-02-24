@@ -114,7 +114,31 @@ export interface Workout {
   user?: User
 }
 
-export type NotificationType = 'low_lessons' | 'weekly_report' | 'inactive' | 'manual'
+// Beslenme takibi
+export type MealStatus = 'compliant' | 'non_compliant'
+
+export interface MemberMeal {
+  id: string
+  user_id: string
+  name: string
+  order_num: number
+  created_at: string
+}
+
+export interface MealLog {
+  id: string
+  user_id: string
+  date: string
+  meal_id: string
+  status: MealStatus
+  photo_url: string | null
+  note: string | null
+  created_at: string
+  // joined
+  member_meal?: MemberMeal
+}
+
+export type NotificationType = 'low_lessons' | 'weekly_report' | 'inactive' | 'manual' | 'nutrition_reminder'
 
 export interface Notification {
   id: string

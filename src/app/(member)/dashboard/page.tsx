@@ -4,6 +4,7 @@ import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Link from 'next/link'
 import { formatDate, daysRemaining, getPackageStatusLabel } from '@/lib/utils'
+import type { MemberMeal } from '@/lib/types'
 
 export default async function MemberDashboard() {
   const supabase = await createClient()
@@ -54,6 +55,21 @@ export default async function MemberDashboard() {
       .limit(1)
       .maybeSingle(),
   ])
+
+  // Üyeye atanmış öğünler
+  const todayDate = new Date().toISOString().split('T')[0]
+  const { data: memberMeals } = await supabase
+    .from('member_meals')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('order_num')
+
+  // Bugünün beslenme kayıtları
+  const { data: todayMeals } = await supabase
+    .from('meal_logs')
+    .select('meal_id, status')
+    .eq('user_id', user.id)
+    .eq('date', todayDate)
 
   const remaining = activePackage
     ? activePackage.total_lessons - activePackage.used_lessons
@@ -146,6 +162,40 @@ export default async function MemberDashboard() {
           </Link>
         </Card>
       )}
+
+      {/* Bugünün Beslenmesi */}
+      <Link href="/dashboard/beslenme" className="block">
+        <Card className="hover-lift card-glow gradient-border border-primary/20 animate-fade-up delay-100">
+          <div className="flex items-center gap-2 mb-3">
+            <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 2v9a3 3 0 003 3v7a1 1 0 002 0v-7a3 3 0 003-3V2h-2v9a1 1 0 01-1 1h-2a1 1 0 01-1-1V2H7zM17 2v20a1 1 0 002 0v-8h1a2 2 0 002-2V5a3 3 0 00-3-3h-2z" />
+            </svg>
+            <h3 className="font-semibold text-text-primary">Beslenme Raporu</h3>
+          </div>
+          {memberMeals && memberMeals.length > 0 ? (
+            <>
+              <div className="flex gap-2">
+                {(memberMeals as MemberMeal[]).map((meal) => {
+                  const log = todayMeals?.find((m: { meal_id: string; status: string }) => m.meal_id === meal.id)
+                  return (
+                    <div key={meal.id} className={`flex-1 text-center py-2 rounded-lg text-xs font-medium ${
+                      !log ? 'bg-border text-text-secondary' :
+                      log.status === 'compliant' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {meal.name}
+                    </div>
+                  )
+                })}
+              </div>
+              <p className="text-xs text-text-secondary mt-2">
+                {todayMeals?.filter((m: { status: string }) => m.status === 'compliant').length || 0}/{todayMeals?.length || 0} öğün uyumlu
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-text-secondary">Henüz öğün planı atanmadı</p>
+          )}
+        </Card>
+      </Link>
 
       {/* Hızlı linkler */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

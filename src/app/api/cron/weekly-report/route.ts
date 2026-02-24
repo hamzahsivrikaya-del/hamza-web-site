@@ -63,7 +63,19 @@ async function generateReport(
   // Streak hesapla
   const consecutiveWeeks = await calculateStreak(admin, userId, weekStart)
 
-  const message = generateMessage(count, consecutiveWeeks)
+  // Beslenme uyumu hesapla
+  const { data: weekMeals } = await admin
+    .from('meal_logs')
+    .select('status')
+    .eq('user_id', userId)
+    .gte('date', weekStart)
+    .lte('date', weekEnd)
+
+  const nutritionCompliance = weekMeals && weekMeals.length > 0
+    ? Math.round((weekMeals.filter((m: { status: string }) => m.status === 'compliant').length / weekMeals.length) * 100)
+    : null
+
+  const message = generateMessage(count, consecutiveWeeks, nutritionCompliance)
 
   // Upsert — aynı hafta için tekrar çalışırsa günceller
   await admin.from('weekly_reports').upsert(
@@ -74,6 +86,7 @@ async function generateReport(
       lessons_count: count,
       total_hours: totalHours,
       consecutive_weeks: consecutiveWeeks,
+      nutrition_compliance: nutritionCompliance,
       message,
     },
     { onConflict: 'user_id,week_start' }
