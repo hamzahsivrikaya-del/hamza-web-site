@@ -11,7 +11,6 @@ export default async function MembersPage() {
       packages(id, total_lessons, used_lessons, status, start_date, expire_date)
     `)
     .eq('role', 'member')
-    .is('parent_id', null)
     .order('created_at', { ascending: false })
 
   return <MembersList initialMembers={members || []} />

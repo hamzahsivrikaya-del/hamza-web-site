@@ -144,8 +144,16 @@ export default function MembersList({ initialMembers }: { initialMembers: Member
                       <Badge variant={member.is_active ? 'success' : 'default'}>
                         {member.is_active ? 'Aktif' : 'Pasif'}
                       </Badge>
+                      {member.parent_id && (
+                        <Badge variant="default">Bağlı Üye</Badge>
+                      )}
                     </div>
-                    <p className="text-sm text-text-secondary mt-1">{member.email}</p>
+                    <p className="text-sm text-text-secondary mt-1">
+                      {member.parent_id
+                        ? `Veli: ${members.find(m => m.id === member.parent_id)?.full_name || '—'}`
+                        : member.email
+                      }
+                    </p>
                   </Link>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
