@@ -122,8 +122,8 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
 
   // ---- foto yükleme ----
   async function handlePhotoUpload(file: File, meal: MemberMeal) {
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Dosya 2MB\'dan küçük olmalı')
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Dosya 10MB\'dan küçük olmalı')
       return
     }
     setUploading(meal.id)

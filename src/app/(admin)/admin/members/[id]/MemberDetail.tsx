@@ -466,41 +466,43 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
               )}
             </div>
 
-            {/* Bağlı Üyeler */}
-            <div className="rounded-xl border border-border p-5 bg-surface">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-[10px] text-text-secondary uppercase tracking-widest">Bağlı Üyeler</p>
-                <button
-                  onClick={() => setShowAddDependent(true)}
-                  className="text-xs text-primary hover:text-primary-hover transition-colors cursor-pointer"
-                >
-                  + Bağlı Üye Ekle
-                </button>
-              </div>
-              {dependents.length > 0 ? (
-                <div className="space-y-2">
-                  {dependents.map((dep) => (
-                    <Link
-                      key={dep.id}
-                      href={`/admin/members/${dep.id}`}
-                      className="flex items-center justify-between p-3 rounded-lg bg-background hover:bg-surface-hover transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-text-primary">{dep.full_name}</span>
-                        <Badge variant={dep.is_active ? 'success' : 'default'}>
-                          {dep.is_active ? 'Aktif' : 'Pasif'}
-                        </Badge>
-                      </div>
-                      <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  ))}
+            {/* Bağlı Üyeler — sadece bağlı olmayan üyelerde göster */}
+            {!member.parent_id && (
+              <div className="rounded-xl border border-border p-5 bg-surface">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[10px] text-text-secondary uppercase tracking-widest">Bağlı Üyeler</p>
+                  <button
+                    onClick={() => setShowAddDependent(true)}
+                    className="text-xs text-primary hover:text-primary-hover transition-colors cursor-pointer"
+                  >
+                    + Bağlı Üye Ekle
+                  </button>
                 </div>
-              ) : (
-                <p className="text-sm text-text-secondary">Bağlı üye yok</p>
-              )}
-            </div>
+                {dependents.length > 0 ? (
+                  <div className="space-y-2">
+                    {dependents.map((dep) => (
+                      <Link
+                        key={dep.id}
+                        href={`/admin/members/${dep.id}`}
+                        className="flex items-center justify-between p-3 rounded-lg bg-background hover:bg-surface-hover transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-text-primary">{dep.full_name}</span>
+                          <Badge variant={dep.is_active ? 'success' : 'default'}>
+                            {dep.is_active ? 'Aktif' : 'Pasif'}
+                          </Badge>
+                        </div>
+                        <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-text-secondary">Bağlı üye yok</p>
+                )}
+              </div>
+            )}
           </div>
         )}
 

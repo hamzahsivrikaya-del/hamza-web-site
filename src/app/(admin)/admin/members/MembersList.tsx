@@ -150,7 +150,7 @@ export default function MembersList({ initialMembers }: { initialMembers: Member
                     </div>
                     <p className="text-sm text-text-secondary mt-1">
                       {member.parent_id
-                        ? `Veli: ${members.find(m => m.id === member.parent_id)?.full_name || '—'}`
+                        ? `Bağlı: ${members.find(m => m.id === member.parent_id)?.full_name || '—'}`
                         : member.email
                       }
                     </p>
