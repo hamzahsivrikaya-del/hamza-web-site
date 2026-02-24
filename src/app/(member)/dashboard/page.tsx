@@ -4,7 +4,7 @@ import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Link from 'next/link'
 import { formatDate, daysRemaining, getPackageStatusLabel } from '@/lib/utils'
-import type { MemberMeal } from '@/lib/types'
+import type { MemberMeal, Package, Measurement } from '@/lib/types'
 
 export default async function MemberDashboard() {
   const supabase = await createClient()
@@ -55,6 +55,24 @@ export default async function MemberDashboard() {
       .limit(1)
       .maybeSingle(),
   ])
+
+  // Bağlı üyeler (çocuklar)
+  const { data: dependents } = await supabase
+    .from('users')
+    .select('id, full_name, gender')
+    .eq('parent_id', user.id)
+
+  const dependentData = await Promise.all(
+    (dependents || []).map(async (dep) => {
+      const [{ data: pkg }, { data: measurement }] = await Promise.all([
+        supabase.from('packages').select('*').eq('user_id', dep.id).eq('status', 'active')
+          .order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('measurements').select('*').eq('user_id', dep.id)
+          .order('date', { ascending: false }).limit(1).maybeSingle(),
+      ])
+      return { ...dep, activePackage: pkg as Package | null, recentMeasurement: measurement as Measurement | null }
+    })
+  )
 
   // Üyeye atanmış öğünler
   const todayDate = new Date().toISOString().split('T')[0]
@@ -134,6 +152,77 @@ export default async function MemberDashboard() {
           </div>
         )}
       </Card>
+
+      {/* Bağlı Üyeler (Çocuklar) */}
+      {dependentData.length > 0 && dependentData.map((dep) => {
+        const depRemaining = dep.activePackage
+          ? dep.activePackage.total_lessons - dep.activePackage.used_lessons
+          : 0
+        const depRatio = dep.activePackage ? depRemaining / dep.activePackage.total_lessons : 0
+        let depStatusLabel = 'Paket Yok'
+        let depStatusVariant: 'success' | 'warning' | 'danger' | 'default' = 'default'
+        if (dep.activePackage) {
+          if (depRemaining <= 0) { depStatusLabel = 'Bitti'; depStatusVariant = 'danger' }
+          else if (depRatio <= 0.25) { depStatusLabel = `Son ${depRemaining} Ders`; depStatusVariant = 'danger' }
+          else if (depRatio <= 0.5) { depStatusLabel = 'Azalıyor'; depStatusVariant = 'warning' }
+          else { depStatusLabel = 'Aktif'; depStatusVariant = 'success' }
+        }
+        return (
+          <Card key={dep.id} className="border-blue-200 bg-blue-50/30 animate-fade-up">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <h3 className="font-semibold text-text-primary">{dep.full_name}</h3>
+              </div>
+              <Badge variant={depStatusVariant}>{depStatusLabel}</Badge>
+            </div>
+
+            {dep.activePackage && (
+              <div className="space-y-2 mb-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-secondary">Kalan Ders</span>
+                  <span className="font-bold">{depRemaining}</span>
+                </div>
+                <div className="h-2 bg-border rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 rounded-full transition-all"
+                    style={{ width: `${(dep.activePackage.used_lessons / dep.activePackage.total_lessons) * 100}%` }}
+                  />
+                </div>
+                <p className="text-xs text-text-secondary">
+                  {dep.activePackage.used_lessons}/{dep.activePackage.total_lessons} ders tamamlandı
+                </p>
+              </div>
+            )}
+
+            {dep.recentMeasurement && (
+              <div className="flex gap-4 text-sm border-t border-border/50 pt-3">
+                {dep.recentMeasurement.weight && (
+                  <div>
+                    <span className="font-bold">{dep.recentMeasurement.weight}</span>
+                    <span className="text-text-secondary text-xs ml-1">kg</span>
+                  </div>
+                )}
+                {dep.recentMeasurement.body_fat_pct && (
+                  <div>
+                    <span className="font-bold text-orange-500">{dep.recentMeasurement.body_fat_pct}%</span>
+                    <span className="text-text-secondary text-xs ml-1">yağ</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Link
+              href={`/dashboard/cocuk/${dep.id}/ilerleme`}
+              className="text-sm text-blue-600 mt-3 inline-block hover:underline"
+            >
+              İlerlemeyi gör →
+            </Link>
+          </Card>
+        )
+      })}
 
       {/* Geçmiş Paketler */}
       {pastPackages && pastPackages.length > 0 && (
