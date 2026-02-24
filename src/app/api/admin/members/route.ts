@@ -22,9 +22,17 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { email, password, full_name, phone, gender } = body
+  const { email: rawEmail, password: rawPassword, full_name, phone, gender, parent_id } = body
 
-  if (!email || !password || !full_name) {
+  // Bağlı üye ise sahte email/şifre oluştur
+  const isDependent = !!parent_id
+  const email = isDependent ? `child-${crypto.randomUUID()}@hamzapt.local` : rawEmail
+  const password = isDependent ? crypto.randomUUID() : rawPassword
+
+  if (!full_name) {
+    return NextResponse.json({ error: 'Ad soyad gerekli' }, { status: 400 })
+  }
+  if (!isDependent && (!email || !password)) {
     return NextResponse.json({ error: 'Gerekli alanlar eksik' }, { status: 400 })
   }
 
@@ -41,10 +49,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: authError.message }, { status: 400 })
   }
 
-  // Profil güncelle (trigger otomatik oluşturur ama phone + gender ekleyelim)
+  // Profil güncelle (trigger otomatik oluşturur ama phone + gender + parent_id ekleyelim)
   const profileUpdate: Record<string, string> = {}
   if (phone) profileUpdate.phone = phone
   if (gender) profileUpdate.gender = gender
+  if (parent_id) profileUpdate.parent_id = parent_id
   if (Object.keys(profileUpdate).length > 0) {
     await adminClient
       .from('users')
@@ -52,11 +61,13 @@ export async function POST(request: NextRequest) {
       .eq('id', authData.user.id)
   }
 
-  // Onay maili gönder
-  await adminClient.auth.resend({
-    type: 'signup',
-    email,
-  })
+  // Bağlı üye ise onay maili gönderme
+  if (!isDependent) {
+    await adminClient.auth.resend({
+      type: 'signup',
+      email,
+    })
+  }
 
   return NextResponse.json({ id: authData.user.id }, { status: 201 })
 }
