@@ -43,7 +43,10 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/antrenmanlar') ||
     pathname === '/' ||
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/cron') ||
+    pathname.startsWith('/api/push') ||
+    pathname.startsWith('/api/share') ||
     pathname.includes('.')
   ) {
     // Giriş yapmış kullanıcıyı login veya landing page'den yönlendir

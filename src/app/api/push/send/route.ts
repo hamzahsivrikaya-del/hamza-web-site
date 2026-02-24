@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import webpush from 'web-push'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { safeCompare } from '@/lib/auth-utils'
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT!,
@@ -9,17 +10,16 @@ webpush.setVapidDetails(
 )
 
 // Bu endpoint yalnızca sunucu tarafından çağrılır (internal).
-// Güvenlik: sadece aynı origin'den istek kabul et.
 export async function POST(request: Request) {
-  const authHeader = request.headers.get('x-internal-token')
-  if (authHeader !== process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  const authHeader = request.headers.get('x-internal-token') || ''
+  if (!safeCompare(authHeader, process.env.SUPABASE_SERVICE_ROLE_KEY!)) {
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
   }
 
   const { userIds, title, message, url } = await request.json()
 
-  if (!userIds?.length || !title || !message) {
-    return NextResponse.json({ error: 'Eksik parametre' }, { status: 400 })
+  if (!Array.isArray(userIds) || !userIds.length || userIds.length > 10000 || !title || !message) {
+    return NextResponse.json({ error: 'Geçersiz parametre' }, { status: 400 })
   }
 
   const admin = createAdminClient()

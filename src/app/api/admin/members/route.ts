@@ -29,11 +29,17 @@ export async function POST(request: NextRequest) {
   const email = isDependent ? `child-${crypto.randomUUID()}@hamzapt.local` : rawEmail
   const password = isDependent ? crypto.randomUUID() : rawPassword
 
-  if (!full_name) {
-    return NextResponse.json({ error: 'Ad soyad gerekli' }, { status: 400 })
+  if (!full_name || typeof full_name !== 'string' || full_name.length < 2 || full_name.length > 100) {
+    return NextResponse.json({ error: 'Geçerli bir ad soyad girin' }, { status: 400 })
   }
   if (!isDependent && (!email || !password)) {
     return NextResponse.json({ error: 'Gerekli alanlar eksik' }, { status: 400 })
+  }
+  if (!isDependent && typeof password === 'string' && password.length < 6) {
+    return NextResponse.json({ error: 'Şifre en az 6 karakter olmalı' }, { status: 400 })
+  }
+  if (gender && !['male', 'female'].includes(gender)) {
+    return NextResponse.json({ error: 'Geçersiz cinsiyet' }, { status: 400 })
   }
 
   // Service role key ile admin client kullan

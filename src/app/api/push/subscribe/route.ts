@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   )
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: 'İşlem başarısız' }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true })

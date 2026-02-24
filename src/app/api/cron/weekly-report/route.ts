@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getWeekRange, generateMessage } from '@/lib/weekly-report'
 import { sendPushNotification } from '@/lib/push'
+import { safeCompare } from '@/lib/auth-utils'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
-  // Vercel Cron veya admin tetiklemesi için token doğrula
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const authHeader = request.headers.get('authorization') || ''
+  const expected = `Bearer ${process.env.CRON_SECRET}`
+  if (!safeCompare(authHeader, expected)) {
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
   }
 
