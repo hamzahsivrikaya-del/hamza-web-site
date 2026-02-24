@@ -38,6 +38,22 @@ const nextConfig: NextConfig = {
             key: 'X-DNS-Prefetch-Control',
             value: 'on',
           },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' https://jpftfjhmgdyrnenopays.supabase.co data: blob:",
+              "font-src 'self' blob:",
+              "connect-src 'self' https://jpftfjhmgdyrnenopays.supabase.co",
+              "worker-src 'self'",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "upgrade-insecure-requests",
+            ].join('; '),
+          },
         ],
       },
     ];
