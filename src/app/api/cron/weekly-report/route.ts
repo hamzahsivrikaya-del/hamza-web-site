@@ -13,6 +13,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
   }
 
+  // Saat kontrolü: sadece 11:00-19:00 UTC (TR 14:00-22:00) arasında gönder
+  const nowUTC = new Date().getUTCHours()
+  if (nowUTC < 11 || nowUTC >= 19) {
+    return NextResponse.json({ ok: true, generated: 0, skipped: 'outside-time-window' })
+  }
+
   const admin = createAdminClient()
   const { weekStart, weekEnd } = getWeekRange(new Date())
 

@@ -12,6 +12,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
   }
 
+  // Saat kontrolü: sadece 06:00-10:00 UTC (TR 09:00-13:00) arasında gönder
+  const nowUTC = new Date().getUTCHours()
+  if (nowUTC < 6 || nowUTC >= 10) {
+    return NextResponse.json({ ok: true, sent: 0, skipped: 'outside-time-window' })
+  }
+
   const admin = createAdminClient()
 
   // Tüm aktif üyeleri al (bağlı üyeler hariç — onlar giriş yapmaz)
