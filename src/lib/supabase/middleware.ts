@@ -51,14 +51,43 @@ export async function updateSession(request: NextRequest) {
   ) {
     // Giriş yapmış kullanıcıyı login veya landing page'den yönlendir
     if ((pathname === '/login' || pathname === '/') && user) {
-      const { data: profile } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+      const cachedRole = request.cookies.get('x-user-role')?.value
+      let role: string | null = null
 
-      const redirectUrl = profile?.role === 'admin' ? '/admin' : '/dashboard'
-      return NextResponse.redirect(new URL(redirectUrl, request.url))
+      if (cachedRole === 'admin' || cachedRole === 'member') {
+        role = cachedRole
+      } else {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        role = profile?.role || null
+
+        if (role) {
+          supabaseResponse.cookies.set('x-user-role', role, {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: true,
+            maxAge: 3600,
+            path: '/',
+          })
+        }
+      }
+
+      const redirectUrl = role === 'admin' ? '/admin' : '/dashboard'
+      const response = NextResponse.redirect(new URL(redirectUrl, request.url))
+      // Cache cookie'sini redirect response'a da ekle
+      if (role && !(cachedRole === 'admin' || cachedRole === 'member')) {
+        response.cookies.set('x-user-role', role, {
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: true,
+          maxAge: 3600,
+          path: '/',
+        })
+      }
+      return response
     }
     return supabaseResponse
   }
@@ -70,20 +99,38 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Rol kontrolü
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  // Rol kontrolü — cookie cache ile
+  const cachedRole = request.cookies.get('x-user-role')?.value
+  let role: string | null = null
+
+  if (cachedRole === 'admin' || cachedRole === 'member') {
+    role = cachedRole
+  } else {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    role = profile?.role || null
+
+    if (role) {
+      supabaseResponse.cookies.set('x-user-role', role, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: true,
+        maxAge: 3600,
+        path: '/',
+      })
+    }
+  }
 
   // Admin rotaları
-  if (pathname.startsWith('/admin') && profile?.role !== 'admin') {
+  if (pathname.startsWith('/admin') && role !== 'admin') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // Üye rotaları
-  if (pathname.startsWith('/dashboard') && profile?.role === 'admin') {
+  if (pathname.startsWith('/dashboard') && role === 'admin') {
     return NextResponse.redirect(new URL('/admin', request.url))
   }
 

@@ -8,25 +8,39 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
-    async function fetchCount() {
-      const supabase = createClient()
+    const supabase = createClient()
+    let userId: string | null = null
+    let interval: ReturnType<typeof setInterval>
+
+    async function init() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      userId = user.id
+      await fetchCount()
+      interval = setInterval(fetchCount, 60000)
+    }
 
+    async function fetchCount() {
+      if (!userId) return
       const { count } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('is_read', false)
-
       setUnreadCount(count || 0)
     }
 
-    fetchCount()
+    function handleVisibility() {
+      if (document.visibilityState === 'visible' && userId) fetchCount()
+    }
 
-    // Her 30 saniyede bir kontrol et
-    const interval = setInterval(fetchCount, 30000)
-    return () => clearInterval(interval)
+    init()
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
   }, [])
 
   return (

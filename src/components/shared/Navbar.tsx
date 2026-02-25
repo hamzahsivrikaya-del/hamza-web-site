@@ -7,33 +7,36 @@ import { createClient } from '@/lib/supabase/client'
 import NotificationBell from './NotificationBell'
 
 interface NavbarProps {
+  userName?: string
   showNotifications?: boolean
 }
 
-export default function Navbar({ showNotifications = true }: NavbarProps) {
+export default function Navbar({ userName: initialName, showNotifications = true }: NavbarProps) {
   const router = useRouter()
-  const [userName, setUserName] = useState('')
-
-  async function fetchName() {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const { data } = await supabase.from('users').select('full_name').eq('id', user.id).single()
-    if (data) setUserName(data.full_name)
-  }
+  const [userName, setUserName] = useState(initialName || '')
 
   useEffect(() => {
-    fetchName()
+    async function fetchName() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase.from('users').select('full_name').eq('id', user.id).single()
+      if (data) setUserName(data.full_name)
+    }
+
+    // Sadece prop yoksa fetch yap
+    if (!initialName) fetchName()
+
     // Settings sayfasından profil güncellenince tetiklenir
     window.addEventListener('profile-updated', fetchName)
     return () => window.removeEventListener('profile-updated', fetchName)
-  }, [])
+  }, [initialName])
 
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
+    document.cookie = 'x-user-role=; path=/; max-age=0'
     router.push('/login')
-    router.refresh()
   }
 
   return (

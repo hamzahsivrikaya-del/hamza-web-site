@@ -24,8 +24,8 @@ export default function Sidebar() {
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
+    document.cookie = 'x-user-role=; path=/; max-age=0'
     router.push('/login')
-    router.refresh()
   }
 
   return (

@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Image from 'next/image'
@@ -7,19 +8,38 @@ import Link from 'next/link'
 import { formatDate, daysRemaining, getPackageStatusLabel } from '@/lib/utils'
 import type { MemberMeal, MemberGoal, Package, Measurement } from '@/lib/types'
 
+function SectionSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="bg-surface rounded-2xl border border-border p-5 space-y-3">
+        <div className="h-5 bg-border rounded w-36" />
+        <div className="h-4 bg-border rounded w-full" />
+        <div className="h-4 bg-border rounded w-2/3" />
+      </div>
+      <div className="bg-surface rounded-2xl border border-border p-5 space-y-3">
+        <div className="h-5 bg-border rounded w-28" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-20 bg-border rounded-xl" />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default async function MemberDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Kritik veri — hemen render
   const [
     { data: profile },
     { data: activePackage },
-    { data: pastPackages },
-    { data: recentMeasurement },
-    { data: blogPosts },
     { data: firstLesson },
-    { data: goals },
+    { data: memberMeals },
+    { data: todayMeals },
   ] = await Promise.all([
     supabase.from('users').select('*').eq('id', user.id).single(),
     supabase
@@ -31,25 +51,6 @@ export default async function MemberDashboard() {
       .limit(1)
       .maybeSingle(),
     supabase
-      .from('packages')
-      .select('*')
-      .eq('user_id', user.id)
-      .neq('status', 'active')
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('measurements')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('date', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from('blog_posts')
-      .select('id, title, slug, published_at')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false })
-      .limit(3),
-    supabase
       .from('lessons')
       .select('date')
       .eq('user_id', user.id)
@@ -57,50 +58,22 @@ export default async function MemberDashboard() {
       .limit(1)
       .maybeSingle(),
     supabase
-      .from('member_goals')
+      .from('member_meals')
       .select('*')
-      .eq('user_id', user.id),
+      .eq('user_id', user.id)
+      .order('order_num'),
+    supabase
+      .from('meal_logs')
+      .select('meal_id, status')
+      .eq('user_id', user.id)
+      .eq('date', new Date().toISOString().split('T')[0]),
   ])
-
-  // Bağlı üyeler (çocuklar)
-  const { data: dependents } = await supabase
-    .from('users')
-    .select('id, full_name, gender')
-    .eq('parent_id', user.id)
-
-  const dependentData = await Promise.all(
-    (dependents || []).map(async (dep) => {
-      const [{ data: pkg }, { data: measurement }] = await Promise.all([
-        supabase.from('packages').select('*').eq('user_id', dep.id).eq('status', 'active')
-          .order('created_at', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('measurements').select('*').eq('user_id', dep.id)
-          .order('date', { ascending: false }).limit(1).maybeSingle(),
-      ])
-      return { ...dep, activePackage: pkg as Package | null, recentMeasurement: measurement as Measurement | null }
-    })
-  )
-
-  // Üyeye atanmış öğünler
-  const todayDate = new Date().toISOString().split('T')[0]
-  const { data: memberMeals } = await supabase
-    .from('member_meals')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('order_num')
-
-  // Bugünün beslenme kayıtları
-  const { data: todayMeals } = await supabase
-    .from('meal_logs')
-    .select('meal_id, status')
-    .eq('user_id', user.id)
-    .eq('date', todayDate)
 
   const remaining = activePackage
     ? activePackage.total_lessons - activePackage.used_lessons
     : 0
   const days = activePackage ? daysRemaining(activePackage.expire_date) : 0
 
-  // Durum etiketi — oran bazlı gradyan
   let statusLabel = 'Paket Yok'
   let statusVariant: 'success' | 'warning' | 'danger' | 'default' = 'default'
   if (activePackage) {
@@ -126,7 +99,6 @@ export default async function MemberDashboard() {
       <Card className="border-primary/20 gradient-border animate-fade-up">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            {/* Profil fotoğrafı */}
             <div className="relative w-12 h-12 rounded-full bg-surface-hover border-2 border-border overflow-hidden flex-shrink-0">
               {profile?.avatar_url ? (
                 <Image src={profile.avatar_url} alt="" fill className="object-cover" sizes="48px" />
@@ -154,7 +126,6 @@ export default async function MemberDashboard() {
               <div className="text-sm text-text-secondary">Kalan Ders</div>
               <div className="text-2xl font-bold">{remaining}</div>
             </div>
-            {/* Progress bar */}
             <div>
               <div className="h-2 bg-border rounded-full overflow-hidden">
                 <div
@@ -172,34 +143,6 @@ export default async function MemberDashboard() {
           </div>
         )}
       </Card>
-
-      {/* Geçmiş Paketler */}
-      {pastPackages && pastPackages.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle>Geçmiş Paketler</CardTitle></CardHeader>
-          <div className="space-y-3 mt-2">
-            {pastPackages.map((pkg) => (
-              <div key={pkg.id} className="flex items-center justify-between p-3 rounded-lg bg-background">
-                <div>
-                  <span className="font-medium text-sm">{pkg.total_lessons} Ders Paketi</span>
-                  <p className="text-xs text-text-secondary mt-0.5">
-                    {formatDate(pkg.start_date)} — {formatDate(pkg.expire_date)}
-                  </p>
-                  <p className="text-xs text-text-secondary">
-                    {pkg.used_lessons}/{pkg.total_lessons} ders tamamlandı
-                  </p>
-                </div>
-                <Badge variant={pkg.status === 'completed' ? 'success' : 'danger'}>
-                  {getPackageStatusLabel(pkg.status)}
-                </Badge>
-              </div>
-            ))}
-          </div>
-          <Link href="/dashboard/packages" className="text-sm text-primary mt-3 inline-block hover:underline">
-            Tüm paketleri gör →
-          </Link>
-        </Card>
-      )}
 
       {/* Bugünün Beslenmesi */}
       <Link href="/dashboard/beslenme" className="block">
@@ -273,6 +216,95 @@ export default async function MemberDashboard() {
           </Card>
         </Link>
       </div>
+
+      {/* Ertelenmiş bölümler — Suspense ile progressive load */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <DeferredSections userId={user.id} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function DeferredSections({ userId }: { userId: string }) {
+  const supabase = await createClient()
+
+  const [
+    { data: pastPackages },
+    { data: recentMeasurement },
+    { data: blogPosts },
+    { data: goals },
+    { data: dependents },
+  ] = await Promise.all([
+    supabase
+      .from('packages')
+      .select('*')
+      .eq('user_id', userId)
+      .neq('status', 'active')
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('measurements')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('blog_posts')
+      .select('id, title, slug, published_at')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(3),
+    supabase
+      .from('member_goals')
+      .select('*')
+      .eq('user_id', userId),
+    supabase
+      .from('users')
+      .select('id, full_name, gender')
+      .eq('parent_id', userId),
+  ])
+
+  const dependentData = await Promise.all(
+    (dependents || []).map(async (dep) => {
+      const [{ data: pkg }, { data: measurement }] = await Promise.all([
+        supabase.from('packages').select('*').eq('user_id', dep.id).eq('status', 'active')
+          .order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('measurements').select('*').eq('user_id', dep.id)
+          .order('date', { ascending: false }).limit(1).maybeSingle(),
+      ])
+      return { ...dep, activePackage: pkg as Package | null, recentMeasurement: measurement as Measurement | null }
+    })
+  )
+
+  return (
+    <>
+      {/* Geçmiş Paketler */}
+      {pastPackages && pastPackages.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Geçmiş Paketler</CardTitle></CardHeader>
+          <div className="space-y-3 mt-2">
+            {pastPackages.map((pkg) => (
+              <div key={pkg.id} className="flex items-center justify-between p-3 rounded-lg bg-background">
+                <div>
+                  <span className="font-medium text-sm">{pkg.total_lessons} Ders Paketi</span>
+                  <p className="text-xs text-text-secondary mt-0.5">
+                    {formatDate(pkg.start_date)} — {formatDate(pkg.expire_date)}
+                  </p>
+                  <p className="text-xs text-text-secondary">
+                    {pkg.used_lessons}/{pkg.total_lessons} ders tamamlandı
+                  </p>
+                </div>
+                <Badge variant={pkg.status === 'completed' ? 'success' : 'danger'}>
+                  {getPackageStatusLabel(pkg.status)}
+                </Badge>
+              </div>
+            ))}
+          </div>
+          <Link href="/dashboard/packages" className="text-sm text-primary mt-3 inline-block hover:underline">
+            Tüm paketleri gör →
+          </Link>
+        </Card>
+      )}
 
       {/* Son ölçüm */}
       {recentMeasurement && (
@@ -357,6 +389,7 @@ export default async function MemberDashboard() {
           </Link>
         </Card>
       )}
+
       {/* Bağlı Üyeler (Çocuklar) */}
       {dependentData.length > 0 && (
         <div className="space-y-4">
@@ -461,6 +494,6 @@ export default async function MemberDashboard() {
           })}
         </div>
       )}
-    </div>
+    </>
   )
 }

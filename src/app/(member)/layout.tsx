@@ -27,7 +27,7 @@ export default async function MemberLayout({
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#FAFAFA]">
-      <Navbar />
+      <Navbar userName={profile?.full_name || ''} />
       <main className="p-4 md:p-6 max-w-5xl mx-auto relative">
         <PushPermissionBanner />
         {children}

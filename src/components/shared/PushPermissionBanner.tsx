@@ -13,8 +13,12 @@ export default function PushPermissionBanner() {
 
     // İzin verilmişse ama subscription DB'de olmayabilir — sessizce tekrar dene
     if (Notification.permission === 'granted') {
+      try {
+        if (sessionStorage.getItem('push-subscribed')) return
+      } catch { /* private browsing */ }
       navigator.serviceWorker.ready
         .then((reg) => subscribeToPush(reg))
+        .then(() => { try { sessionStorage.setItem('push-subscribed', '1') } catch {} })
         .catch(() => {})
       return
     }
