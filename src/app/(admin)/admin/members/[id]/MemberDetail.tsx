@@ -658,46 +658,59 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
                     <h4 className="text-sm font-medium text-text-secondary mb-3">
                       {new Date(date + 'T00:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
                     </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div className="space-y-2">
                       {(logs as (MealLog & { member_meal?: { id: string; name: string } | null })[]).map((log) => (
                         <div key={log.id} className={`p-3 rounded-lg border relative group ${
                           log.status === 'compliant'
                             ? 'bg-green-50 border-green-200'
                             : 'bg-red-50 border-red-200'
                         }`}>
-                          {/* Düzenle / Sil butonları */}
-                          <div className="absolute top-1.5 right-1.5 flex gap-0.5">
-                            <button
-                              onClick={() => {
-                                setEditingMealLog(log)
-                                setMealLogForm({ status: log.status, note: log.note || '' })
-                              }}
-                              className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-primary hover:bg-white transition-all cursor-pointer"
-                              title="Düzenle"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleMealLogDelete(log.id)}
-                              disabled={deletingMealLogId === log.id}
-                              className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-danger hover:bg-white transition-all cursor-pointer disabled:opacity-40"
-                              title="Sil"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">{log.member_meal?.name || 'Bilinmeyen Öğün'}</span>
+                                <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
+                                  log.status === 'compliant'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-red-100 text-red-700'
+                                }`}>
+                                  {log.status === 'compliant' ? 'Uyumlu' : 'Uyulmadı'}
+                                </span>
+                              </div>
+                              {log.note && (
+                                <p className="text-sm text-text-secondary mt-1.5 whitespace-pre-wrap">{log.note}</p>
+                              )}
+                            </div>
+                            <div className="flex gap-0.5 flex-shrink-0">
+                              <button
+                                onClick={() => {
+                                  setEditingMealLog(log)
+                                  setMealLogForm({ status: log.status, note: log.note || '' })
+                                }}
+                                className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-primary hover:bg-white transition-all cursor-pointer"
+                                title="Düzenle"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleMealLogDelete(log.id)}
+                                disabled={deletingMealLogId === log.id}
+                                className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-danger hover:bg-white transition-all cursor-pointer disabled:opacity-40"
+                                title="Sil"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
-                          <div className="text-sm font-medium">{log.member_meal?.name || 'Bilinmeyen Öğün'}</div>
-                          <div className="text-xs mt-1">{log.status === 'compliant' ? 'Uyumlu' : 'Uyulmadı'}</div>
                           {log.photo_url && (
                             <a href={log.photo_url} target="_blank" rel="noopener noreferrer" className="block mt-2">
-                              <img src={log.photo_url} alt={log.member_meal?.name || ''} className="rounded-lg w-full h-32 object-cover hover:opacity-90 transition-opacity cursor-pointer" />
+                              <img src={log.photo_url} alt={log.member_meal?.name || ''} className="rounded-lg w-full max-h-48 object-cover hover:opacity-90 transition-opacity cursor-pointer" />
                             </a>
                           )}
-                          {log.note && <p className="text-xs text-text-secondary mt-1 italic">{log.note}</p>}
                         </div>
                       ))}
                     </div>

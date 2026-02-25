@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { sendLowLessonPush } from '../new/actions'
+import { sendLowLessonPush, sendLessonCompletedPush } from '../new/actions'
 
 interface Attendee {
   packageId: string
@@ -83,6 +83,10 @@ export default function TodayAttendance({
         )
       )
 
+      // Ders tamamlandı bildirimi
+      await sendLessonCompletedPush(attendee.userId)
+
+      // Kalan ders uyarısı
       const remaining = attendee.totalLessons - attendee.usedLessons - 1
       if (remaining <= 2 && remaining >= 1) {
         await sendLowLessonPush(attendee.userId, remaining)

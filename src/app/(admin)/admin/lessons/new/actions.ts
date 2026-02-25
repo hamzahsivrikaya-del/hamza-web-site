@@ -2,6 +2,15 @@
 
 import { sendPushNotification } from '@/lib/push'
 
+export async function sendLessonCompletedPush(userId: string) {
+  await sendPushNotification({
+    userIds: [userId],
+    title: 'Ders Tamamlandı!',
+    message: 'Harika bir iş çıkardın! Şimdi dinlenme ve toparlanma zamanı. Bir sonraki derste görüşmek üzere!',
+    url: '/dashboard',
+  })
+}
+
 export async function sendLowLessonPush(userId: string, remaining: number) {
   const title = remaining === 1 ? 'Son Dersiniz!' : 'Son 2 Dersiniz Kaldı'
   const message =
