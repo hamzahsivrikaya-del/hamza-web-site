@@ -643,39 +643,43 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
             {mealLogs.length > 0 ? (
               <>
                 {/* Kompakt tarih grid'i */}
-                <div className="grid grid-cols-7 gap-1.5">
-                  {Object.entries(groupedByDate).map(([date]) => {
-                    const dayLogs = (groupedByDate[date] as (MealLog & { member_meal?: { id: string; name: string } | null })[])
-                    const dayNormal = dayLogs.filter(l => !l.is_extra)
-                    const dayHasExtra = dayLogs.some(l => l.is_extra)
-                    const dayCompleted = dayNormal.length
-                    const dayTotal = memberMeals.length
-                    const ratio = dayTotal > 0 ? dayCompleted / dayTotal : 0
-                    const isSelected = selectedNutritionDate === date
-                    const d = new Date(date + 'T00:00:00')
-                    const gridColor = ratio >= 1 ? 'bg-success/20 text-success ring-1 ring-success/30'
-                      : ratio >= 0.5 ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300/50'
-                      : dayCompleted > 0 ? 'bg-red-100 text-red-600 ring-1 ring-red-300/50'
-                      : 'bg-border text-text-secondary'
+                <div className="rounded-xl border border-border p-4 bg-surface">
+                  <h4 className="text-sm font-medium text-text-secondary mb-3">Beslenme Geçmişi</h4>
+                  <div className="grid grid-cols-7 gap-2">
+                    {Object.entries(groupedByDate).map(([date]) => {
+                      const dayLogs = (groupedByDate[date] as (MealLog & { member_meal?: { id: string; name: string } | null })[])
+                      const dayNormal = dayLogs.filter(l => !l.is_extra)
+                      const dayHasExtra = dayLogs.some(l => l.is_extra)
+                      const dayCompleted = dayNormal.length
+                      const dayTotal = memberMeals.length
+                      const ratio = dayTotal > 0 ? dayCompleted / dayTotal : 0
+                      const isSelected = selectedNutritionDate === date
+                      const d = new Date(date + 'T00:00:00')
+                      const gridColor = ratio >= 1 ? 'bg-success/20 text-success ring-1 ring-success/30'
+                        : ratio >= 0.5 ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300/50'
+                        : dayCompleted > 0 ? 'bg-red-100 text-red-600 ring-1 ring-red-300/50'
+                        : 'bg-border text-text-secondary'
 
-                    return (
-                      <button
-                        key={date}
-                        onClick={() => setSelectedNutritionDate(isSelected ? null : date)}
-                        className={`relative flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
-                          isSelected ? 'ring-2 ring-primary ring-offset-1' : ''
-                        }`}
-                      >
-                        <span className="text-[10px] text-text-secondary">{d.toLocaleDateString('tr-TR', { weekday: 'short' }).slice(0, 3)}</span>
-                        <span className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-semibold ${gridColor}`}>
-                          {d.getDate()}
-                        </span>
-                        {dayHasExtra && (
-                          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 border border-white" />
-                        )}
-                      </button>
-                    )
-                  })}
+                      return (
+                        <button
+                          key={date}
+                          onClick={() => setSelectedNutritionDate(isSelected ? null : date)}
+                          className={`relative flex flex-col items-center gap-1 py-2 rounded-xl text-xs transition-all cursor-pointer hover:bg-surface-hover ${
+                            isSelected ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' : ''
+                          }`}
+                        >
+                          <span className="text-[11px] text-text-secondary font-medium">{d.toLocaleDateString('tr-TR', { weekday: 'short' }).slice(0, 3)}</span>
+                          <span className={`w-9 h-9 flex items-center justify-center rounded-full text-sm font-semibold ${gridColor}`}>
+                            {d.getDate()}
+                          </span>
+                          <span className="text-[10px] text-text-secondary">{dayCompleted}/{dayTotal}</span>
+                          {dayHasExtra && (
+                            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-400 border border-white" />
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 {/* Seçili gün detayı */}
