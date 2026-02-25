@@ -150,3 +150,15 @@ export interface Notification {
   is_read: boolean
   sent_at: string
 }
+
+// Kisisel hedefler
+export type GoalMetricType = 'weight' | 'body_fat_pct' | 'chest' | 'waist' | 'arm' | 'leg'
+
+export interface MemberGoal {
+  id: string
+  user_id: string
+  metric_type: GoalMetricType
+  target_value: number
+  created_at: string
+  achieved_at: string | null
+}

@@ -35,7 +35,7 @@ export default async function ChildProgressPage({ params }: { params: Promise<{ 
         <h1 className="text-2xl font-bold">{child.full_name} - İlerleme</h1>
       </div>
       {measurements && measurements.length > 0 ? (
-        <ProgressChart measurements={measurements} gender={child.gender} />
+        <ProgressChart measurements={measurements} gender={child.gender} goals={[]} />
       ) : (
         <div className="rounded-xl border border-border p-16 text-center bg-surface">
           <p className="text-text-secondary">Henüz ölçüm kaydı yok</p>

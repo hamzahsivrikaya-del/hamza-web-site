@@ -89,7 +89,7 @@ export default function MemberSettingsPage() {
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 2 * 1024 * 1024) { setAvatarError('Dosya 2MB\'dan küçük olmalı'); return }
+    if (file.size > 15 * 1024 * 1024) { setAvatarError('Dosya 15MB\'dan küçük olmalı'); return }
     setAvatarError('')
     setAvatarMessage('')
     setAvatarLoading(true)
@@ -101,8 +101,10 @@ export default function MemberSettingsPage() {
       const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
       if (uploadError) { setAvatarError('Yükleme başarısız'); setAvatarLoading(false); return }
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-      await supabase.from('users').update({ avatar_url: publicUrl }).eq('id', user!.id)
-      setAvatarUrl(publicUrl)
+      const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`
+      const { error: updateError } = await supabase.from('users').update({ avatar_url: urlWithCacheBust }).eq('id', user!.id)
+      if (updateError) { setAvatarError(`Kayıt başarısız: ${updateError.message}`); setAvatarLoading(false); return }
+      setAvatarUrl(urlWithCacheBust)
       setAvatarMessage('Fotoğraf güncellendi')
     } catch { setAvatarError('Bir hata oluştu') }
     setAvatarLoading(false)
@@ -232,7 +234,7 @@ export default function MemberSettingsPage() {
               >
                 {avatarUrl ? 'Fotoğrafı Değiştir' : 'Fotoğraf Yükle'}
               </Button>
-              <p className="text-xs text-text-secondary">JPG, PNG veya WebP — max 2MB</p>
+              <p className="text-xs text-text-secondary">JPG, PNG veya WebP — max 15MB</p>
             </div>
 
             {avatarError && <p className="text-sm text-danger text-center">{avatarError}</p>}

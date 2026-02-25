@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Image from 'next/image'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Link from 'next/link'
 import { formatDate, daysRemaining, getPackageStatusLabel } from '@/lib/utils'
-import type { MemberMeal, Package, Measurement } from '@/lib/types'
+import type { MemberMeal, MemberGoal, Package, Measurement } from '@/lib/types'
 
 export default async function MemberDashboard() {
   const supabase = await createClient()
@@ -18,6 +19,7 @@ export default async function MemberDashboard() {
     { data: recentMeasurement },
     { data: blogPosts },
     { data: firstLesson },
+    { data: goals },
   ] = await Promise.all([
     supabase.from('users').select('*').eq('id', user.id).single(),
     supabase
@@ -54,6 +56,10 @@ export default async function MemberDashboard() {
       .order('date', { ascending: true })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from('member_goals')
+      .select('*')
+      .eq('user_id', user.id),
   ])
 
   // Bağlı üyeler (çocuklar)
@@ -119,11 +125,25 @@ export default async function MemberDashboard() {
       {/* Hoşgeldin kartı */}
       <Card className="border-primary/20 gradient-border animate-fade-up">
         <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-xl font-bold">Hoşgeldin, {profile?.full_name?.split(' ')[0]?.charAt(0).toUpperCase() + (profile?.full_name?.split(' ')[0]?.slice(1) || '')}</h2>
-            <p className="text-sm text-text-secondary mt-1">
-              Üyelik başlangıcı: {firstLesson?.date ? formatDate(firstLesson.date) : profile?.start_date ? formatDate(profile.start_date) : '-'}
-            </p>
+          <div className="flex items-center gap-3">
+            {/* Profil fotoğrafı */}
+            <div className="relative w-12 h-12 rounded-full bg-surface-hover border-2 border-border overflow-hidden flex-shrink-0">
+              {profile?.avatar_url ? (
+                <Image src={profile.avatar_url} alt="" fill className="object-cover" sizes="48px" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-lg font-bold text-text-secondary">
+                    {profile?.full_name?.charAt(0)?.toUpperCase() || '?'}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">Hoşgeldin, {profile?.full_name?.split(' ')[0]?.charAt(0).toUpperCase() + (profile?.full_name?.split(' ')[0]?.slice(1) || '')}</h2>
+              <p className="text-sm text-text-secondary mt-1">
+                Üyelik başlangıcı: {firstLesson?.date ? formatDate(firstLesson.date) : profile?.start_date ? formatDate(profile.start_date) : '-'}
+              </p>
+            </div>
           </div>
           <Badge variant={statusVariant}>{statusLabel}</Badge>
         </div>
@@ -260,42 +280,53 @@ export default async function MemberDashboard() {
           <CardHeader><CardTitle>Son Ölçüm</CardTitle></CardHeader>
           <div className="text-xs text-text-secondary mb-3">{formatDate(recentMeasurement.date)}</div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {recentMeasurement.weight && (
-              <div className="text-center">
-                <div className="text-lg font-bold">{recentMeasurement.weight}</div>
-                <div className="text-xs text-text-secondary">kg</div>
-              </div>
-            )}
-            {recentMeasurement.chest && (
-              <div className="text-center">
-                <div className="text-lg font-bold">{recentMeasurement.chest}</div>
-                <div className="text-xs text-text-secondary">Göğüs cm</div>
-              </div>
-            )}
-            {recentMeasurement.waist && (
-              <div className="text-center">
-                <div className="text-lg font-bold">{recentMeasurement.waist}</div>
-                <div className="text-xs text-text-secondary">Bel cm</div>
-              </div>
-            )}
-            {recentMeasurement.arm && (
-              <div className="text-center">
-                <div className="text-lg font-bold">{recentMeasurement.arm}</div>
-                <div className="text-xs text-text-secondary">Kol cm</div>
-              </div>
-            )}
-            {recentMeasurement.leg && (
-              <div className="text-center">
-                <div className="text-lg font-bold">{recentMeasurement.leg}</div>
-                <div className="text-xs text-text-secondary">Bacak cm</div>
-              </div>
-            )}
-            {recentMeasurement.body_fat_pct && (
-              <div className="text-center">
-                <div className="text-lg font-bold">{recentMeasurement.body_fat_pct}</div>
-                <div className="text-xs text-text-secondary">Yağ %</div>
-              </div>
-            )}
+            {([
+              { key: 'weight' as const, label: 'Kilo', unit: 'kg', color: '#DC2626' },
+              { key: 'chest' as const, label: 'Göğüs', unit: 'cm', color: '#F59E0B' },
+              { key: 'waist' as const, label: 'Bel', unit: 'cm', color: '#22C55E' },
+              { key: 'arm' as const, label: 'Kol', unit: 'cm', color: '#3B82F6' },
+              { key: 'leg' as const, label: 'Bacak', unit: 'cm', color: '#8B5CF6' },
+              { key: 'body_fat_pct' as const, label: 'Yağ', unit: '%', color: '#F97316' },
+            ]).map(({ key, label, unit, color }) => {
+              const value = recentMeasurement[key]
+              if (!value) return null
+              const goal = (goals as MemberGoal[] | null)?.find(g => g.metric_type === key)
+
+              return (
+                <div key={key} className="bg-background rounded-xl p-3">
+                  <div className="text-[11px] font-medium text-text-secondary mb-1">{label}</div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-bold text-text-primary">{value}</span>
+                    <span className="text-xs text-text-secondary">{unit}</span>
+                  </div>
+                  {goal && (() => {
+                    const current = Number(value)
+                    const target = goal.target_value
+                    const left = Math.abs(target - current)
+                    const done = left <= 0.1
+                    const pct = done ? 100 : Math.max(8, Math.min(92, 100 - (left / (left + 5)) * 100))
+
+                    return (
+                      <div className="mt-2 pt-2 border-t border-border/50">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] text-text-secondary">Hedef</span>
+                          <span className="text-xs font-semibold" style={{ color }}>{target} {unit}</span>
+                        </div>
+                        <div className="h-1.5 bg-border rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${done ? 'bg-success' : ''}`}
+                            style={{ width: `${pct}%`, backgroundColor: done ? undefined : color }}
+                          />
+                        </div>
+                        <div className={`text-[10px] mt-1 ${done ? 'text-success font-medium' : 'text-text-secondary'}`}>
+                          {done ? 'Hedefe ulaştın!' : `Hedefe ${left.toFixed(1)} ${unit} kaldı`}
+                        </div>
+                      </div>
+                    )
+                  })()}
+                </div>
+              )
+            })}
           </div>
           <Link href="/dashboard/progress" className="text-sm text-primary mt-3 inline-block hover:underline">
             Tüm ölçümleri gör →

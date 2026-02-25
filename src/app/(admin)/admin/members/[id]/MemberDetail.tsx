@@ -510,7 +510,7 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
         {activeTab === 'measurements' && (
           <div>
             {measurements.length > 0 ? (
-              <ProgressChart measurements={[...measurements].reverse()} gender={member.gender} />
+              <ProgressChart measurements={[...measurements].reverse()} gender={member.gender} goals={[]} />
             ) : (
               <div className="rounded-xl border border-border p-16 text-center bg-surface">
                 <p className="text-text-secondary">Henüz ölçüm kaydı yok</p>

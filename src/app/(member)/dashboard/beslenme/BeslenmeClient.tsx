@@ -57,6 +57,7 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
   const [uploading, setUploading] = useState<string | null>(null)
   const [notes, setNotes] = useState<Record<string, string>>({}) // mealId -> note text
   const [expandedNote, setExpandedNote] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
   const mealCount = memberMeals.length
@@ -113,6 +114,8 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
           )
           return [data, ...without]
         })
+        setSuccessMsg(status === 'compliant' ? 'Kaydedildi' : 'Kaydedildi')
+        setTimeout(() => setSuccessMsg(null), 2000)
       }
     } catch {
       // sessiz hata
@@ -170,6 +173,8 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
           )
           return [data, ...without]
         })
+        setSuccessMsg('Fotoğraf yüklendi')
+        setTimeout(() => setSuccessMsg(null), 2000)
       }
     } catch {
       // sessiz hata
@@ -277,6 +282,18 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
 
   return (
     <div className="space-y-6 pb-8">
+      {/* Başarı toast */}
+      {successMsg && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-fade-up">
+          <div className="flex items-center gap-2 bg-success text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+            {successMsg}
+          </div>
+        </div>
+      )}
+
       {/* Başlık */}
       <div className="flex items-center gap-3 animate-fade-up">
         <Link

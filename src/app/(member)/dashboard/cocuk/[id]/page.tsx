@@ -207,7 +207,7 @@ export default async function ChildDashboardPage({ params }: { params: Promise<{
       <Card>
         <CardHeader><CardTitle>Fiziksel İlerleme</CardTitle></CardHeader>
         {measurements && measurements.length > 0 ? (
-          <ProgressChart measurements={measurements} gender={child.gender} />
+          <ProgressChart measurements={measurements} gender={child.gender} goals={[]} />
         ) : (
           <p className="text-text-secondary text-center py-8">Henüz ölçüm kaydı yok</p>
         )}
