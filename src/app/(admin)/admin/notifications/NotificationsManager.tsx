@@ -31,7 +31,7 @@ export default function NotificationsManager({ initialNotifications, members }: 
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  const [form, setForm] = useState({ user_id: '', title: '', message: '' })
+  const [form, setForm] = useState({ user_id: '', title: '', message: '', url: '' })
 
   const readCount = notifications.filter((n) => n.is_read).length
 
@@ -73,7 +73,7 @@ export default function NotificationsManager({ initialNotifications, members }: 
       }))
       const { error: insertError } = await supabase.from('notifications').insert(inserts)
       if (insertError) { setError(insertError.message); setSending(false); return }
-      await sendManualPush(members.map((m) => m.id), form.title, form.message)
+      await sendManualPush(members.map((m) => m.id), form.title, form.message, form.url || undefined)
     } else {
       const { error: insertError } = await supabase.from('notifications').insert({
         user_id: form.user_id,
@@ -82,11 +82,11 @@ export default function NotificationsManager({ initialNotifications, members }: 
         message: form.message,
       })
       if (insertError) { setError(insertError.message); setSending(false); return }
-      await sendManualPush([form.user_id], form.title, form.message)
+      await sendManualPush([form.user_id], form.title, form.message, form.url || undefined)
     }
 
     setShowSendModal(false)
-    setForm({ user_id: '', title: '', message: '' })
+    setForm({ user_id: '', title: '', message: '', url: '' })
     setSending(false)
     setSuccess(true)
     setTimeout(() => setSuccess(false), 2000)
@@ -196,6 +196,12 @@ export default function NotificationsManager({ initialNotifications, members }: 
             onChange={(e) => setForm({ ...form, message: e.target.value })}
             required
             placeholder="Bildirim mesajı..."
+          />
+          <Input
+            label="Yönlendirme URL (opsiyonel)"
+            value={form.url}
+            onChange={(e) => setForm({ ...form, url: e.target.value })}
+            placeholder="/dashboard/progress"
           />
           {error && <p className="text-sm text-danger">{error}</p>}
           <div className="flex gap-3 justify-end">
