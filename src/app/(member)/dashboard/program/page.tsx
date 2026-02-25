@@ -8,8 +8,9 @@ import type { Workout } from '@/lib/types'
 
 export default async function ProgramPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) redirect('/login')
+  const user = session.user
 
   const monday = getMonday()
   const todayIndex = getTodayDayIndex()

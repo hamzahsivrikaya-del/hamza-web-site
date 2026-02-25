@@ -6,8 +6,9 @@ export const metadata = { title: 'Beslenme Takibi' }
 
 export default async function BeslenmePage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) redirect('/login')
+  const user = session.user
 
   const todayStr = new Date().toISOString().split('T')[0]
   const thirtyDaysAgo = new Date()

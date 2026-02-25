@@ -4,8 +4,9 @@ import NotificationsList from './NotificationsList'
 
 export default async function NotificationsPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) redirect('/login')
+  const user = session.user
 
   const { data: notifications } = await supabase
     .from('notifications')

@@ -6,8 +6,9 @@ import WeeklyReportList from './WeeklyReportList'
 export default async function HaftalikOzetPage() {
   // Kimlik doğrulama
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) redirect('/login')
+  const user = session.user
 
   // RLS'yi aşmak için admin client ile veri çek (kimlik zaten doğrulandı)
   const admin = createAdminClient()

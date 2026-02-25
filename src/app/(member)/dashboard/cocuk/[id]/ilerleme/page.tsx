@@ -6,8 +6,9 @@ import ProgressChart from '@/app/(member)/dashboard/progress/ProgressChartLazy'
 export default async function ChildProgressPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: childId } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) redirect('/login')
+  const user = session.user
 
   // Çocuğun bu veliye ait olduğunu doğrula
   const { data: child } = await supabase
