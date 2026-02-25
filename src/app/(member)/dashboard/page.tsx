@@ -157,13 +157,12 @@ export default async function MemberDashboard() {
           </div>
           {memberMeals && memberMeals.length > 0 ? (
             <>
-              <div className="flex gap-2">
+              <div className="flex gap-2 overflow-hidden">
                 {(memberMeals as MemberMeal[]).map((meal) => {
-                  const log = todayMeals?.find((m: { meal_id: string; status: string }) => m.meal_id === meal.id)
+                  const log = todayMeals?.find((m: { meal_id: string }) => m.meal_id === meal.id)
                   return (
-                    <div key={meal.id} className={`flex-1 text-center py-2 rounded-lg text-xs font-medium ${
-                      !log ? 'bg-border text-text-secondary' :
-                      log.status === 'compliant' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    <div key={meal.id} className={`flex-1 min-w-0 text-center py-2 rounded-lg text-xs font-medium truncate px-1 ${
+                      log ? 'bg-green-100 text-green-700' : 'bg-border text-text-secondary'
                     }`}>
                       {meal.name}
                     </div>
@@ -171,7 +170,7 @@ export default async function MemberDashboard() {
                 })}
               </div>
               <p className="text-xs text-text-secondary mt-2">
-                {todayMeals?.filter((m: { status: string }) => m.status === 'compliant').length || 0}/{todayMeals?.length || 0} öğün uyumlu
+                {todayMeals?.filter((m: { meal_id: string }) => m.meal_id !== null).length || 0}/{memberMeals.length} öğün tamamlandı
               </p>
             </>
           ) : (

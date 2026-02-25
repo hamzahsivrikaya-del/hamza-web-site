@@ -1,16 +1,15 @@
 'use client'
 
 import { useState, useRef, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Card from '@/components/ui/Card'
-import type { MealLog, MealStatus, MemberMeal } from '@/lib/types'
+import Modal from '@/components/ui/Modal'
+import type { MealLog, MemberMeal } from '@/lib/types'
 
 // ---------- helpers ----------
 
-/** YYYY-MM-DD formatında tarih döndür (timezone-safe) */
 function toDateStr(d: Date): string {
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -18,19 +17,6 @@ function toDateStr(d: Date): string {
   return `${y}-${m}-${dd}`
 }
 
-/** Kısa Türkçe tarih: "24 Şub" */
-function shortDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })
-}
-
-/** Türkçe gün adı */
-function dayName(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  return d.toLocaleDateString('tr-TR', { weekday: 'long' })
-}
-
-/** Bugünün formatlı hali */
 function prettyDate(dateStr: string, today: string): string {
   if (dateStr === today) return 'Bugün'
   const yesterday = new Date(today + 'T00:00:00')
@@ -40,6 +26,11 @@ function prettyDate(dateStr: string, today: string): string {
   return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })
 }
 
+function shortDayName(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('tr-TR', { weekday: 'short' }).slice(0, 3)
+}
+
 // ---------- component ----------
 
 interface Props {
@@ -47,50 +38,69 @@ interface Props {
   memberMeals: MemberMeal[]
   initialLogs: MealLog[]
   today: string
+  nutritionNote: string | null
 }
 
-export default function BeslenmeClient({ userId, memberMeals, initialLogs, today }: Props) {
-  const router = useRouter()
+export default function BeslenmeClient({ userId, memberMeals, initialLogs, today, nutritionNote }: Props) {
   const [logs, setLogs] = useState<MealLog[]>(initialLogs)
   const [selectedDate, setSelectedDate] = useState(today)
-  const [saving, setSaving] = useState<string | null>(null) // "mealId-compliant" gibi key
+  const [saving, setSaving] = useState<string | null>(null)
   const [uploading, setUploading] = useState<string | null>(null)
-  const [notes, setNotes] = useState<Record<string, string>>({}) // mealId -> note text
-  const [expandedNote, setExpandedNote] = useState<string | null>(null)
+  const [expandedMeal, setExpandedMeal] = useState<string | null>(null)
+  const [notes, setNotes] = useState<Record<string, string>>({})
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [showExtraForm, setShowExtraForm] = useState(false)
+  const [extraForm, setExtraForm] = useState({ name: '', note: '' })
+  const [detailDay, setDetailDay] = useState<string | null>(null)
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
   const mealCount = memberMeals.length
 
-  // Seçili güne ait loglar
-  const dayLogs = useMemo(
-    () => logs.filter((l) => l.date === selectedDate),
-    [logs, selectedDate]
-  )
+  // --- computed ---
+  const dayLogs = useMemo(() => logs.filter(l => l.date === selectedDate), [logs, selectedDate])
+  const normalLogs = useMemo(() => dayLogs.filter(l => !l.is_extra), [dayLogs])
+  const extraLogs = useMemo(() => dayLogs.filter(l => l.is_extra), [dayLogs])
+  const completedCount = normalLogs.length
+  const totalMeals = mealCount
+  const completionRatio = totalMeals > 0 ? completedCount / totalMeals : 0
 
-  function getLog(mealId: string): MealLog | undefined {
-    return dayLogs.find((l) => l.meal_id === mealId)
-  }
+  // Son 14 gün
+  const past14Days = useMemo(() => {
+    const days: { date: string; completed: number; total: number; hasExtra: boolean }[] = []
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(today + 'T00:00:00')
+      d.setDate(d.getDate() - i)
+      const ds = toDateStr(d)
+      const dayNormal = logs.filter(l => l.date === ds && !l.is_extra)
+      const dayExtra = logs.filter(l => l.date === ds && l.is_extra)
+      days.push({ date: ds, completed: dayNormal.length, total: mealCount, hasExtra: dayExtra.length > 0 })
+    }
+    return days
+  }, [logs, today, mealCount])
 
-  // ---- tarih navigasyonu ----
+  // --- tarih navigasyonu ---
   function changeDate(offset: number) {
     const d = new Date(selectedDate + 'T00:00:00')
     d.setDate(d.getDate() + offset)
     const newDate = toDateStr(d)
-    if (newDate > today) return // geleceğe gidemez
+    if (newDate > today) return
     setSelectedDate(newDate)
-    setExpandedNote(null)
+    setExpandedMeal(null)
+    setShowExtraForm(false)
   }
 
-  // ---- kaydet / güncelle ----
-  async function handleMealSave(meal: MemberMeal, status: MealStatus) {
-    const key = `${meal.id}-${status}`
-    setSaving(key)
-    try {
-      const supabase = createClient()
-      const existingLog = getLog(meal.id)
-      const noteText = notes[meal.id] ?? existingLog?.note ?? null
+  // --- öğün toggle ---
+  async function handleMealToggle(meal: MemberMeal) {
+    const existingLog = normalLogs.find(l => l.meal_id === meal.id)
+    setSaving(meal.id)
+    const supabase = createClient()
 
+    if (existingLog) {
+      // geri al → sil
+      const { error } = await supabase.from('meal_logs').delete().eq('id', existingLog.id)
+      if (!error) setLogs(prev => prev.filter(l => l.id !== existingLog.id))
+    } else {
+      // tamamla → oluştur
       const { data, error } = await supabase
         .from('meal_logs')
         .upsert(
@@ -98,58 +108,83 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
             user_id: userId,
             date: selectedDate,
             meal_id: meal.id,
-            status,
-            photo_url: existingLog?.photo_url ?? null,
-            note: noteText,
+            status: 'compliant' as const,
+            is_extra: false,
           },
           { onConflict: 'user_id,date,meal_id' }
         )
         .select()
         .single()
-
       if (!error && data) {
-        setLogs((prev) => {
-          const without = prev.filter(
-            (l) => !(l.date === selectedDate && l.meal_id === meal.id)
-          )
-          return [data, ...without]
-        })
-        setSuccessMsg(status === 'compliant' ? 'Kaydedildi' : 'Kaydedildi')
+        setLogs(prev => [...prev, data as MealLog])
+        setSuccessMsg('Kaydedildi')
         setTimeout(() => setSuccessMsg(null), 2000)
       }
-    } catch {
-      // sessiz hata
     }
     setSaving(null)
   }
 
-  // ---- foto yükleme ----
+  // --- not kaydetme ---
+  async function handleNoteSave(logId: string, mealId: string) {
+    const noteText = notes[mealId]
+    if (noteText === undefined) return
+    setSaving(mealId)
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('meal_logs')
+      .update({ note: noteText || null })
+      .eq('id', logId)
+      .select()
+      .single()
+    if (!error && data) {
+      setLogs(prev => prev.map(l => l.id === logId ? data as MealLog : l))
+      setSuccessMsg('Not kaydedildi')
+      setTimeout(() => setSuccessMsg(null), 2000)
+    }
+    setSaving(null)
+  }
+
+  // --- foto yükleme ---
   async function handlePhotoUpload(file: File, meal: MemberMeal) {
     if (file.size > 10 * 1024 * 1024) {
       alert('Dosya 10MB\'dan küçük olmalı')
       return
     }
     setUploading(meal.id)
-    try {
-      const supabase = createClient()
-      const ext = file.name.split('.').pop()
-      const path = `${userId}/${selectedDate}_${meal.id}.${ext}`
+    const supabase = createClient()
+    const ext = file.name.split('.').pop()
+    const path = `${userId}/${selectedDate}_${meal.id}.${ext}`
 
-      const { error: uploadError } = await supabase.storage
-        .from('meal_photos')
-        .upload(path, file, { upsert: true })
+    const { error: uploadError } = await supabase.storage
+      .from('meal_photos')
+      .upload(path, file, { upsert: true })
 
-      if (uploadError) {
-        setUploading(null)
-        return
+    if (uploadError) {
+      setUploading(null)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('meal_photos')
+      .getPublicUrl(path)
+
+    const existingLog = normalLogs.find(l => l.meal_id === meal.id)
+
+    if (existingLog) {
+      // mevcut log'u güncelle
+      const { data, error } = await supabase
+        .from('meal_logs')
+        .update({ photo_url: publicUrl })
+        .eq('id', existingLog.id)
+        .select()
+        .single()
+      if (!error && data) {
+        setLogs(prev => prev.map(l => l.id === existingLog.id ? data as MealLog : l))
+        setSuccessMsg('Fotoğraf yüklendi')
+        setTimeout(() => setSuccessMsg(null), 2000)
       }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('meal_photos')
-        .getPublicUrl(path)
-
-      // Log varsa güncelle, yoksa "compliant" olarak oluştur
-      const existingLog = getLog(meal.id)
+    } else {
+      // log yoksa oluştur
       const { data, error } = await supabase
         .from('meal_logs')
         .upsert(
@@ -157,108 +192,109 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
             user_id: userId,
             date: selectedDate,
             meal_id: meal.id,
-            status: existingLog?.status ?? 'compliant',
+            status: 'compliant' as const,
             photo_url: publicUrl,
-            note: notes[meal.id] ?? existingLog?.note ?? null,
+            is_extra: false,
           },
           { onConflict: 'user_id,date,meal_id' }
         )
         .select()
         .single()
-
       if (!error && data) {
-        setLogs((prev) => {
-          const without = prev.filter(
-            (l) => !(l.date === selectedDate && l.meal_id === meal.id)
-          )
-          return [data, ...without]
-        })
+        setLogs(prev => [...prev, data as MealLog])
         setSuccessMsg('Fotoğraf yüklendi')
         setTimeout(() => setSuccessMsg(null), 2000)
       }
-    } catch {
-      // sessiz hata
     }
     setUploading(null)
   }
 
-  // ---- haftalık uyum ----
-  const weekStats = useMemo(() => {
-    // Bu haftanın pazartesisini bul
-    const todayDate = new Date(today + 'T00:00:00')
-    const dayOfWeek = todayDate.getDay()
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-    const monday = new Date(todayDate)
-    monday.setDate(todayDate.getDate() + mondayOffset)
+  // --- extra öğün kaydetme ---
+  async function handleExtraSave() {
+    const name = extraForm.name.trim()
+    if (!name) return
+    setSaving('extra')
+    const supabase = createClient()
 
-    const weekDates: string[] = []
-    for (let i = 0; i <= 6; i++) {
-      const d = new Date(monday)
-      d.setDate(monday.getDate() + i)
-      const ds = toDateStr(d)
-      if (ds <= today) weekDates.push(ds)
-    }
-
-    let totalMeals = 0
-    let compliantMeals = 0
-
-    for (const date of weekDates) {
-      const dayMealLogs = logs.filter((l) => l.date === date)
-      totalMeals += dayMealLogs.length
-      compliantMeals += dayMealLogs.filter((l) => l.status === 'compliant').length
-    }
-
-    // Dinamik öğün sayısı x gün sayısı
-    const maxPossible = weekDates.length * mealCount
-    const loggedPct = totalMeals > 0 ? Math.round((compliantMeals / totalMeals) * 100) : 0
-    const filledPct = maxPossible > 0 ? Math.round((totalMeals / maxPossible) * 100) : 0
-
-    return { compliantMeals, totalMeals, maxPossible, loggedPct, filledPct, weekDates }
-  }, [logs, today, mealCount])
-
-  // ---- son 7 gün özeti ----
-  const last7Days = useMemo(() => {
-    const days: { date: string; compliant: number; total: number }[] = []
-    for (let i = 1; i <= 7; i++) {
-      const d = new Date(today + 'T00:00:00')
-      d.setDate(d.getDate() - i)
-      const ds = toDateStr(d)
-      const dayMealLogs = logs.filter((l) => l.date === ds)
-      days.push({
-        date: ds,
-        compliant: dayMealLogs.filter((l) => l.status === 'compliant').length,
-        total: dayMealLogs.length,
+    const { data, error } = await supabase
+      .from('meal_logs')
+      .insert({
+        user_id: userId,
+        date: selectedDate,
+        meal_id: null,
+        status: 'compliant' as const,
+        is_extra: true,
+        extra_name: name,
+        note: extraForm.note || null,
       })
-    }
-    return days
-  }, [logs, today])
+      .select()
+      .single()
 
-  // ---- card border class ----
-  function cardBorderClass(mealId: string): string {
-    const log = getLog(mealId)
-    if (!log) return 'border-border'
-    return log.status === 'compliant'
-      ? 'border-success/60 shadow-[0_0_12px_-4px_rgba(34,197,94,0.2)]'
-      : 'border-danger/60 shadow-[0_0_12px_-4px_rgba(239,68,68,0.2)]'
+    if (!error && data) {
+      setLogs(prev => [data as MealLog, ...prev])
+      setExtraForm({ name: '', note: '' })
+      setShowExtraForm(false)
+      setSuccessMsg('Ekstra öğün eklendi')
+      setTimeout(() => setSuccessMsg(null), 2000)
+    }
+    setSaving(null)
   }
+
+  // --- extra öğün silme ---
+  async function handleExtraDelete(logId: string) {
+    setSaving(logId)
+    const supabase = createClient()
+    const { error } = await supabase.from('meal_logs').delete().eq('id', logId)
+    if (!error) setLogs(prev => prev.filter(l => l.id !== logId))
+    setSaving(null)
+  }
+
+  // --- detay modal verileri ---
+  const detailDayData = useMemo(() => {
+    if (!detailDay) return null
+    const dayAll = logs.filter(l => l.date === detailDay)
+    const normal = dayAll.filter(l => !l.is_extra)
+    const extra = dayAll.filter(l => l.is_extra)
+    return { normal, extra, completed: normal.length, total: mealCount }
+  }, [detailDay, logs, mealCount])
+
+  // --- progress bar renk ---
+  function getProgressColor(ratio: number): string {
+    if (ratio >= 1) return 'var(--color-success)'
+    if (ratio >= 0.5) return 'var(--color-warning)'
+    return 'var(--color-danger)'
+  }
+
+  // --- grid renk class ---
+  function getGridColor(completed: number, total: number): string {
+    if (total === 0) return 'bg-border text-text-secondary'
+    const ratio = completed / total
+    if (ratio >= 1) return 'bg-success/20 text-success ring-1 ring-success/30'
+    if (ratio >= 0.5) return 'bg-amber-100 text-amber-700 ring-1 ring-amber-300/50'
+    if (completed > 0) return 'bg-red-100 text-red-600 ring-1 ring-red-300/50'
+    return 'bg-border text-text-secondary'
+  }
+
+  // --- spinner ---
+  const Spinner = () => (
+    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
+  )
 
   // ---- öğün atanmamış durumu ----
   if (mealCount === 0) {
     return (
       <div className="space-y-6 pb-8">
-        {/* Başlık */}
         <div className="flex items-center gap-3 animate-fade-up">
-          <Link
-            href="/dashboard"
-            className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors"
-          >
+          <Link href="/dashboard" className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
           <h1 className="text-2xl font-bold">Beslenme Takibi</h1>
         </div>
-
         <Card className="animate-fade-up delay-100">
           <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
             <div className="w-14 h-14 rounded-full bg-surface-hover flex items-center justify-center">
@@ -267,12 +303,8 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-text-primary">
-                Henüz öğün planınız atanmadı
-              </p>
-              <p className="text-xs text-text-secondary mt-1">
-                Antrenörünüzle iletişime geçin.
-              </p>
+              <p className="text-sm font-medium text-text-primary">Henüz öğün planınız atanmadı</p>
+              <p className="text-xs text-text-secondary mt-1">Antrenörünüzle iletişime geçin.</p>
             </div>
           </div>
         </Card>
@@ -296,16 +328,26 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
 
       {/* Başlık */}
       <div className="flex items-center gap-3 animate-fade-up">
-        <Link
-          href="/dashboard"
-          className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors"
-        >
+        <Link href="/dashboard" className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
         <h1 className="text-2xl font-bold">Beslenme Takibi</h1>
       </div>
+
+      {/* Antrenörün beslenme notu */}
+      {nutritionNote && (
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 animate-fade-up delay-50">
+          <div className="flex items-center gap-2 mb-2">
+            <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            <span className="text-xs font-semibold text-primary uppercase tracking-wide">Antrenörün Notu</span>
+          </div>
+          <p className="text-sm text-text-primary whitespace-pre-wrap">{nutritionNote}</p>
+        </div>
+      )}
 
       {/* Tarih seçici */}
       <div className="flex items-center justify-between bg-surface rounded-xl border border-border p-3 animate-fade-up delay-100">
@@ -321,7 +363,9 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
         <div className="text-center">
           <p className="font-semibold text-sm">{prettyDate(selectedDate, today)}</p>
           {selectedDate !== today && (
-            <p className="text-xs text-text-secondary mt-0.5">{shortDate(selectedDate)}</p>
+            <p className="text-xs text-text-secondary mt-0.5">
+              {new Date(selectedDate + 'T00:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+            </p>
           )}
         </div>
         <button
@@ -336,333 +380,360 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
         </button>
       </div>
 
-      {/* Öğün kartları */}
-      <div className="space-y-3">
+      {/* Progress bar */}
+      <div className="animate-fade-up delay-150">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-semibold text-text-primary">
+            {completedCount}/{totalMeals} öğün tamamlandı
+          </span>
+          <span className="text-xs font-medium" style={{ color: getProgressColor(completionRatio) }}>
+            %{totalMeals > 0 ? Math.round(completionRatio * 100) : 0}
+          </span>
+        </div>
+        <div className="h-2.5 bg-border rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${totalMeals > 0 ? completionRatio * 100 : 0}%`,
+              backgroundColor: getProgressColor(completionRatio),
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Öğün checklist */}
+      <div className="space-y-2">
         {memberMeals.map((meal) => {
-          const log = getLog(meal.id)
-          const isExpanded = expandedNote === meal.id
+          const log = normalLogs.find(l => l.meal_id === meal.id)
+          const isCompleted = !!log
+          const isExpanded = expandedMeal === meal.id
           const noteValue = notes[meal.id] ?? log?.note ?? ''
 
           return (
-            <Card
+            <div
               key={meal.id}
-              className={`transition-all duration-300 animate-fade-up ${cardBorderClass(meal.id)}`}
+              className={`rounded-xl border transition-all duration-200 animate-fade-up ${
+                isCompleted
+                  ? 'bg-success/5 border-success/30'
+                  : 'bg-surface border-border'
+              }`}
             >
-              <div className="space-y-3">
-                {/* Başlık satırı */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-bold text-primary">
-                        {meal.order_num}
-                      </span>
+              {/* Ana satır */}
+              <div className="flex items-center gap-3 p-3">
+                {/* Toggle checkbox */}
+                <button
+                  onClick={() => handleMealToggle(meal)}
+                  disabled={saving !== null}
+                  className="flex-shrink-0 cursor-pointer disabled:opacity-50"
+                  aria-label={isCompleted ? 'Geri al' : 'Tamamla'}
+                >
+                  {saving === meal.id ? (
+                    <div className="w-6 h-6 flex items-center justify-center">
+                      <Spinner />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-sm">{meal.name}</h3>
-                      {log && (
-                        <span
-                          className={`text-xs font-medium ${
-                            log.status === 'compliant' ? 'text-success' : 'text-danger'
-                          }`}
-                        >
-                          {log.status === 'compliant' ? 'Uyuldu' : 'Uyulmadı'}
-                        </span>
-                      )}
+                  ) : isCompleted ? (
+                    <div className="w-6 h-6 rounded-lg bg-success flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-lg border-2 border-border hover:border-success/50 transition-colors" />
+                  )}
+                </button>
 
+                {/* Öğün adı */}
+                <span className={`flex-1 text-sm font-medium ${isCompleted ? 'text-success' : 'text-text-primary'}`}>
+                  {meal.name}
+                </span>
+
+                {/* Aksiyon ikonları (sadece tamamlandıysa aktif) */}
+                {isCompleted && (
+                  <div className="flex items-center gap-1">
+                    {/* Foto */}
+                    <input
+                      ref={(el) => { fileRefs.current[meal.id] = el }}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handlePhotoUpload(file, meal)
+                        e.target.value = ''
+                      }}
+                    />
+                    <button
+                      onClick={() => fileRefs.current[meal.id]?.click()}
+                      disabled={uploading !== null}
+                      className={`p-2 rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${
+                        log?.photo_url ? 'text-primary bg-primary/10' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                      }`}
+                      aria-label="Fotoğraf ekle"
+                    >
+                      {uploading === meal.id ? (
+                        <Spinner />
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      )}
+                    </button>
+                    {/* Not */}
+                    <button
+                      onClick={() => setExpandedMeal(isExpanded ? null : meal.id)}
+                      className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                        log?.note ? 'text-primary bg-primary/10' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                      }`}
+                      aria-label="Not ekle"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Expanded: foto + not */}
+              {isExpanded && log && (
+                <div className="px-3 pb-3 space-y-3 animate-fade-in">
                   {/* Foto thumbnail */}
-                  {log?.photo_url && (
-                    <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-border flex-shrink-0">
-                      <Image
-                        src={log.photo_url}
-                        alt={meal.name}
-                        fill
-                        className="object-cover"
-                        sizes="40px"
-                      />
+                  {log.photo_url && (
+                    <div className="relative w-full h-40 rounded-lg overflow-hidden border border-border">
+                      <Image src={log.photo_url} alt={meal.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
                     </div>
                   )}
-                </div>
-
-                {/* Uyum butonları */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleMealSave(meal, 'compliant')}
-                    disabled={saving !== null}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer
-                      ${
-                        log?.status === 'compliant'
-                          ? 'bg-success/15 text-success border-2 border-success/40'
-                          : 'bg-surface-hover text-text-secondary border-2 border-transparent hover:border-success/30 hover:text-success'
-                      }
-                      disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {saving === `${meal.id}-compliant` ? (
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                    Uydum
-                  </button>
-                  <button
-                    onClick={() => handleMealSave(meal, 'non_compliant')}
-                    disabled={saving !== null}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer
-                      ${
-                        log?.status === 'non_compliant'
-                          ? 'bg-danger/15 text-danger border-2 border-danger/40'
-                          : 'bg-surface-hover text-text-secondary border-2 border-transparent hover:border-danger/30 hover:text-danger'
-                      }
-                      disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {saving === `${meal.id}-non_compliant` ? (
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    )}
-                    Uymadım
-                  </button>
-                </div>
-
-                {/* Foto yükle + Not butonu */}
-                <div className="flex gap-2">
-                  <input
-                    ref={(el) => { fileRefs.current[meal.id] = el }}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handlePhotoUpload(file, meal)
-                      e.target.value = '' // aynı dosyayı tekrar seçebilmek için
-                    }}
-                  />
-                  <button
-                    onClick={() => fileRefs.current[meal.id]?.click()}
-                    disabled={uploading !== null}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface-hover text-text-secondary hover:text-text-primary transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    {uploading === meal.id ? (
-                      <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                    ) : (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    )}
-                    Foto
-                  </button>
-                  <button
-                    onClick={() => setExpandedNote(isExpanded ? null : meal.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface-hover text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Not
-                    {(log?.note || notes[meal.id]) && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Not alanı (expandable) */}
-                {isExpanded && (
-                  <div className="animate-fade-in">
+                  {/* Not alanı */}
+                  <div className="space-y-2">
                     <textarea
                       value={noteValue}
-                      onChange={(e) =>
-                        setNotes((prev) => ({ ...prev, [meal.id]: e.target.value }))
-                      }
+                      onChange={(e) => setNotes(prev => ({ ...prev, [meal.id]: e.target.value }))}
                       placeholder="Öğünle ilgili not ekle..."
                       rows={2}
-                      className="w-full text-sm bg-surface-hover border border-border rounded-lg px-3 py-2 resize-none focus:outline-none focus:border-primary/50 placeholder:text-text-secondary/50"
+                      className="w-full text-sm bg-white border border-border rounded-lg px-3 py-2 resize-none focus:outline-none focus:border-primary placeholder:text-text-secondary/50"
                     />
-                    {notes[meal.id] !== undefined && notes[meal.id] !== (log?.note ?? '') && (
+                    {notes[meal.id] !== undefined && notes[meal.id] !== (log.note ?? '') && (
                       <button
-                        onClick={() => {
-                          if (log) {
-                            handleMealSave(meal, log.status)
-                          }
-                        }}
-                        disabled={!log}
-                        className="mt-1.5 text-xs text-primary font-medium hover:underline cursor-pointer disabled:opacity-50"
+                        onClick={() => handleNoteSave(log.id, meal.id)}
+                        disabled={saving !== null}
+                        className="w-full py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50"
                       >
-                        Notu kaydet
+                        Notu Kaydet
                       </button>
                     )}
                   </div>
-                )}
+                  {/* Mevcut not kısa gösterim (collapsed'ta) */}
+                </div>
+              )}
 
-                {/* Mevcut not gösterimi (collapsed) */}
-                {!isExpanded && log?.note && (
-                  <p className="text-xs text-text-secondary italic truncate">
-                    {log.note}
-                  </p>
-                )}
-              </div>
-            </Card>
+              {/* Collapsed not gösterimi */}
+              {!isExpanded && log?.note && (
+                <div className="px-3 pb-3 pl-12">
+                  <p className="text-xs text-text-secondary italic line-clamp-1">{log.note}</p>
+                </div>
+              )}
+            </div>
           )
         })}
       </div>
 
-      {/* Haftalık uyum özeti */}
-      <Card className="animate-fade-up delay-300">
-        <div className="space-y-3">
-          <h3 className="font-semibold text-sm text-text-primary">Bu Hafta</h3>
+      {/* Ekstra Öğünler */}
+      <div className="space-y-3 animate-fade-up">
+        <p className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-medium">Ekstra Öğünler</p>
 
-          {weekStats.totalMeals === 0 ? (
-            <p className="text-sm text-text-secondary">Henüz kayıt yok</p>
-          ) : (
-            <>
-              <div className="flex items-end gap-3">
-                <span className="text-3xl font-bold text-text-primary">
-                  %{weekStats.loggedPct}
-                </span>
-                <span className="text-sm text-text-secondary pb-1">
-                  uyum ({weekStats.compliantMeals}/{weekStats.totalMeals} öğün)
-                </span>
-              </div>
-
-              {/* Progress bar */}
-              <div className="space-y-1.5">
-                <div className="h-2.5 bg-border rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${weekStats.loggedPct}%`,
-                      backgroundColor:
-                        weekStats.loggedPct >= 80
-                          ? 'var(--color-success)'
-                          : weekStats.loggedPct >= 50
-                            ? 'var(--color-warning)'
-                            : 'var(--color-danger)',
-                    }}
-                  />
-                </div>
-                <p className="text-xs text-text-secondary">
-                  {weekStats.filledPct}% girildi ({weekStats.totalMeals}/{weekStats.maxPossible})
-                </p>
-              </div>
-            </>
-          )}
-
-          {/* Hafta günleri mini grid */}
-          <div className="grid grid-cols-7 gap-1 pt-1">
-            {weekStats.weekDates.map((date) => {
-              const dayMealLogs = logs.filter((l) => l.date === date)
-              const compliant = dayMealLogs.filter((l) => l.status === 'compliant').length
-              const total = dayMealLogs.length
-              const isSelected = date === selectedDate
-
-              return (
-                <button
-                  key={date}
-                  onClick={() => { setSelectedDate(date); setExpandedNote(null) }}
-                  className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer
-                    ${isSelected ? 'bg-primary/10 ring-1 ring-primary/30' : 'hover:bg-surface-hover'}`}
-                >
-                  <span className="text-[10px] text-text-secondary">
-                    {dayName(date).slice(0, 3)}
-                  </span>
-                  <span className={`font-medium ${isSelected ? 'text-primary' : ''}`}>
-                    {new Date(date + 'T00:00:00').getDate()}
-                  </span>
-                  {total > 0 && (
-                    <div className="flex gap-px">
-                      {memberMeals.map((meal, i) => {
-                        const ml = dayMealLogs.find((l) => l.meal_id === meal.id)
-                        return (
-                          <span
-                            key={meal.id}
-                            className={`w-1 h-1 rounded-full ${
-                              ml
-                                ? ml.status === 'compliant'
-                                  ? 'bg-success'
-                                  : 'bg-danger'
-                                : 'bg-border'
-                            }`}
-                          />
-                        )
-                      })}
-                    </div>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </Card>
-
-      {/* Son 7 gün geçmişi */}
-      <Card className="animate-fade-up delay-400">
-        <h3 className="font-semibold text-sm text-text-primary mb-3">Son 7 Gün</h3>
-        <div className="space-y-2">
-          {last7Days.map(({ date, compliant, total }) => (
+        {/* Mevcut extra'lar */}
+        {extraLogs.map((log) => (
+          <div key={log.id} className="flex items-start gap-3 p-3 rounded-xl border-2 border-dashed border-border bg-surface">
+            <span className="text-lg flex-shrink-0">🍕</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-text-primary">{log.extra_name}</p>
+              {log.note && <p className="text-xs text-text-secondary mt-0.5">{log.note}</p>}
+            </div>
             <button
-              key={date}
-              onClick={() => { setSelectedDate(date); setExpandedNote(null); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-              className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer text-left"
+              onClick={() => handleExtraDelete(log.id)}
+              disabled={saving === log.id}
+              className="p-1.5 text-text-secondary hover:text-danger transition-colors cursor-pointer flex-shrink-0 disabled:opacity-50"
+              aria-label="Sil"
             >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {prettyDate(date, today)}
-                </p>
-                <p className="text-xs text-text-secondary">
-                  {total === 0 ? 'Girilmedi' : `${compliant}/${total} uyumlu`}
-                </p>
-              </div>
-
-              {/* Mini durum göstergesi */}
-              {total > 0 ? (
-                <div className="flex gap-1">
-                  {memberMeals.map((meal) => {
-                    const ml = logs.find((l) => l.date === date && l.meal_id === meal.id)
-                    return (
-                      <span
-                        key={meal.id}
-                        className={`w-2.5 h-2.5 rounded-full ${
-                          !ml
-                            ? 'bg-border'
-                            : ml.status === 'compliant'
-                              ? 'bg-success'
-                              : 'bg-danger'
-                        }`}
-                        title={meal.name}
-                      />
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="flex gap-1">
-                  {memberMeals.map((meal) => (
-                    <span key={meal.id} className="w-2.5 h-2.5 rounded-full bg-border" />
-                  ))}
-                </div>
+              {saving === log.id ? <Spinner /> : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               )}
-
-              <svg className="w-4 h-4 text-text-secondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
             </button>
-          ))}
+          </div>
+        ))}
+
+        {/* Extra form */}
+        {showExtraForm ? (
+          <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 space-y-3 animate-fade-in">
+            {/* Hızlı seçenekler */}
+            <div className="flex flex-wrap gap-2">
+              {['Ara öğün', 'Cheat meal', 'Ekstra'].map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => setExtraForm(prev => ({ ...prev, name: opt }))}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    extraForm.name === opt
+                      ? 'bg-primary text-white'
+                      : 'bg-surface border border-border text-text-secondary hover:border-primary/30'
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+            <input
+              type="text"
+              value={extraForm.name}
+              onChange={(e) => setExtraForm(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="Öğün adı..."
+              className="w-full text-sm bg-white border border-border rounded-lg px-3 py-2 focus:outline-none focus:border-primary placeholder:text-text-secondary/50"
+              maxLength={100}
+            />
+            <textarea
+              value={extraForm.note}
+              onChange={(e) => setExtraForm(prev => ({ ...prev, note: e.target.value }))}
+              placeholder="Not (opsiyonel)..."
+              rows={2}
+              className="w-full text-sm bg-white border border-border rounded-lg px-3 py-2 resize-none focus:outline-none focus:border-primary placeholder:text-text-secondary/50"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleExtraSave}
+                disabled={!extraForm.name.trim() || saving === 'extra'}
+                className="flex-1 py-2.5 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {saving === 'extra' ? <Spinner /> : 'Kaydet'}
+              </button>
+              <button
+                onClick={() => { setShowExtraForm(false); setExtraForm({ name: '', note: '' }) }}
+                className="px-4 py-2.5 bg-surface border border-border text-sm font-medium rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
+              >
+                İptal
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowExtraForm(true)}
+            className="w-full p-3 rounded-xl border-2 border-dashed border-border text-sm font-medium text-text-secondary hover:border-primary/30 hover:text-primary transition-colors cursor-pointer flex items-center justify-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Öğün Ekle
+          </button>
+        )}
+      </div>
+
+      {/* Son 14 gün grid */}
+      <Card className="animate-fade-up">
+        <h3 className="font-semibold text-sm text-text-primary mb-3">Son 14 Gün</h3>
+        <div className="grid grid-cols-7 gap-1.5">
+          {past14Days.map(({ date, completed, total, hasExtra }) => {
+            const isSelected = date === selectedDate
+            const dayNum = new Date(date + 'T00:00:00').getDate()
+
+            return (
+              <button
+                key={date}
+                onClick={() => { setSelectedDate(date); setExpandedMeal(null); setShowExtraForm(false) }}
+                onDoubleClick={() => setDetailDay(date)}
+                className={`relative flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                  isSelected ? 'ring-2 ring-primary ring-offset-1' : ''
+                }`}
+              >
+                <span className="text-[10px] text-text-secondary">{shortDayName(date)}</span>
+                <span className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-semibold ${getGridColor(completed, total)}`}>
+                  {dayNum}
+                </span>
+                {hasExtra && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 border border-white" />
+                )}
+              </button>
+            )
+          })}
         </div>
+        <p className="text-[10px] text-text-secondary mt-3">
+          Güne tıklayarak git, çift tıklayarak detay gör
+        </p>
       </Card>
+
+      {/* Geçmiş gün detay modalı */}
+      <Modal open={detailDay !== null} onClose={() => setDetailDay(null)} title={detailDay ? prettyDate(detailDay, today) : ''}>
+        {detailDayData && (
+          <div className="space-y-4">
+            {/* Özet */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold">
+                {detailDayData.completed}/{detailDayData.total} öğün tamamlandı
+              </span>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{
+                backgroundColor: detailDayData.total > 0 && detailDayData.completed / detailDayData.total >= 1
+                  ? 'rgb(34 197 94 / 0.15)' : detailDayData.completed / detailDayData.total >= 0.5
+                  ? 'rgb(245 158 11 / 0.15)' : 'rgb(239 68 68 / 0.15)',
+                color: detailDayData.total > 0 && detailDayData.completed / detailDayData.total >= 1
+                  ? 'rgb(22 163 74)' : detailDayData.completed / detailDayData.total >= 0.5
+                  ? 'rgb(217 119 6)' : 'rgb(220 38 38)',
+              }}>
+                %{detailDayData.total > 0 ? Math.round((detailDayData.completed / detailDayData.total) * 100) : 0}
+              </span>
+            </div>
+
+            {/* Normal öğünler */}
+            <div className="space-y-2">
+              {memberMeals.map((meal) => {
+                const log = detailDayData.normal.find(l => l.meal_id === meal.id)
+                return (
+                  <div key={meal.id} className={`flex items-start gap-3 p-3 rounded-lg border ${
+                    log ? 'bg-success/5 border-success/30' : 'bg-surface border-border'
+                  }`}>
+                    {log ? (
+                      <svg className="w-5 h-5 text-success flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-text-secondary/40 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${log ? 'text-text-primary' : 'text-text-secondary'}`}>{meal.name}</p>
+                      {log?.note && <p className="text-xs text-text-secondary mt-0.5">{log.note}</p>}
+                      {log?.photo_url && (
+                        <a href={log.photo_url} target="_blank" rel="noopener noreferrer" className="block mt-2">
+                          <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border">
+                            <Image src={log.photo_url} alt={meal.name} fill className="object-cover" sizes="400px" />
+                          </div>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Extra öğünler */}
+            {detailDayData.extra.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-medium">Ekstra Öğünler</p>
+                {detailDayData.extra.map((log) => (
+                  <div key={log.id} className="flex items-start gap-3 p-3 rounded-lg border-2 border-dashed border-border">
+                    <span className="text-lg flex-shrink-0">🍕</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-text-primary">{log.extra_name}</p>
+                      {log.note && <p className="text-xs text-text-secondary mt-0.5">{log.note}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

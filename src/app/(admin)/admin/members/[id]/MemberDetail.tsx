@@ -637,44 +637,40 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
         {/* BESLENME */}
         {activeTab === 'nutrition' && (
           <div className="space-y-4">
-            <MealPlanManager userId={member.id} initialMeals={memberMeals} />
+            <MealPlanManager userId={member.id} initialMeals={memberMeals} initialNutritionNote={member.nutrition_note} />
 
             {mealLogs.length > 0 ? (
               <>
-                <div className="rounded-xl border border-border p-4 bg-surface">
-                  <h3 className="text-sm font-semibold text-text-secondary mb-2">Beslenme Uyumu</h3>
-                  <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold" style={{ color: compliancePct >= 80 ? '#22c55e' : compliancePct >= 50 ? '#f59e0b' : '#ef4444' }}>
-                      %{compliancePct}
-                    </span>
-                    <span className="text-sm text-text-secondary pb-1">
-                      ({compliantCount}/{mealLogs.length} öğün)
-                    </span>
-                  </div>
-                </div>
-
-                {Object.entries(groupedByDate).map(([date, logs]) => (
+                {Object.entries(groupedByDate).map(([date, logs]) => {
+                  const dayLogs = logs as (MealLog & { member_meal?: { id: string; name: string } | null })[]
+                  const dayNormal = dayLogs.filter(l => !l.is_extra)
+                  const dayExtra = dayLogs.filter(l => l.is_extra)
+                  const dayCompleted = dayNormal.length
+                  const dayTotal = memberMeals.length
+                  const dayPct = dayTotal > 0 ? Math.round((dayCompleted / dayTotal) * 100) : 0
+                  return (
                   <div key={date} className="rounded-xl border border-border p-4 bg-surface">
-                    <h4 className="text-sm font-medium text-text-secondary mb-3">
-                      {new Date(date + 'T00:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
-                    </h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-medium text-text-secondary">
+                        {new Date(date + 'T00:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
+                      </h4>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        dayPct >= 80 ? 'bg-green-100 text-green-700' :
+                        dayPct >= 50 ? 'bg-amber-100 text-amber-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {dayCompleted}/{dayTotal} tamamlandı
+                      </span>
+                    </div>
                     <div className="space-y-2">
-                      {(logs as (MealLog & { member_meal?: { id: string; name: string } | null })[]).map((log) => (
-                        <div key={log.id} className={`p-3 rounded-lg border relative group ${
-                          log.status === 'compliant'
-                            ? 'bg-green-50 border-green-200'
-                            : 'bg-red-50 border-red-200'
-                        }`}>
+                      {dayNormal.map((log) => (
+                        <div key={log.id} className="p-3 rounded-lg border relative group bg-green-50 border-green-200">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium">{log.member_meal?.name || 'Bilinmeyen Öğün'}</span>
-                                <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
-                                  log.status === 'compliant'
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-red-100 text-red-700'
-                                }`}>
-                                  {log.status === 'compliant' ? 'Uyumlu' : 'Uyulmadı'}
+                              <div className="flex flex-wrap items-start gap-2">
+                                <span className="text-sm font-medium break-words">{log.member_meal?.name || 'Bilinmeyen Öğün'}</span>
+                                <span className="text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 bg-green-100 text-green-700">
+                                  Tamamlandı
                                 </span>
                               </div>
                               {log.note && (
@@ -713,9 +709,38 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
                           )}
                         </div>
                       ))}
+                      {/* Extra öğünler */}
+                      {dayExtra.map((log) => (
+                        <div key={log.id} className="p-3 rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 relative group">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-start gap-2">
+                                <span className="text-sm font-medium break-words">{log.extra_name || 'Ekstra Öğün'}</span>
+                                <span className="text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 bg-amber-100 text-amber-700">
+                                  Ekstra
+                                </span>
+                              </div>
+                              {log.note && (
+                                <p className="text-sm text-text-secondary mt-1.5 whitespace-pre-wrap">{log.note}</p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => handleMealLogDelete(log.id)}
+                              disabled={deletingMealLogId === log.id}
+                              className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-danger hover:bg-white transition-all cursor-pointer disabled:opacity-40 flex-shrink-0"
+                              title="Sil"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </>
             ) : (
               <div className="text-center py-12 text-text-secondary">

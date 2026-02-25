@@ -7,9 +7,10 @@ import type { MemberMeal } from '@/lib/types'
 interface Props {
   userId: string
   initialMeals: MemberMeal[]
+  initialNutritionNote?: string | null
 }
 
-export default function MealPlanManager({ userId, initialMeals }: Props) {
+export default function MealPlanManager({ userId, initialMeals, initialNutritionNote }: Props) {
   const [meals, setMeals] = useState<MemberMeal[]>(initialMeals)
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
@@ -18,8 +19,19 @@ export default function MealPlanManager({ userId, initialMeals }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
+  const [nutritionNote, setNutritionNote] = useState(initialNutritionNote || '')
+  const [savingNote, setSavingNote] = useState(false)
+  const [noteSaved, setNoteSaved] = useState(false)
 
   const supabase = createClient()
+
+  async function handleNutritionNoteSave() {
+    setSavingNote(true)
+    await supabase.from('users').update({ nutrition_note: nutritionNote || null }).eq('id', userId)
+    setSavingNote(false)
+    setNoteSaved(true)
+    setTimeout(() => setNoteSaved(false), 2000)
+  }
 
   const handleAdd = useCallback(async () => {
     const name = newName.trim()
@@ -271,6 +283,36 @@ export default function MealPlanManager({ userId, initialMeals }: Props) {
           </button>
         </div>
       )}
+
+      {/* Üyeye genel beslenme notu */}
+      <div className="mt-4 pt-4 border-t border-border/50">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[10px] text-text-secondary uppercase tracking-widest font-medium">
+            Üyeye Not
+          </p>
+          {noteSaved && (
+            <span className="text-xs text-green-600 font-medium">Kaydedildi</span>
+          )}
+        </div>
+        <textarea
+          value={nutritionNote}
+          onChange={(e) => setNutritionNote(e.target.value)}
+          placeholder="Genel beslenme notu... (üye beslenme sayfasında görecek)"
+          rows={2}
+          className="w-full text-sm bg-background border border-border rounded-lg px-3 py-2 resize-none focus:outline-none focus:border-primary/50 placeholder:text-text-secondary/50"
+        />
+        {nutritionNote !== (initialNutritionNote || '') && (
+          <div className="flex justify-end mt-2">
+            <button
+              onClick={handleNutritionNoteSave}
+              disabled={savingNote}
+              className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary-hover transition-colors cursor-pointer disabled:opacity-40"
+            >
+              {savingNote ? 'Kaydediliyor...' : 'Notu Kaydet'}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

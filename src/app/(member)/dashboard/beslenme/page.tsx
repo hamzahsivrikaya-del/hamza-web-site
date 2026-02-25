@@ -14,6 +14,13 @@ export default async function BeslenmePage() {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
+  // Üyenin beslenme notu
+  const { data: userData } = await supabase
+    .from('users')
+    .select('nutrition_note')
+    .eq('id', user.id)
+    .single()
+
   // Üyeye atanmış öğünler
   const { data: memberMeals } = await supabase
     .from('member_meals')
@@ -35,6 +42,7 @@ export default async function BeslenmePage() {
       memberMeals={memberMeals || []}
       initialLogs={mealLogs || []}
       today={todayStr}
+      nutritionNote={userData?.nutrition_note || null}
     />
   )
 }

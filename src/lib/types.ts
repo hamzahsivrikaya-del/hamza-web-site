@@ -13,6 +13,7 @@ export interface User {
   is_active: boolean
   created_at: string
   parent_id: string | null
+  nutrition_note: string | null
 }
 
 export type PackageStatus = 'active' | 'completed' | 'expired'
@@ -130,10 +131,12 @@ export interface MealLog {
   id: string
   user_id: string
   date: string
-  meal_id: string
+  meal_id: string | null
   status: MealStatus
   photo_url: string | null
   note: string | null
+  is_extra: boolean
+  extra_name: string | null
   created_at: string
   // joined
   member_meal?: MemberMeal

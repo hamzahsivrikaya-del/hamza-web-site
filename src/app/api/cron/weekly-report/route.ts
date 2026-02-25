@@ -75,6 +75,7 @@ async function generateReport(
     .from('meal_logs')
     .select('status')
     .eq('user_id', userId)
+    .eq('is_extra', false)
     .gte('date', weekStart)
     .lte('date', weekEnd)
 
