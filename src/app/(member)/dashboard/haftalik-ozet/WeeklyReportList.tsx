@@ -11,6 +11,7 @@ interface WeeklyReport {
   lessons_count: number
   total_hours: number
   consecutive_weeks: number
+  nutrition_compliance: number | null
   message: string
 }
 
@@ -128,6 +129,38 @@ export default function WeeklyReportList({ reports }: { reports: WeeklyReport[] 
                   </div>
                 )}
               </div>
+
+              {/* Beslenme */}
+              {report.nutrition_compliance !== null && report.nutrition_compliance !== undefined && (
+                <div className="mt-4 p-3 rounded-xl bg-background border border-border">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7 2v9a3 3 0 003 3v7a1 1 0 002 0v-7a3 3 0 003-3V2h-2v9a1 1 0 01-1 1h-2a1 1 0 01-1-1V2H7zM17 2v20a1 1 0 002 0v-8h1a2 2 0 002-2V5a3 3 0 00-3-3h-2z" />
+                      </svg>
+                      <span className="text-sm font-medium">Beslenme Tamamlanma</span>
+                    </div>
+                    <span className={`text-sm font-bold ${
+                      report.nutrition_compliance >= 80 ? 'text-success' :
+                      report.nutrition_compliance >= 50 ? 'text-amber-500' :
+                      'text-danger'
+                    }`}>
+                      %{report.nutrition_compliance}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-border rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${report.nutrition_compliance}%`,
+                        backgroundColor: report.nutrition_compliance >= 80 ? 'var(--color-success)'
+                          : report.nutrition_compliance >= 50 ? 'var(--color-warning)'
+                          : 'var(--color-danger)',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Motivasyon mesajı */}
               <p className="text-sm text-text-secondary mt-4 italic leading-relaxed">
