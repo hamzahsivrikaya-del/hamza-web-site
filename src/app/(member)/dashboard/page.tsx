@@ -30,8 +30,10 @@ function SectionSkeleton() {
 
 export default async function MemberDashboard() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  // Middleware zaten getUser() ile token doğruladı — session'dan oku (network call yok)
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) redirect('/login')
+  const user = session.user
 
   // Kritik veri — hemen render
   const [

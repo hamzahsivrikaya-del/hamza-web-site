@@ -9,21 +9,15 @@ export default async function MemberLayout({
   children: React.ReactNode
 }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login')
-  }
+  // Middleware zaten getUser() ile token doğruladı — burada session'dan oku (network call yok)
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) redirect('/login')
 
   const { data: profile } = await supabase
     .from('users')
-    .select('full_name, role')
-    .eq('id', user.id)
+    .select('full_name')
+    .eq('id', session.user.id)
     .single()
-
-  if (profile?.role === 'admin') {
-    redirect('/admin')
-  }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#FAFAFA]">

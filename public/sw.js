@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hamza-sivrikaya-v2'
+const CACHE_NAME = 'hamza-sivrikaya-v3'
 
 const STATIC_ASSETS = [
   '/',
