@@ -1,77 +1,56 @@
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Link from 'next/link'
 
+function AlertsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-pulse">
+      {[...Array(2)].map((_, i) => (
+        <div key={i} className="bg-surface rounded-2xl border border-border p-5 space-y-3">
+          <div className="h-5 bg-border rounded w-36" />
+          {[...Array(3)].map((_, j) => (
+            <div key={j} className="flex items-center justify-between">
+              <div className="h-4 bg-border rounded w-32" />
+              <div className="h-5 bg-border rounded-full w-20" />
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default async function AdminDashboard() {
   const supabase = await createClient()
 
-  // Paralel sorgular
+  // Kritik: istatistik kartları — hemen render
   const [
     { count: activeMembers },
     { data: weeklyLessons },
-    { data: lowLessonMembers_raw },
-    { data: inactiveMembers },
     { data: todayLessons },
   ] = await Promise.all([
-    // Aktif üye sayısı
     supabase
       .from('users')
       .select('*', { count: 'exact', head: true })
       .eq('role', 'member')
       .eq('is_active', true),
-
-    // Bu haftaki dersler
     supabase
       .from('lessons')
       .select('id')
       .gte('date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]),
-
-    // Aktif + completed paketler (JS tarafında remaining hesaplanacak)
-    supabase
-      .from('packages')
-      .select('user_id, total_lessons, used_lessons, status, users(full_name)')
-      .in('status', ['active', 'completed']),
-
-    // 4+ gün gelmeyen aktif üyeler (aktif üyeler arasından son dersi 4+ gün önce olanlar)
-    supabase
-      .from('users')
-      .select('id, full_name')
-      .eq('role', 'member')
-      .eq('is_active', true),
-
-    // Bugünkü dersler
     supabase
       .from('lessons')
       .select('id, users(full_name), date')
       .eq('date', new Date().toISOString().split('T')[0]),
   ])
 
-  // Paket yenileyen üyeleri bul (hem completed hem active paketi var)
-  const renewedUserIds = new Set(
-    (lowLessonMembers_raw || [])
-      .filter(pkg => pkg.status === 'active')
-      .map(pkg => pkg.user_id)
-  )
-
-  // Paket uyarıları: bitti (completed), son 1, son 2 — önem sırasına göre
-  // Yeni paket alan üyelerin completed uyarısını gösterme
-  const alertMembers = (lowLessonMembers_raw || [])
-    .filter((pkg) => {
-      if (pkg.status === 'completed' && renewedUserIds.has(pkg.user_id)) return false
-      return pkg.status === 'completed' || (pkg.total_lessons - pkg.used_lessons) <= 2
-    })
-    .sort((a, b) => {
-      const remA = a.status === 'completed' ? -1 : (a.total_lessons - a.used_lessons)
-      const remB = b.status === 'completed' ? -1 : (b.total_lessons - b.used_lessons)
-      return remA - remB
-    })
-
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
-      {/* İstatistik Kartları */}
+      {/* İstatistik Kartları — hemen render */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card>
           <div className="text-text-secondary text-sm">Aktif Üyeler</div>
@@ -87,7 +66,7 @@ export default async function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Hızlı Aksiyonlar */}
+      {/* Hızlı Aksiyonlar — hemen render */}
       <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 sm:gap-3">
         <Link
           href="/admin/lessons/new"
@@ -118,55 +97,85 @@ export default async function AdminDashboard() {
         </Link>
       </div>
 
-      {/* Uyarılar */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Paket Uyarıları */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Paket Uyarıları</CardTitle>
-          </CardHeader>
-          {alertMembers.length > 0 ? (
-            <ul className="space-y-1">
-              {alertMembers.map((pkg) => {
-                const remaining = pkg.total_lessons - pkg.used_lessons
-                const isCompleted = pkg.status === 'completed'
-                return (
-                  <li key={pkg.user_id}>
-                    <Link href={`/admin/members/${pkg.user_id}`} className="flex items-center justify-between py-2 px-1 -mx-1 rounded-lg hover:bg-surface-hover active:bg-surface-hover transition-colors">
-                      <span className="text-sm text-text-primary">
-                        {((pkg.users as unknown) as { full_name: string })?.full_name}
-                      </span>
-                      <Badge variant={isCompleted || remaining <= 1 ? 'danger' : 'warning'}>
-                        {isCompleted ? 'Paket Bitti' : remaining === 1 ? 'Son 1 Ders' : 'Son 2 Ders'}
-                      </Badge>
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          ) : (
-            <p className="text-sm text-text-secondary">Uyarı yok</p>
-          )}
-        </Card>
+      {/* Uyarılar — ertelenmiş */}
+      <Suspense fallback={<AlertsSkeleton />}>
+        <DeferredAlerts todayLessons={todayLessons} />
+      </Suspense>
+    </div>
+  )
+}
 
-        {/* Bugün gelen üyeler */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Bugün Gelen Üyeler</CardTitle>
-          </CardHeader>
-          {todayLessons && todayLessons.length > 0 ? (
-            <ul className="space-y-2">
-              {todayLessons.map((lesson: Record<string, unknown>) => (
-                <li key={lesson.id as string} className="text-sm">
-                  {(lesson.users as Record<string, string>)?.full_name}
+async function DeferredAlerts({ todayLessons }: { todayLessons: Record<string, unknown>[] | null }) {
+  const supabase = await createClient()
+
+  const { data: lowLessonMembers_raw } = await supabase
+    .from('packages')
+    .select('user_id, total_lessons, used_lessons, status, users(full_name)')
+    .in('status', ['active', 'completed'])
+
+  const renewedUserIds = new Set(
+    (lowLessonMembers_raw || [])
+      .filter(pkg => pkg.status === 'active')
+      .map(pkg => pkg.user_id)
+  )
+
+  const alertMembers = (lowLessonMembers_raw || [])
+    .filter((pkg) => {
+      if (pkg.status === 'completed' && renewedUserIds.has(pkg.user_id)) return false
+      return pkg.status === 'completed' || (pkg.total_lessons - pkg.used_lessons) <= 2
+    })
+    .sort((a, b) => {
+      const remA = a.status === 'completed' ? -1 : (a.total_lessons - a.used_lessons)
+      const remB = b.status === 'completed' ? -1 : (b.total_lessons - b.used_lessons)
+      return remA - remB
+    })
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Paket Uyarıları</CardTitle>
+        </CardHeader>
+        {alertMembers.length > 0 ? (
+          <ul className="space-y-1">
+            {alertMembers.map((pkg) => {
+              const remaining = pkg.total_lessons - pkg.used_lessons
+              const isCompleted = pkg.status === 'completed'
+              return (
+                <li key={pkg.user_id}>
+                  <Link href={`/admin/members/${pkg.user_id}`} className="flex items-center justify-between py-2 px-1 -mx-1 rounded-lg hover:bg-surface-hover active:bg-surface-hover transition-colors">
+                    <span className="text-sm text-text-primary">
+                      {((pkg.users as unknown) as { full_name: string })?.full_name}
+                    </span>
+                    <Badge variant={isCompleted || remaining <= 1 ? 'danger' : 'warning'}>
+                      {isCompleted ? 'Paket Bitti' : remaining === 1 ? 'Son 1 Ders' : 'Son 2 Ders'}
+                    </Badge>
+                  </Link>
                 </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-text-secondary">Bugün henüz ders yok</p>
-          )}
-        </Card>
-      </div>
+              )
+            })}
+          </ul>
+        ) : (
+          <p className="text-sm text-text-secondary">Uyarı yok</p>
+        )}
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Bugün Gelen Üyeler</CardTitle>
+        </CardHeader>
+        {todayLessons && todayLessons.length > 0 ? (
+          <ul className="space-y-2">
+            {todayLessons.map((lesson: Record<string, unknown>) => (
+              <li key={lesson.id as string} className="text-sm">
+                {(lesson.users as Record<string, string>)?.full_name}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-text-secondary">Bugün henüz ders yok</p>
+        )}
+      </Card>
     </div>
   )
 }
