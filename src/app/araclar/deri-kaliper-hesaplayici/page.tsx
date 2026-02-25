@@ -3,8 +3,8 @@ import LandingNavbar from '@/components/shared/LandingNavbar'
 import SkinfoldCalculator from '@/components/shared/SkinfoldCalculator'
 
 export const metadata = {
-  title: 'Dericaltı Yağ Hesaplayıcı — Vücut Yağ Oranı | Hamza Sivrikaya',
-  description: 'Ücretsiz dericaltı yağ hesaplayıcı. Jackson & Pollock 3 nokta yöntemiyle vücut yağ yüzdenizi ve yağsız vücut kütlenizi hesaplayın.',
+  title: 'Derialtı Yağ Hesaplayıcı — Vücut Yağ Oranı | Hamza Sivrikaya',
+  description: 'Ücretsiz derialtı yağ hesaplayıcı. Jackson & Pollock 3 nokta yöntemiyle vücut yağ yüzdenizi ve yağsız vücut kütlenizi hesaplayın.',
 }
 
 export default function DeriKaliperPage() {
@@ -18,12 +18,12 @@ export default function DeriKaliperPage() {
           <span>/</span>
           <Link href="/araclar" className="hover:text-primary transition-colors">Hesaplayıcılar</Link>
           <span>/</span>
-          <span className="text-text-primary">Dericaltı Yağ Hesaplayıcı</span>
+          <span className="text-text-primary">Derialtı Yağ Hesaplayıcı</span>
         </div>
 
         <div className="text-center mb-12 animate-fade-up">
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-wider">
-            <span className="text-primary">DERİCALTI</span> YAĞ
+            <span className="text-primary">DERİALTI</span> YAĞ
           </h1>
           <p className="text-text-secondary mt-4 max-w-2xl mx-auto leading-relaxed">
             Jackson & Pollock 3 nokta kaliper yöntemiyle vücut yağ yüzdenizi, yağ kitlenizi ve yağsız vücut ağırlığınızı hesaplayın.
