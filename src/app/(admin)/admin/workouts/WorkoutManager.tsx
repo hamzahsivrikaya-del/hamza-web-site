@@ -9,6 +9,7 @@ import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
 import Modal from '@/components/ui/Modal'
 import Select from '@/components/ui/Select'
+import ExerciseAutocomplete from '@/components/ui/ExerciseAutocomplete'
 import { getDayName, formatWeekRange, getAdjacentWeek, getMonday, getTodayDayIndex } from '@/lib/utils'
 import type { Workout, WorkoutExercise, WorkoutSection, User } from '@/lib/types'
 import { WORKOUT_SECTIONS } from '@/lib/types'
@@ -643,9 +644,9 @@ export default function WorkoutManager({ initialWorkouts, members, initialWeek }
                                     hasSuperset ? 'border-l-2 border-l-primary ml-1' : ''
                                   } ${prevSameGroup ? 'rounded-t-none -mt-1 border-t border-t-primary/10' : ''}`}>
                                     <div className="flex items-center gap-2">
-                                      <input
+                                      <ExerciseAutocomplete
                                         value={ex.name}
-                                        onChange={(e) => updateExercise(idx, 'name', e.target.value)}
+                                        onChange={(val) => updateExercise(idx, 'name', val)}
                                         placeholder={hasSuperset && prevSameGroup ? 'Süper set hareketi' : 'Egzersiz adı'}
                                         className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-primary/50 focus:outline-none"
                                       />
