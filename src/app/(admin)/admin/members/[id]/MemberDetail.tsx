@@ -47,6 +47,7 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
   const [mealLogForm, setMealLogForm] = useState({ status: '' as string, note: '' })
   const [savingMealLog, setSavingMealLog] = useState(false)
   const [deletingMealLogId, setDeletingMealLogId] = useState<string | null>(null)
+  const [selectedNutritionDate, setSelectedNutritionDate] = useState<string | null>(null)
   const [showAddDependent, setShowAddDependent] = useState(false)
   const [dependentForm, setDependentForm] = useState({ full_name: '', gender: '' as '' | Gender, phone: '' })
   const [addingDependent, setAddingDependent] = useState(false)
@@ -641,124 +642,158 @@ export default function MemberDetail({ member, packages, measurements, lessons, 
 
             {mealLogs.length > 0 ? (
               <>
-                {Object.entries(groupedByDate).map(([date, logs]) => {
-                  const dayLogs = logs as (MealLog & { member_meal?: { id: string; name: string } | null })[]
+                {/* Kompakt tarih grid'i */}
+                <div className="grid grid-cols-7 gap-1.5">
+                  {Object.entries(groupedByDate).map(([date]) => {
+                    const dayLogs = (groupedByDate[date] as (MealLog & { member_meal?: { id: string; name: string } | null })[])
+                    const dayNormal = dayLogs.filter(l => !l.is_extra)
+                    const dayHasExtra = dayLogs.some(l => l.is_extra)
+                    const dayCompleted = dayNormal.length
+                    const dayTotal = memberMeals.length
+                    const ratio = dayTotal > 0 ? dayCompleted / dayTotal : 0
+                    const isSelected = selectedNutritionDate === date
+                    const d = new Date(date + 'T00:00:00')
+                    const gridColor = ratio >= 1 ? 'bg-success/20 text-success ring-1 ring-success/30'
+                      : ratio >= 0.5 ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300/50'
+                      : dayCompleted > 0 ? 'bg-red-100 text-red-600 ring-1 ring-red-300/50'
+                      : 'bg-border text-text-secondary'
+
+                    return (
+                      <button
+                        key={date}
+                        onClick={() => setSelectedNutritionDate(isSelected ? null : date)}
+                        className={`relative flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                          isSelected ? 'ring-2 ring-primary ring-offset-1' : ''
+                        }`}
+                      >
+                        <span className="text-[10px] text-text-secondary">{d.toLocaleDateString('tr-TR', { weekday: 'short' }).slice(0, 3)}</span>
+                        <span className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-semibold ${gridColor}`}>
+                          {d.getDate()}
+                        </span>
+                        {dayHasExtra && (
+                          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 border border-white" />
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Seçili gün detayı */}
+                {selectedNutritionDate && groupedByDate[selectedNutritionDate] && (() => {
+                  const dayLogs = groupedByDate[selectedNutritionDate] as (MealLog & { member_meal?: { id: string; name: string } | null })[]
                   const dayNormal = dayLogs.filter(l => !l.is_extra)
                   const dayExtra = dayLogs.filter(l => l.is_extra)
                   const dayCompleted = dayNormal.length
                   const dayTotal = memberMeals.length
                   const dayPct = dayTotal > 0 ? Math.round((dayCompleted / dayTotal) * 100) : 0
                   const progressColor = dayPct >= 100 ? 'var(--color-success)' : dayPct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)'
+
                   return (
-                  <div key={date} className="rounded-xl border border-border p-4 bg-surface space-y-3">
-                    {/* Gün başlığı + progress */}
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-medium text-text-secondary">
-                        {new Date(date + 'T00:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
-                      </h4>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                        dayPct >= 80 ? 'bg-green-100 text-green-700' :
-                        dayPct >= 50 ? 'bg-amber-100 text-amber-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {dayCompleted}/{dayTotal} tamamlandı
-                      </span>
-                    </div>
-                    {/* Progress bar */}
-                    <div className="h-1.5 bg-border rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${dayPct}%`, backgroundColor: progressColor }} />
-                    </div>
-                    {/* Tüm atanmış öğünler (tamamlanan + tamamlanmayan) */}
-                    <div className="space-y-2">
-                      {memberMeals.map((meal) => {
-                        const log = dayNormal.find(l => l.meal_id === meal.id)
-                        return (
-                          <div key={meal.id} className={`p-3 rounded-lg border ${
-                            log ? 'bg-green-50 border-green-200' : 'bg-surface border-border'
-                          }`}>
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                {log ? (
-                                  <div className="w-5 h-5 rounded-md bg-success flex items-center justify-center flex-shrink-0">
-                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  </div>
-                                ) : (
-                                  <div className="w-5 h-5 rounded-md border-2 border-border flex-shrink-0" />
-                                )}
-                                <span className={`text-sm font-medium break-words ${log ? 'text-text-primary' : 'text-text-secondary'}`}>{meal.name}</span>
-                              </div>
-                              {log && (
-                                <div className="flex gap-0.5 flex-shrink-0">
-                                  <button
-                                    onClick={() => {
-                                      setEditingMealLog(log)
-                                      setMealLogForm({ status: log.status, note: log.note || '' })
-                                    }}
-                                    className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-primary hover:bg-white transition-all cursor-pointer"
-                                    title="Düzenle"
-                                  >
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={() => handleMealLogDelete(log.id)}
-                                    disabled={deletingMealLogId === log.id}
-                                    className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-danger hover:bg-white transition-all cursor-pointer disabled:opacity-40"
-                                    title="Sil"
-                                  >
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                  </button>
+                    <div className="rounded-xl border border-border p-4 bg-surface space-y-3 animate-fade-in">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium text-text-secondary">
+                          {new Date(selectedNutritionDate + 'T00:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
+                        </h4>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          dayPct >= 80 ? 'bg-green-100 text-green-700' :
+                          dayPct >= 50 ? 'bg-amber-100 text-amber-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {dayCompleted}/{dayTotal} tamamlandı
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-border rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${dayPct}%`, backgroundColor: progressColor }} />
+                      </div>
+                      <div className="space-y-2">
+                        {memberMeals.map((meal) => {
+                          const log = dayNormal.find(l => l.meal_id === meal.id)
+                          return (
+                            <div key={meal.id} className={`p-3 rounded-lg border ${
+                              log ? 'bg-green-50 border-green-200' : 'bg-surface border-border'
+                            }`}>
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  {log ? (
+                                    <div className="w-5 h-5 rounded-md bg-success flex items-center justify-center flex-shrink-0">
+                                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    </div>
+                                  ) : (
+                                    <div className="w-5 h-5 rounded-md border-2 border-border flex-shrink-0" />
+                                  )}
+                                  <span className={`text-sm font-medium break-words ${log ? 'text-text-primary' : 'text-text-secondary'}`}>{meal.name}</span>
                                 </div>
-                              )}
-                            </div>
-                            {log?.note && (
-                              <p className="text-sm text-text-secondary mt-1.5 ml-7 whitespace-pre-wrap">{log.note}</p>
-                            )}
-                            {log?.photo_url && (
-                              <a href={log.photo_url} target="_blank" rel="noopener noreferrer" className="block mt-2 ml-7">
-                                <img src={log.photo_url} alt={meal.name} className="rounded-lg w-full max-h-64 object-cover hover:opacity-90 transition-opacity cursor-pointer" />
-                              </a>
-                            )}
-                          </div>
-                        )
-                      })}
-                      {/* Extra öğünler */}
-                      {dayExtra.map((log) => (
-                        <div key={log.id} className="p-3 rounded-lg border-2 border-dashed border-amber-300 bg-amber-50">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-wrap items-start gap-2">
-                                <span className="text-sm font-medium break-words">{log.extra_name || 'Ekstra Öğün'}</span>
-                                <span className="text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 bg-amber-100 text-amber-700">
-                                  Ekstra
-                                </span>
+                                {log && (
+                                  <div className="flex gap-0.5 flex-shrink-0">
+                                    <button
+                                      onClick={() => {
+                                        setEditingMealLog(log)
+                                        setMealLogForm({ status: log.status, note: log.note || '' })
+                                      }}
+                                      className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-primary hover:bg-white transition-all cursor-pointer"
+                                      title="Düzenle"
+                                    >
+                                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      onClick={() => handleMealLogDelete(log.id)}
+                                      disabled={deletingMealLogId === log.id}
+                                      className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-danger hover:bg-white transition-all cursor-pointer disabled:opacity-40"
+                                      title="Sil"
+                                    >
+                                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                )}
                               </div>
-                              {log.note && (
-                                <p className="text-sm text-text-secondary mt-1.5 whitespace-pre-wrap">{log.note}</p>
+                              {log?.note && (
+                                <p className="text-sm text-text-secondary mt-1.5 ml-7 whitespace-pre-wrap">{log.note}</p>
+                              )}
+                              {log?.photo_url && (
+                                <a href={log.photo_url} target="_blank" rel="noopener noreferrer" className="block mt-2 ml-7">
+                                  <img src={log.photo_url} alt={meal.name} className="rounded-lg w-full max-h-64 object-cover hover:opacity-90 transition-opacity cursor-pointer" />
+                                </a>
                               )}
                             </div>
-                            <button
-                              onClick={() => handleMealLogDelete(log.id)}
-                              disabled={deletingMealLogId === log.id}
-                              className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-danger hover:bg-white transition-all cursor-pointer disabled:opacity-40 flex-shrink-0"
-                              title="Sil"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
+                          )
+                        })}
+                        {dayExtra.map((log) => (
+                          <div key={log.id} className="p-3 rounded-lg border-2 border-dashed border-amber-300 bg-amber-50">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-start gap-2">
+                                  <span className="text-sm font-medium break-words">{log.extra_name || 'Ekstra Öğün'}</span>
+                                  <span className="text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 bg-amber-100 text-amber-700">
+                                    Ekstra
+                                  </span>
+                                </div>
+                                {log.note && (
+                                  <p className="text-sm text-text-secondary mt-1.5 whitespace-pre-wrap">{log.note}</p>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => handleMealLogDelete(log.id)}
+                                disabled={deletingMealLogId === log.id}
+                                className="p-1 rounded-md bg-white/80 text-text-secondary hover:text-danger hover:bg-white transition-all cursor-pointer disabled:opacity-40 flex-shrink-0"
+                                title="Sil"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
                   )
-                })}
+                })()}
               </>
             ) : (
               <div className="text-center py-12 text-text-secondary">
