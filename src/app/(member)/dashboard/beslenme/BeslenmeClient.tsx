@@ -569,29 +569,14 @@ export default function BeslenmeClient({ userId, memberMeals, initialLogs, today
         {/* Extra form */}
         {showExtraForm ? (
           <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 space-y-3 animate-fade-in">
-            {/* Hızlı seçenekler */}
-            <div className="flex flex-wrap gap-2">
-              {['Ara öğün', 'Cheat meal', 'Ekstra'].map((opt) => (
-                <button
-                  key={opt}
-                  onClick={() => setExtraForm(prev => ({ ...prev, name: opt }))}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                    extraForm.name === opt
-                      ? 'bg-primary text-white'
-                      : 'bg-surface border border-border text-text-secondary hover:border-primary/30'
-                  }`}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
             <input
               type="text"
               value={extraForm.name}
               onChange={(e) => setExtraForm(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Öğün adı..."
+              placeholder="Öğün başlığı..."
               className="w-full text-sm bg-white border border-border rounded-lg px-3 py-2 focus:outline-none focus:border-primary placeholder:text-text-secondary/50"
               maxLength={100}
+              autoFocus
             />
             <textarea
               value={extraForm.note}
