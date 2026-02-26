@@ -11,5 +11,18 @@ export default async function NewPackagePage() {
     .order('is_active', { ascending: false })
     .order('full_name')
 
-  return <PackageForm members={members || []} />
+  // Aktif paketi olan üyelerin ID'lerini bul
+  const { data: activePackages } = await supabase
+    .from('packages')
+    .select('user_id')
+    .eq('status', 'active')
+
+  const activePackageUserIds = new Set((activePackages || []).map((p) => p.user_id))
+
+  const membersWithPackageInfo = (members || []).map((m) => ({
+    ...m,
+    hasActivePackage: activePackageUserIds.has(m.id),
+  }))
+
+  return <PackageForm members={membersWithPackageInfo} />
 }

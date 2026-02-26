@@ -29,13 +29,15 @@ function formatDate(iso: string): string {
   })
 }
 
-export default function PackageForm({ members }: { members: { id: string; full_name: string; is_active: boolean }[] }) {
+export default function PackageForm({ members }: { members: { id: string; full_name: string; is_active: boolean; hasActivePackage: boolean }[] }) {
   const router = useRouter()
   const [userId, setUserId] = useState('')
   const [packageType, setPackageType] = useState<'10' | '20' | '30' | 'custom'>('10')
   const [customLessons, setCustomLessons] = useState('')
   const [customDays, setCustomDays] = useState('')
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0])
+  const [price, setPrice] = useState('')
+  const [paymentStatus, setPaymentStatus] = useState<'paid' | 'unpaid'>('unpaid')
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -69,6 +71,8 @@ export default function PackageForm({ members }: { members: { id: string; full_n
       start_date: startDate,
       expire_date: expireDate,
       status: 'active',
+      price: price ? parseFloat(price) : null,
+      payment_status: paymentStatus,
     })
 
     if (insertError) {
@@ -79,6 +83,8 @@ export default function PackageForm({ members }: { members: { id: string; full_n
       setPackageType('10')
       setCustomLessons('')
       setCustomDays('')
+      setPrice('')
+      setPaymentStatus('unpaid')
       setTimeout(() => setSuccess(false), 2000)
       router.refresh()
     }
@@ -88,10 +94,12 @@ export default function PackageForm({ members }: { members: { id: string; full_n
 
   const memberOptions = [
     { value: '', label: 'Üye seçin...' },
-    ...members.map((m) => ({
-      value: m.id,
-      label: m.is_active ? m.full_name : `${m.full_name} (Pasif)`,
-    })),
+    ...members
+      .filter((m) => !m.hasActivePackage)
+      .map((m) => ({
+        value: m.id,
+        label: m.is_active ? m.full_name : `${m.full_name} (Pasif)`,
+      })),
   ]
 
   const packageOptions = [
@@ -155,6 +163,28 @@ export default function PackageForm({ members }: { members: { id: string; full_n
             required
           />
 
+          {/* Fiyat ve Ödeme */}
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Fiyat (TL)"
+              type="number"
+              min={0}
+              step="0.01"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="Örn: 15600"
+            />
+            <Select
+              label="Ödeme Durumu"
+              options={[
+                { value: 'unpaid', label: 'Ödenmedi' },
+                { value: 'paid', label: 'Ödendi' },
+              ]}
+              value={paymentStatus}
+              onChange={(e) => setPaymentStatus(e.target.value as 'paid' | 'unpaid')}
+            />
+          </div>
+
           {/* Özet */}
           <div className="bg-surface-hover rounded-lg p-3 space-y-1 text-sm">
             {totalLessons > 0 && (
@@ -167,6 +197,20 @@ export default function PackageForm({ members }: { members: { id: string; full_n
               <span className="text-text-secondary">Bitiş tarihi</span>
               <span className="font-medium">
                 {expireDate ? formatDate(expireDate) : '—'}
+              </span>
+            </div>
+            {price && (
+              <div className="flex justify-between">
+                <span className="text-text-secondary">Fiyat</span>
+                <span className="font-medium">
+                  {parseFloat(price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Ödeme</span>
+              <span className={`font-medium ${paymentStatus === 'paid' ? 'text-success' : 'text-danger'}`}>
+                {paymentStatus === 'paid' ? 'Ödendi' : 'Ödenmedi'}
               </span>
             </div>
           </div>
