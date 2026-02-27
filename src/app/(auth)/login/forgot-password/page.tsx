@@ -17,8 +17,18 @@ export default function ForgotPasswordPage() {
     setError('')
     setLoading(true)
 
+    // Türkçe karakterleri normalize et (ı→i, ş→s vb.)
+    const normalizedEmail = email.trim()
+      .replace(/ı/g, 'i').replace(/İ/g, 'I')
+      .replace(/ş/g, 's').replace(/Ş/g, 'S')
+      .replace(/ç/g, 'c').replace(/Ç/g, 'C')
+      .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+      .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+      .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+      .toLowerCase()
+
     const supabase = createClient()
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
       redirectTo: `${window.location.origin}/api/auth/callback?next=/login/reset-password`,
     })
 

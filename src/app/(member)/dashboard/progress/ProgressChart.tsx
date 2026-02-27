@@ -38,29 +38,45 @@ export default function ProgressChart({ measurements, gender, goals, goalsEnable
     setGoalModal({ metric: metric.key, current: latest?.[metric.key] ?? null })
     const goal = getGoal(metric.key)
     setGoalValue(goal?.target_value?.toString() || '')
+    setGoalError('')
   }
+
+  const [goalError, setGoalError] = useState('')
 
   async function saveGoal() {
     if (!goalModal || !goalValue) return
     setSaving(true)
+    setGoalError('')
     try {
-      await fetch('/api/goals', {
+      const res = await fetch('/api/goals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ metric_type: goalModal.metric, target_value: parseFloat(goalValue) }),
       })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setGoalError(data.error || 'Hedef kaydedilemedi')
+        return
+      }
       window.location.reload()
+    } catch {
+      setGoalError('Bağlantı hatası, tekrar deneyin')
     } finally {
       setSaving(false)
     }
   }
 
   async function deleteGoal(metricType: string) {
-    await fetch('/api/goals', {
+    const res = await fetch('/api/goals', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ metric_type: metricType }),
     })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      alert(data.error || 'Hedef silinemedi')
+      return
+    }
     window.location.reload()
   }
 
@@ -369,6 +385,8 @@ export default function ProgressChart({ measurements, gender, goals, goalsEnable
               className="w-full px-4 py-3 rounded-xl border border-border bg-background text-text-primary text-lg font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 mb-4"
               autoFocus
             />
+
+            {goalError && <p className="text-sm text-danger mb-3">{goalError}</p>}
 
             <div className="flex gap-2">
               {getGoal(goalModal.metric) && (
