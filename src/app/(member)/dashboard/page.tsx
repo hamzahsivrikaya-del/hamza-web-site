@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Link from 'next/link'
-import { formatDate, daysRemaining, getPackageStatusLabel } from '@/lib/utils'
+import { formatDate, daysRemaining, getPackageStatusLabel, formatPrice } from '@/lib/utils'
 import type { MemberMeal, MemberGoal, Package, Measurement } from '@/lib/types'
 
 function SectionSkeleton() {
@@ -30,7 +30,7 @@ function SectionSkeleton() {
 
 export default async function MemberDashboard() {
   const supabase = await createClient()
-  // Middleware zaten getUser() ile token doğruladı — session'dan oku (network call yok)
+  // Middleware zaten getUser() ile token dogruladı — session'dan oku (network call yok)
   const { data: { session } } = await supabase.auth.getSession()
   if (!session?.user) redirect('/login')
   const user = session.user
@@ -139,6 +139,17 @@ export default async function MemberDashboard() {
                 {activePackage.used_lessons}/{activePackage.total_lessons} ders tamamlandı
               </p>
             </div>
+            {activePackage.price !== null && (
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-text-secondary">Paket Tutarı</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">{formatPrice(activePackage.price)}</span>
+                  <Badge variant={activePackage.payment_status === 'paid' ? 'success' : 'danger'}>
+                    {activePackage.payment_status === 'paid' ? 'Ödendi' : 'Ödenmedi'}
+                  </Badge>
+                </div>
+              </div>
+            )}
             <p className="text-xs text-text-secondary">
               Bu paketin kullanım süresi <span className="text-text-primary font-medium">{days} gündür</span>.
             </p>
@@ -179,7 +190,7 @@ export default async function MemberDashboard() {
         </Card>
       </Link>
 
-      {/* Hızlı linkler */}
+      {/* Hizli linkler */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Link href="/dashboard/program">
           <Card className="hover-lift card-glow text-center cursor-pointer animate-fade-up delay-200">
@@ -285,19 +296,31 @@ async function DeferredSections({ userId }: { userId: string }) {
           <CardHeader><CardTitle>Geçmiş Paketler</CardTitle></CardHeader>
           <div className="space-y-3 mt-2">
             {pastPackages.map((pkg) => (
-              <div key={pkg.id} className="flex items-center justify-between p-3 rounded-lg bg-background">
-                <div>
-                  <span className="font-medium text-sm">{pkg.total_lessons} Ders Paketi</span>
-                  <p className="text-xs text-text-secondary mt-0.5">
-                    {formatDate(pkg.start_date)} — {formatDate(pkg.expire_date)}
-                  </p>
-                  <p className="text-xs text-text-secondary">
-                    {pkg.used_lessons}/{pkg.total_lessons} ders tamamlandı
-                  </p>
+              <div key={pkg.id} className="p-3 rounded-lg bg-background">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-medium text-sm">{pkg.total_lessons} Ders Paketi</span>
+                    <p className="text-xs text-text-secondary mt-0.5">
+                      {formatDate(pkg.start_date)} — {formatDate(pkg.expire_date)}
+                    </p>
+                  </div>
+                  <Badge variant={pkg.status === 'completed' ? 'success' : 'danger'}>
+                    {getPackageStatusLabel(pkg.status)}
+                  </Badge>
                 </div>
-                <Badge variant={pkg.status === 'completed' ? 'success' : 'danger'}>
-                  {getPackageStatusLabel(pkg.status)}
-                </Badge>
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-xs text-text-secondary">
+                    {pkg.used_lessons}/{pkg.total_lessons} ders tamamlandı
+                  </span>
+                  {pkg.price !== null && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium">{formatPrice(pkg.price)}</span>
+                      <Badge variant={pkg.payment_status === 'paid' ? 'success' : 'danger'}>
+                        {pkg.payment_status === 'paid' ? 'Ödendi' : 'Ödenmedi'}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

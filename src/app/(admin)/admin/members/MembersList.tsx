@@ -43,14 +43,43 @@ export default function MembersList({ initialMembers }: { initialMembers: Member
 
   async function handleAddMember(e: React.FormEvent) {
     e.preventDefault()
-    setAdding(true)
     setAddError('')
+
+    // Manuel validation (native browser validation autofill ile çakışabiliyor)
+    if (!newMember.full_name.trim()) {
+      setAddError('Ad soyad girin')
+      return
+    }
+    // Türkçe karakterleri ASCII'ye normalize et (ı→i, İ→I, ş→s, ç→c, ğ→g, ü→u, ö→o)
+    const normalizedEmail = newMember.email.trim()
+      .replace(/ı/g, 'i').replace(/İ/g, 'I')
+      .replace(/ş/g, 's').replace(/Ş/g, 'S')
+      .replace(/ç/g, 'c').replace(/Ç/g, 'C')
+      .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+      .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+      .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+      .toLowerCase()
+
+    if (!normalizedEmail) {
+      setAddError('E-posta girin')
+      return
+    }
+    if (!newMember.password || newMember.password.length < 6) {
+      setAddError('Şifre en az 6 karakter olmalı')
+      return
+    }
+    if (!newMember.gender) {
+      setAddError('Cinsiyet seçin')
+      return
+    }
+
+    setAdding(true)
 
     try {
       const res = await fetch('/api/admin/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMember),
+        body: JSON.stringify({ ...newMember, email: normalizedEmail }),
       })
 
       if (!res.ok) {
@@ -195,27 +224,23 @@ export default function MembersList({ initialMembers }: { initialMembers: Member
 
       {/* Yeni üye modal */}
       <Modal open={showAddModal} onClose={() => setShowAddModal(false)} title="Yeni Üye Ekle">
-        <form onSubmit={handleAddMember} className="space-y-4">
+        <form onSubmit={handleAddMember} noValidate className="space-y-4">
           <Input
             label="Ad Soyad"
             value={newMember.full_name}
             onChange={(e) => setNewMember({ ...newMember, full_name: e.target.value })}
-            required
           />
           <Input
             label="E-posta"
             type="email"
             value={newMember.email}
             onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-            required
           />
           <Input
             label="Şifre"
             type="password"
             value={newMember.password}
             onChange={(e) => setNewMember({ ...newMember, password: e.target.value })}
-            required
-            minLength={6}
           />
           <Input
             label="Telefon"
@@ -232,7 +257,6 @@ export default function MembersList({ initialMembers }: { initialMembers: Member
               { value: 'male', label: 'Erkek' },
               { value: 'female', label: 'Kadın' },
             ]}
-            required
           />
           {addError && <p className="text-sm text-danger">{addError}</p>}
           <div className="flex gap-3 justify-end">

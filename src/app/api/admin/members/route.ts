@@ -24,9 +24,21 @@ export async function POST(request: NextRequest) {
   const body = await request.json()
   const { email: rawEmail, password: rawPassword, full_name, phone, gender, parent_id } = body
 
+  // Türkçe karakterleri ASCII'ye normalize et
+  const sanitizedEmail = typeof rawEmail === 'string'
+    ? rawEmail.trim()
+        .replace(/ı/g, 'i').replace(/İ/g, 'I')
+        .replace(/ş/g, 's').replace(/Ş/g, 'S')
+        .replace(/ç/g, 'c').replace(/Ç/g, 'C')
+        .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+        .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+        .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+        .toLowerCase()
+    : rawEmail
+
   // Bağlı üye ise sahte email/şifre oluştur
   const isDependent = !!parent_id
-  const email = isDependent ? `child-${crypto.randomUUID()}@hamzapt.local` : rawEmail
+  const email = isDependent ? `child-${crypto.randomUUID()}@hamzapt.local` : sanitizedEmail
   const password = isDependent ? crypto.randomUUID() : rawPassword
 
   if (!full_name || typeof full_name !== 'string' || full_name.length < 2 || full_name.length > 100) {
