@@ -119,8 +119,27 @@ export default async function MemberDashboard() {
               </p>
             </div>
           </div>
-          <Badge variant={statusVariant}>{statusLabel}</Badge>
+          {statusVariant !== 'danger' && (
+            <Badge variant={statusVariant}>{statusLabel}</Badge>
+          )}
         </div>
+
+        {/* Son ders uyarısı — dikkat çekici banner */}
+        {activePackage && statusVariant === 'danger' && (
+          <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200">
+            <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+              <svg className="w-4.5 h-4.5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-red-700">{statusLabel}</p>
+              <p className="text-xs text-red-600/80">
+                {remaining <= 0 ? 'Paketiniz bitti, yeni paket alınmalı.' : 'Paketiniz bitmek üzere.'}
+              </p>
+            </div>
+          </div>
+        )}
 
         {activePackage && (
           <div className="mt-4 space-y-3">
