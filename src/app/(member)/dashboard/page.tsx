@@ -126,18 +126,18 @@ export default async function MemberDashboard() {
 
         {/* Son ders uyarısı — samimi koç tonu */}
         {activePackage && statusVariant === 'danger' && (
-          <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200">
-            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 text-lg">
+          <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-primary/5 border border-primary/15">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-lg">
               {remaining <= 0 ? '🎯' : '🚀'}
             </div>
             <div>
-              <p className="text-sm font-semibold text-amber-800">
-                {remaining <= 0 ? 'Yeni pakete hazır mısın?' : 'Son sprinttesin!'}
+              <p className="text-sm font-semibold text-text-primary">
+                {remaining <= 0 ? 'Yeni pakete hazır mısın?' : 'Son düzlüktesin!'}
               </p>
-              <p className="text-xs text-amber-700/80">
+              <p className="text-xs text-text-secondary">
                 {remaining <= 0
                   ? 'Yenilemek için antrenörünle iletişime geçmeyi unutma!'
-                  : `${remaining} ders kaldı, yeni paketi unutma!`}
+                  : `${remaining} ders kaldı, yeni paket için antrenörünle iletişime geç!`}
               </p>
             </div>
           </div>
@@ -172,7 +172,7 @@ export default async function MemberDashboard() {
               </div>
             )}
             <p className="text-xs text-text-secondary">
-              Bu paketin kullanım süresi <span className="text-text-primary font-medium">{days} gündür</span>.
+              Paketinin bitimine <span className="text-text-primary font-medium">{days} gün</span> kaldı, değerlendir!
             </p>
           </div>
         )}
@@ -180,7 +180,7 @@ export default async function MemberDashboard() {
 
       {/* Bugünün Beslenmesi */}
       <Link href="/dashboard/beslenme" className="block">
-        <Card className="hover-lift card-glow gradient-border border-primary/20 animate-fade-up delay-100">
+        <Card className="hover-lift card-glow animate-fade-up delay-100">
           <div className="flex items-center gap-2 mb-3">
             <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
               <path d="M7 2v9a3 3 0 003 3v7a1 1 0 002 0v-7a3 3 0 003-3V2h-2v9a1 1 0 01-1 1h-2a1 1 0 01-1-1V2H7zM17 2v20a1 1 0 002 0v-8h1a2 2 0 002-2V5a3 3 0 00-3-3h-2z" />
@@ -194,7 +194,7 @@ export default async function MemberDashboard() {
                   const log = todayMeals?.find((m: { meal_id: string }) => m.meal_id === meal.id)
                   return (
                     <div key={meal.id} className={`flex-1 min-w-0 text-center py-2 rounded-lg text-xs font-medium truncate px-1 ${
-                      log ? 'bg-green-100 text-green-700' : 'bg-border text-text-secondary'
+                      log ? 'bg-green-100 text-green-700' : 'bg-red-50 text-text-secondary'
                     }`}>
                       {meal.name}
                     </div>
@@ -359,48 +359,93 @@ async function DeferredSections({ userId }: { userId: string }) {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {([
               { key: 'weight' as const, label: 'Kilo', unit: 'kg', color: '#DC2626' },
-              { key: 'chest' as const, label: 'Göğüs', unit: 'cm', color: '#F59E0B' },
-              { key: 'waist' as const, label: 'Bel', unit: 'cm', color: '#22C55E' },
-              { key: 'arm' as const, label: 'Kol', unit: 'cm', color: '#3B82F6' },
-              { key: 'leg' as const, label: 'Bacak', unit: 'cm', color: '#8B5CF6' },
-              { key: 'body_fat_pct' as const, label: 'Yağ', unit: '%', color: '#F97316' },
+              { key: 'chest' as const, label: 'Göğüs', unit: 'cm', color: '#DC2626' },
+              { key: 'waist' as const, label: 'Bel', unit: 'cm', color: '#DC2626' },
+              { key: 'arm' as const, label: 'Kol', unit: 'cm', color: '#DC2626' },
+              { key: 'leg' as const, label: 'Bacak', unit: 'cm', color: '#DC2626' },
+              { key: 'body_fat_pct' as const, label: 'Yağ', unit: '%', color: '#DC2626' },
             ]).map(({ key, label, unit, color }) => {
               const value = recentMeasurement[key]
               if (!value) return null
               const goal = (goals as MemberGoal[] | null)?.find(g => g.metric_type === key)
 
-              return (
-                <div key={key} className="bg-background rounded-xl p-3">
-                  <div className="text-[11px] font-medium text-text-secondary mb-1">{label}</div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-bold text-text-primary">{value}</span>
-                    <span className="text-xs text-text-secondary">{unit}</span>
-                  </div>
-                  {goal && (() => {
-                    const current = Number(value)
-                    const target = goal.target_value
-                    const left = Math.abs(target - current)
-                    const done = left <= 0.1
-                    const pct = done ? 100 : Math.max(8, Math.min(92, 100 - (left / (left + 5)) * 100))
+              let pct = 0
+              let left = 0
+              let done = false
+              let nearGoal = false
+              if (goal) {
+                const current = Number(value)
+                left = Math.abs(goal.target_value - current)
+                done = left <= 0.1
+                pct = done ? 100 : Math.max(8, Math.min(92, 100 - (left / (left + 5)) * 100))
+                nearGoal = pct >= 80 && !done
+              }
 
-                    return (
+              return (
+                <div
+                  key={key}
+                  className="bg-surface rounded-xl overflow-hidden"
+                  style={{
+                    border: `1px solid ${done ? 'rgba(34,197,94,0.2)' : goal ? `${color}22` : 'var(--border)'}`,
+                    boxShadow: done ? '0 0 12px rgba(34,197,94,0.1)' : nearGoal ? `0 0 12px ${color}15` : 'none',
+                  }}
+                >
+                  <div className="h-1" style={{ backgroundColor: color }} />
+                  <div className="p-3">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+                      <span className="text-[11px] font-medium text-text-secondary">{label}</span>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold text-text-primary">{value}</span>
+                      <span className="text-xs text-text-secondary">{unit}</span>
+                    </div>
+                    {goal && (
                       <div className="mt-2 pt-2 border-t border-border/50">
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] text-text-secondary">Hedef</span>
-                          <span className="text-xs font-semibold" style={{ color }}>{target} {unit}</span>
+                          <span className="flex items-center gap-1 text-xs text-text-secondary">
+                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                              <circle cx="12" cy="12" r="10" />
+                              <line x1="22" y1="12" x2="18" y2="12" />
+                              <line x1="6" y1="12" x2="2" y2="12" />
+                              <line x1="12" y1="6" x2="12" y2="2" />
+                              <line x1="12" y1="22" x2="12" y2="18" />
+                            </svg>
+                            Hedef
+                          </span>
+                          <span className="text-xs font-semibold" style={{ color }}>{goal.target_value} {unit}</span>
                         </div>
-                        <div className="h-1.5 bg-border rounded-full overflow-hidden">
+                        <div className="h-2.5 bg-border rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all ${done ? 'bg-success' : ''}`}
-                            style={{ width: `${pct}%`, backgroundColor: done ? undefined : color }}
+                            style={{
+                              width: `${pct}%`,
+                              backgroundColor: done ? undefined : color,
+                              boxShadow: nearGoal ? `0 0 8px ${color}66` : 'none',
+                            }}
                           />
                         </div>
-                        <div className={`text-[10px] mt-1 ${done ? 'text-success font-medium' : 'text-text-secondary'}`}>
-                          {done ? 'Hedefe ulaştın!' : `Hedefe ${left.toFixed(1)} ${unit} kaldı`}
+                        <div className="mt-1.5">
+                          {done ? (
+                            <span className="text-xs text-success font-semibold flex items-center gap-1">
+                              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                              Hedefe ulaştın!
+                            </span>
+                          ) : nearGoal ? (
+                            <span className="text-xs font-semibold" style={{ color }}>
+                              🔥 Son {left.toFixed(1)} {unit}!
+                            </span>
+                          ) : (
+                            <span className="text-xs" style={{ color }}>
+                              Hedefe {left.toFixed(1)} {unit} kaldı
+                            </span>
+                          )}
                         </div>
                       </div>
-                    )
-                  })()}
+                    )}
+                  </div>
                 </div>
               )
             })}
