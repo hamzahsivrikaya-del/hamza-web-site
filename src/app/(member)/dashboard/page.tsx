@@ -136,8 +136,8 @@ export default async function MemberDashboard() {
               </p>
               <p className="text-xs text-amber-700/80">
                 {remaining <= 0
-                  ? 'Kaldığın yerden devam edelim!'
-                  : `${remaining} ders kaldı, harika gidiyorsun!`}
+                  ? 'Yenilemek için antrenörünle iletişime geçmeyi unutma!'
+                  : `${remaining} ders kaldı, yeni paketi unutma!`}
               </p>
             </div>
           </div>
